@@ -1,0 +1,9 @@
+# Python env
+.venv/
+venv/
+
+# Files folder
+files/
+
+# Victoria Metrics data
+victoria-metrics-data

@@ -1,0 +1,33 @@
+services:
+  victoriametrics:
+    image: victoriametrics/victoria-metrics
+    container_name: victoriametrics
+    ports:
+      - "8428:8428"
+    command:
+      - '-retentionPeriod=1'
+      - '-selfScrapeInterval=5s'
+    volumes:
+      - victoriametrics-data:/victoria-metrics-data
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3030:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - victoriametrics
+    networks:
+      - monitoring
+    volumes:
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+
+volumes:
+  victoriametrics-data:
+
+networks:
+  monitoring:
