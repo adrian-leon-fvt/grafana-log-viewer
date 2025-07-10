@@ -82,7 +82,7 @@ def send_signal(signal: Signal, start_time: datetime, job: str):
     metric_name = signal.name.replace(" ", "_")
     unit = signal.unit if signal.unit else ""
 
-    print(f"  => Sending {metric_name} ...", end="", flush=True)
+    print(f"  => Sending {metric_name} ...", end="\r", flush=True)
     start = time.time()
     batch: list[str] = []
     batch_size = 10000
@@ -100,18 +100,17 @@ def send_signal(signal: Signal, start_time: datetime, job: str):
             try:
                 requests.post(vm_import_url, data="".join(batch))
             except Exception as e:
-                print(f"\nError sending batch: {e}")
+                print(f"\nError sending batch: {e}", flush=True)
             batch = []
             time.sleep(0.1)
     if batch:
         try:
             requests.post(vm_import_url, data="".join(batch))
         except Exception as e:
-            print(f"\nError sending final batch: {e}")
-    elapsed = time.time() - start
-    mins, secs = divmod(int(elapsed), 60)
-    time_str = f"{mins}m{secs}s" if mins else f"{secs}s"
-    print(f"\r  => Sending {metric_name} ... sent in {time_str}   ")
+            print(f"\nError sending final batch: {e}", flush=True)
+
+    time_str = get_time_str(start)
+    print(f"  => Sending {metric_name} ... sent in {time_str}   ", flush=True)
 
 
 def send_file(filename: Path, job: str | None = None):
