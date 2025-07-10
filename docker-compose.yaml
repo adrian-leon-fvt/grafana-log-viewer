@@ -5,7 +5,7 @@ services:
     ports:
       - "8428:8428"
     command:
-      - '-retentionPeriod=1'
+      - '-retentionPeriod=10y'
       - '-selfScrapeInterval=5s'
     volumes:
       - victoriametrics-data:/victoria-metrics-data
