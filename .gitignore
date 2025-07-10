@@ -1,6 +1,7 @@
 # Python env
 .venv/
 venv/
+__pycache__/
 
 # Files folder
 files/
