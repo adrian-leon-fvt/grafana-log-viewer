@@ -1,10 +1,23 @@
 from asammdf import MDF, Signal
+from asammdf.blocks.types import DbcFileType, BusType, StrPath
 import requests
 from pathlib import Path
 from datetime import datetime, timedelta
 import time
+from collections.abc import Iterable
+from collections import defaultdict
 
-victoriametrics_url = "http://localhost:8428/api/v1/import/prometheus"
+def get_time_str(start_time: float) -> str:
+    elapsed: float = time.time() - start_time
+    mins, secs = divmod(int(elapsed), 60)
+    millis = int((elapsed - int(elapsed)) * 1000)
+    if mins:
+        time_str = f"{mins}m{secs}s{millis}ms"
+    elif secs:
+        time_str = f"{secs}s{millis}ms"
+    else:
+        time_str = f"{millis}ms"
+    return time_str
 
 
 def get_mf4_files(directory: Path | str):
@@ -16,6 +29,27 @@ def get_mf4_files(directory: Path | str):
         directory = Path(directory)
 
     return list(directory.rglob("*.[mM][fF]4"))
+
+
+def get_dbc_files(directory: Path | str) -> list[StrPath]:
+    """
+    Get all DBC files in the specified directory.
+    """
+
+    if not isinstance(directory, Path):
+        directory = Path(directory)
+
+    return list(directory.rglob("*.[dD][bB][cC]"))
+
+
+def get_dbc_dict(directory: Path | str) -> dict[BusType, Iterable[DbcFileType]]:
+    """
+    Get a dictionary of DBC files in the specified directory.
+    This dictionary can be passed directly to extract_bus_logging() in asammdf.
+    """
+
+    dbc_files = get_dbc_files(directory)
+    return {"CAN": [(file, 0) for file in dbc_files]}
 
 
 def get_channel_data(signal: Signal) -> tuple[str, int]:
