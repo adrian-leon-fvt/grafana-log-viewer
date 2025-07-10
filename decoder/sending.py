@@ -7,6 +7,11 @@ import time
 from collections.abc import Iterable
 from collections import defaultdict
 
+vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
+vm_export_url = "http://localhost:8428/api/v1/export"
+vm_query_url = "http://localhost:8428/api/v1/query"
+vm_query_range_url = "http://localhost:8428/api/v1/query_range"
+
 def get_time_str(start_time: float) -> str:
     elapsed: float = time.time() - start_time
     mins, secs = divmod(int(elapsed), 60)
@@ -93,14 +98,14 @@ def send_signal(signal: Signal, start_time: datetime, job: str):
         batch.append(data)
         if len(batch) >= batch_size:
             try:
-                requests.post(victoriametrics_url, data="".join(batch))
+                requests.post(vm_import_url, data="".join(batch))
             except Exception as e:
                 print(f"\nError sending batch: {e}")
             batch = []
             time.sleep(0.1)
     if batch:
         try:
-            requests.post(victoriametrics_url, data="".join(batch))
+            requests.post(vm_import_url, data="".join(batch))
         except Exception as e:
             print(f"\nError sending final batch: {e}")
     elapsed = time.time() - start
