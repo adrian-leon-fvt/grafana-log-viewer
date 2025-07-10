@@ -12,17 +12,11 @@ vm_export_url = "http://localhost:8428/api/v1/export"
 vm_query_url = "http://localhost:8428/api/v1/query"
 vm_query_range_url = "http://localhost:8428/api/v1/query_range"
 
+
 def get_time_str(start_time: float) -> str:
-    elapsed: float = time.time() - start_time
-    mins, secs = divmod(int(elapsed), 60)
-    millis = int((elapsed - int(elapsed)) * 1000)
-    if mins:
-        time_str = f"{mins}m{secs}s{millis}ms"
-    elif secs:
-        time_str = f"{secs}s{millis}ms"
-    else:
-        time_str = f"{millis}ms"
-    return time_str
+    elapsed = time.time() - start_time
+    mins, secs = divmod(elapsed, 60)
+    return f"{mins:.0f}m{secs:.3f}s" if mins else f"{secs:.3f}s"
 
 
 def get_mf4_files(directory: Path | str):
