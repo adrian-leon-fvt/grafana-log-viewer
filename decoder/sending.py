@@ -51,11 +51,12 @@ def get_dbc_dict(directory: Path | str) -> dict[BusType, Iterable[DbcFileType]]:
     return {"CAN": [(file, 0) for file in dbc_files]}
 
 
-def get_channel_data(signal: Signal) -> tuple[str, int]:
+def get_channel_data(signal: Signal) -> tuple[str, int, str]:
     display_names = list(signal.display_names.keys())
     message = display_names[1].split(".")[0]
     can_id = display_names[2].split(" ")[0].split("ID=")[1]
-    return message, int(can_id, 16)
+    name = signal.name.replace(" ", "_")
+    return message, int(can_id, 16), name
 
 
 def make_metric_line(
@@ -97,8 +98,7 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
 
 
 def send_signal(signal: Signal, start_time: datetime, job: str):
-    message, can_id = get_channel_data(signal)
-    metric_name = signal.name.replace(" ", "_")
+    message, can_id, metric_name = get_channel_data(signal)
     unit = signal.unit if signal.unit else ""
 
     print(f"  => Sending {metric_name} ...", end="\r", flush=True)
