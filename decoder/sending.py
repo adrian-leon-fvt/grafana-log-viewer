@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import time
 from collections.abc import Iterable
 from collections import defaultdict
+import json
 
 vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
 vm_export_url = "http://localhost:8428/api/v1/export"
@@ -51,68 +52,92 @@ def get_dbc_dict(directory: Path | str) -> dict[BusType, Iterable[DbcFileType]]:
     return {"CAN": [(file, 0) for file in dbc_files]}
 
 
-def get_channel_data(signal: Signal) -> tuple[str, int, str]:
+def get_channel_data(signal: Signal) -> tuple[str, str]:
     display_names = list(signal.display_names.keys())
     message = display_names[1].split(".")[0]
-    can_id = display_names[2].split(" ")[0].split("ID=")[1]
     name = signal.name.replace(" ", "_")
-    return message, int(can_id, 16), name
+    return message, name
 
 
 def make_metric_line(
     metric_name: str,
     message: str,
-    can_id: int,
     unit: str,
     value: float,
     timestamp: datetime | float,
     job: str = "",
 ) -> str:
     # Format the metric line for Prometheus
-    return f'{metric_name}{{job="{job}",message="{message}",can_id="{can_id:X}",unit="{unit}"}} {value} {timestamp.timestamp() if type(timestamp) is datetime else timestamp}\n'
+    return f'{metric_name}{{job="{job}",message="{message}",unit="{unit}"}} {value} {timestamp.timestamp() if type(timestamp) is datetime else timestamp}\n'
 
 
 def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
     """
-    Checks if the signal timestamps already exist in the database, returns a Signal object only with timestamps not already there, if the whole range is already in the metrics database, returns None.
+    Checks if the signal timestamps already exist in the database, returns a Signal object only with timestamps not already there,
     """
     # Query VictoriaMetrics to check if data for this signal exists in the given time range
-    metric_name = signal.name.replace(" ", "_")
-    start_ts = start_time.timestamp()
+    message, metric_name = get_channel_data(signal)
+    start_ts = (start_time + timedelta(seconds=signal.timestamps[0])).timestamp()
     end_ts = (start_time + timedelta(seconds=signal.timestamps[-1])).timestamp()
 
     params: dict[str, str] = {
-        "query": f"{metric_name}",
+        "match[]": f'{metric_name}{{message="{message}"}}',
         "start": str(start_ts),
         "end": str(end_ts),
-        "step": "60",  # 1 minute step, adjust as needed
+        "step": "1s",
     }
     try:
-        resp = requests.get(vm_query_url, params=params, timeout=10)
-        if resp.status_code == 200 and resp.text.strip():
+        resp = requests.get(vm_export_url, params=params, timeout=10)
+        if resp.status_code != 200:
+            return signal
+        elif resp.text == '':
+            return signal
+        else:
             # Data exists for this signal in the range
-            return None
+            # Cut the data that already exists
+            _json = json.loads(resp.text)
+            respstart_ts = datetime.fromtimestamp(
+                1e-3 * _json["timestamps"][0], tz=start_time.tzinfo
+            )
+            respend_ts = datetime.fromtimestamp(
+                1e-3 * _json["timestamps"][-1], tz=start_time.tzinfo
+            )
+
+            cutstart = (respstart_ts - start_time).total_seconds()
+            cutend = (respend_ts - start_time).total_seconds()
+
+            eps = 1e-3 # Adjusts for precision, acceptable to lose 1ms of data
+            older_data = signal.cut(signal.timestamps[0] + eps, cutstart - eps)
+            newer_data = signal.cut(cutend + eps, signal.timestamps[-1] - eps)
+
+            newsig = older_data.extend(newer_data)
+            return newsig if len(newsig.timestamps) > 0 else None
     except Exception as e:
-        print(f"Warning: Could not check VictoriaMetrics for {metric_name}: {e}")
+        print(f"Warning: Could not check Signal range for {metric_name}: {e}")
     return signal
 
 
-def send_signal(signal: Signal, start_time: datetime, job: str):
-    message, can_id, metric_name = get_channel_data(signal)
-    unit = signal.unit if signal.unit else ""
+def send_signal(signal: Signal, start_time: datetime, job: str | None):
+    _signal = check_signal_range(signal, start_time)
+    if _signal is None or len(_signal.timestamps) == 0:
+        print(f"  => No new data for {signal.name}, skipping ...", flush=True)
+        return
+
+    message, metric_name = get_channel_data(_signal)
+    unit = _signal.unit if _signal.unit else ""
 
     print(f"  => Sending {metric_name} ...", end="\r", flush=True)
     start = time.time()
     batch: list[str] = []
     batch_size = 10000
-    for sample, ts in zip(signal.samples, signal.timestamps):
+    for sample, ts in zip(_signal.samples, _signal.timestamps):
         data = make_metric_line(
             metric_name,
             message,
-            can_id,
             unit,
             sample,
             start_time + timedelta(seconds=ts),
+            job=job if job else "",
         )
         batch.append(data)
         if len(batch) >= batch_size:
@@ -151,7 +176,21 @@ def send_file(filename: Path, job: str | None = None):
             send_signal(sig, mdf.start_time, job=job if job else filename.stem)
 
 
-def concat_and_decode(directory: Path | str):
+def send_decoded(decoded: Path | MDF, job: str | None = None) -> None:
+    """
+    Send a decoded MDF4 file to VictoriaMetrics.
+    """
+    if isinstance(decoded, Path):
+        send_file(decoded, job)
+    elif isinstance(decoded, MDF):
+        for sig in decoded.iter_channels():
+            _job = job if job else "-".join(decoded.name.parts)
+            send_signal(sig, decoded.start_time, _job)
+    else:
+        print("Invalid decoded input type. Must be Path or MDF instance.")
+
+
+def decode_and_send(directory: Path | str, job: str | None = None):
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
     """
@@ -160,55 +199,27 @@ def concat_and_decode(directory: Path | str):
 
     if not files:
         print(f"No MDF4 files found in {directory}.")
-        return
 
     for file in files:
-        # Group files by local date (using MDF start_time)
-
-        # First, collect all files and their local dates
-        file_dates = defaultdict(list)
-        local_tz = datetime.now().astimezone().tzinfo
-
-        for mf4_file in files:
-            mdf = MDF(mf4_file, process_bus_logging=False)
-            local_date = mdf.start_time.astimezone(local_tz).date()
-            file_dates[local_date.strftime("%Y_%m_%d")].append(mdf)
-
-        # For each date, concatenate and decode all files for that day
-        for date, day_files in file_dates.items():
-            print(f"Combining files for {date} ... [{0:>3.1f}%]", end="", flush=True, end="\r")
-            concatenated = MDF().concatenate(day_files, process_bus_logging=False, )
-            # Determine if 'upper' or 'lower' is in the directory path (case-insensitive)
-            dir_str = str(directory).lower()
-            prefix = (
-                "upper"
-                if "upper" in dir_str
-                else "lower" if "lower" in dir_str else "unknown"
-            )
-            # Find the git repo root
-            repo_root = Path(__file__).resolve().parent
-            while not (repo_root / ".git").exists() and repo_root != repo_root.parent:
-                repo_root = repo_root.parent
-            out_dir = repo_root / "files" / "concatenated"
-            out_dir.mkdir(parents=True, exist_ok=True)
-            out_file = out_dir / f"{prefix}_{date}_concat.MF4"
-            concatenated.save(out_file)
-            # Decode with DBC
+        mdf = MDF(file, process_bus_logging=False)
+        try:
             start = time.time()
-            print(f"Decoding {date} ... [{0:>3.1f}%]", end="", flush=True)
-            decoded = concatenated.extract_bus_logging(database_files=database_files)
-            print(
-                f"Decoding {date} ... [{100:>3.1f}%] in {get_time_str(start)}",
-                end="",
-                flush=True,
-            )
-            # Save decoded file with date as name
-            out_path = repo_root / "files" / "decoded"
-            out_path.mkdir(parents=True, exist_ok=True)
-            decoded.save(out_path / f"{prefix}_{date}_dec.MF4")
-            print(f"Saved decoded file for {date} to {out_path}")
-            # Clean up
-            for m in day_files:
-                m.close()
-            decoded.close()
-            concatenated.close()
+            print(f" => Decoding {file} ...", end="\r", flush=True)
+            decoded = mdf.extract_bus_logging(database_files, ignore_value2text_conversion=True)
+            print(f" => Decoded {file} in {time.time() - start:.3f}s", flush=True)
+            send_decoded(decoded, job)
+        except Exception as e:
+            print(f"❌ Error decoding {file}: {e}")
+            continue
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Decode MDF4 files and send to VictoriaMetrics.")
+    parser.add_argument("directory", type=str, help="Directory containing MDF4 files.")
+    parser.add_argument("job", type=str, default=None, help="Job name for the metrics.")
+    
+    args = parser.parse_args()
+    
+    decode_and_send(args.directory, args.job)
+    print("Decoding and sending completed.")
