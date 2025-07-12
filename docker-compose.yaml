@@ -7,6 +7,7 @@ services:
     command:
       - '-retentionPeriod=10y'
       - '-selfScrapeInterval=10s'
+      - '-storageDataPath=/victoria-metrics-data'
     volumes:
       - victoriametrics-data:/victoria-metrics-data
     networks:
