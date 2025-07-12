@@ -6,7 +6,7 @@ services:
       - "8428:8428"
     command:
       - '-retentionPeriod=10y'
-      - '-selfScrapeInterval=5s'
+      - '-selfScrapeInterval=10s'
     volumes:
       - victoriametrics-data:/victoria-metrics-data
     networks:
