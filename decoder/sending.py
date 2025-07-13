@@ -7,6 +7,7 @@ import time
 from collections.abc import Iterable
 from collections import defaultdict
 import json
+import argparse
 
 vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
 vm_export_url = "http://localhost:8428/api/v1/export"
@@ -113,20 +114,20 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
             newsig = older_data.extend(newer_data)
             return newsig if len(newsig.timestamps) > 0 else None
     except Exception as e:
-        print(f"Warning: Could not check Signal range for {metric_name}: {e}")
+        print(f"⚠️ Warning: Could not check Signal range for {metric_name}: {e}")
     return signal
 
 
 def send_signal(signal: Signal, start_time: datetime, job: str | None):
     _signal = check_signal_range(signal, start_time)
     if _signal is None or len(_signal.timestamps) == 0:
-        print(f"  => No new data for {signal.name}, skipping ...", flush=True)
+        print(f"  ☑️ No new data for {signal.name}, skipping ...", flush=True)
         return
 
     message, metric_name = get_channel_data(_signal)
     unit = _signal.unit if _signal.unit else ""
 
-    print(f"  => Sending {metric_name} ...", end="\r", flush=True)
+    print(f"  📨 Sending {metric_name} ...", end="\r", flush=True)
     start = time.time()
     batch: list[str] = []
     batch_size = 10000
@@ -144,31 +145,31 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
             try:
                 requests.post(vm_import_url, data="".join(batch))
             except Exception as e:
-                print(f"\nError sending batch: {e}", flush=True)
+                print(f"\n ‼️ Error sending batch: {e}", flush=True)
             batch = []
             time.sleep(0.1)
     if batch:
         try:
             requests.post(vm_import_url, data="".join(batch))
         except Exception as e:
-            print(f"\nError sending final batch: {e}", flush=True)
+            print(f"\n ‼️ Error sending final batch: {e}", flush=True)
 
     time_str = get_time_str(start)
-    print(f"  => Sending {metric_name} ... sent in {time_str}   ", flush=True)
+    print(f"  📨 Sending {metric_name} ... sent in {time_str}   ", flush=True)
 
 
 def send_file(filename: Path, job: str | None = None):
     print(f"Sending {filename}")
     if not filename.exists():
-        print(f"File {filename} does not exist.")
+        print(f"📃 File {filename} does not exist.")
         return
 
     if not filename.is_file():
-        print(f"{filename} is not a file.")
+        print(f"📃 {filename} is not a file.")
         return
 
     if not filename.suffix.lower() == ".mf4":
-        print(f"{filename} is not a valid MDF4 file.")
+        print(f"📃 {filename} is not a valid MDF4 file.")
         return
 
     with MDF(filename) as mdf:
@@ -187,7 +188,7 @@ def send_decoded(decoded: Path | MDF, job: str | None = None) -> None:
             _job = job if job else "-".join(decoded.name.parts)
             send_signal(sig, decoded.start_time, _job)
     else:
-        print("Invalid decoded input type. Must be Path or MDF instance.")
+        print("⚠️ Invalid decoded input type. Must be Path or MDF instance.")
 
 
 def decode_and_send(
@@ -208,24 +209,26 @@ def decode_and_send(
     else:
         if dbc_files:
             database_files = {"CAN": dbc_files}
-        
+
         if dbc_directory:
             _dbc_dict = get_dbc_dict(dbc_directory)
             if dbc_files:
-                database_files["CAN"] = list(database_files["CAN"]) + list(_dbc_dict["CAN"])
+                database_files["CAN"] = list(database_files["CAN"]) + list(
+                    _dbc_dict["CAN"]
+                )
 
     if not files:
-        print(f"No MDF4 files found in {directory}.")
+        print(f"🤷‍♂️ No MDF4 files found in {directory}.")
 
     for file in files:
         mdf = MDF(file, process_bus_logging=False)
         try:
             start = time.time()
-            print(f" => Decoding {file} ...", end="\r", flush=True)
+            print(f" ⏳ Decoding {file} ...", end="\r", flush=True)
             decoded = mdf.extract_bus_logging(
                 database_files, ignore_value2text_conversion=True
             )
-            print(f" => Decoded {file} in {time.time() - start:.3f}s", flush=True)
+            print(f" ✅ Decoded {file} in {time.time() - start:.3f}s", flush=True)
             send_decoded(decoded, job)
         except Exception as e:
             print(f"❌ Error decoding {file}: {e}")
@@ -233,8 +236,6 @@ def decode_and_send(
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Decode MDF4 files and send to VictoriaMetrics."
     )
@@ -244,4 +245,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     decode_and_send(args.directory, args.job)
-    print("Decoding and sending completed.")
+    print("👍 Decoding and sending completed 👍")
