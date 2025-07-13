@@ -90,7 +90,7 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
         resp = requests.get(vm_export_url, params=params, timeout=10)
         if resp.status_code != 200:
             return signal
-        elif resp.text == '':
+        elif resp.text == "":
             return signal
         else:
             # Data exists for this signal in the range
@@ -106,7 +106,7 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
             cutstart = (respstart_ts - start_time).total_seconds()
             cutend = (respend_ts - start_time).total_seconds()
 
-            eps = 1e-3 # Adjusts for precision, acceptable to lose 1ms of data
+            eps = 1e-3  # Adjusts for precision, acceptable to lose 1ms of data
             older_data = signal.cut(signal.timestamps[0] + eps, cutstart - eps)
             newer_data = signal.cut(cutend + eps, signal.timestamps[-1] - eps)
 
@@ -190,12 +190,29 @@ def send_decoded(decoded: Path | MDF, job: str | None = None) -> None:
         print("Invalid decoded input type. Must be Path or MDF instance.")
 
 
-def decode_and_send(directory: Path | str, job: str | None = None):
+def decode_and_send(
+    directory: Path | str,
+    job: str | None = None,
+    dbc_files: list[DbcFileType] | None = None,
+    dbc_directory: Path | str | None = None,
+):
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
     """
     files = get_mf4_files(directory)
-    database_files = get_dbc_dict(directory)
+
+    database_files: dict[BusType, Iterable[DbcFileType]] = {}
+
+    if not dbc_files and not dbc_directory:
+        database_files = get_dbc_dict(directory)
+    else:
+        if dbc_files:
+            database_files = {"CAN": dbc_files}
+        
+        if dbc_directory:
+            _dbc_dict = get_dbc_dict(dbc_directory)
+            if dbc_files:
+                database_files["CAN"] = list(database_files["CAN"]) + list(_dbc_dict["CAN"])
 
     if not files:
         print(f"No MDF4 files found in {directory}.")
@@ -205,21 +222,26 @@ def decode_and_send(directory: Path | str, job: str | None = None):
         try:
             start = time.time()
             print(f" => Decoding {file} ...", end="\r", flush=True)
-            decoded = mdf.extract_bus_logging(database_files, ignore_value2text_conversion=True)
+            decoded = mdf.extract_bus_logging(
+                database_files, ignore_value2text_conversion=True
+            )
             print(f" => Decoded {file} in {time.time() - start:.3f}s", flush=True)
             send_decoded(decoded, job)
         except Exception as e:
             print(f"❌ Error decoding {file}: {e}")
             continue
 
+
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Decode MDF4 files and send to VictoriaMetrics.")
+    parser = argparse.ArgumentParser(
+        description="Decode MDF4 files and send to VictoriaMetrics."
+    )
     parser.add_argument("directory", type=str, help="Directory containing MDF4 files.")
     parser.add_argument("job", type=str, default=None, help="Job name for the metrics.")
-    
+
     args = parser.parse_args()
-    
+
     decode_and_send(args.directory, args.job)
     print("Decoding and sending completed.")
