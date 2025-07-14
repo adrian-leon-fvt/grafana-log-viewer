@@ -12,11 +12,40 @@ import cantools.database
 import json
 import argparse
 from multiprocessing.pool import ThreadPool
+import os
 
 vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
 vm_export_url = "http://localhost:8428/api/v1/export"
 vm_query_url = "http://localhost:8428/api/v1/query"
 vm_query_range_url = "http://localhost:8428/api/v1/query_range"
+
+
+def get_onedrive_path() -> Path | None:
+    # Find the first /mnt/c/Users/<username>/... entry in PATH
+    path_env = os.environ.get("PATH", "")
+    for entry in path_env.split(os.pathsep):
+        if entry.startswith("/mnt/c/Users/"):
+            # Try to reconstruct the full path to CANEdge
+            base = entry.split(os.sep)
+            # base: ['', 'mnt', 'c', 'Users', '<username>', ...]
+            if len(base) >= 5:
+                user_dir = os.sep.join(base[:5])
+                return Path(
+                    user_dir,
+                    "Epiroc",
+                    "Rig Crew - Private - General",
+                    "5. Testing",
+                    "4. Lafarge Field Trial",
+                    "D65 Mine Site Testing Software Documentation",
+                    "CANEdge",
+                )
+    # Fallback to default path if not found
+    return None
+
+
+d65_onedrive_files = get_onedrive_path()
+
+grafana_log_viewer_files = Path(__file__).parent.parent / "files"
 
 
 def get_time_str(start_time: float) -> str:
@@ -134,7 +163,7 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
     print(f"  📨 Sending {metric_name} ...", end="\r", flush=True)
     start = time.time()
     batch: list[str] = []
-    batch_size = 10000
+    batch_size = 50000
     for sample, ts in zip(_signal.samples, _signal.timestamps):
         data = make_metric_line(
             metric_name,
@@ -211,18 +240,22 @@ def decode_and_send(
     if not dbc_files and not dbc_directory:
         database_files = get_dbc_dict(directory)
     else:
+        database_files["CAN"] = []
+
         if dbc_files:
-            database_files = {"CAN": dbc_files}
+            database_files["CAN"].extend(list(dbc_files))
 
         if dbc_directory:
             _dbc_dict = get_dbc_dict(dbc_directory)
-            if dbc_files:
-                database_files["CAN"] = list(database_files["CAN"]) + list(
-                    _dbc_dict["CAN"]
-                )
+            database_files["CAN"].extend(list(_dbc_dict["CAN"]))
 
     if not files:
-        print(f"🤷‍♂️ No MDF4 files found in {directory}.")
+        print(f"  🤷‍♂️ No MDF4 files found in {directory}.")
+        return
+
+    if not database_files:
+        print(f"  🤷‍♂️ No DBC files found in {dbc_directory or directory}.")
+        return
 
     for file in files:
         mdf = MDF(file, process_bus_logging=False)
@@ -233,7 +266,10 @@ def decode_and_send(
                 database_files, ignore_value2text_conversion=True
             )
             print(f" ✅ Decoded {file} in {time.time() - start:.3f}s", flush=True)
-            send_decoded(decoded, job)
+            if list(decoded.iter_channels()):
+                send_decoded(decoded, job)
+            else:
+                print(f"⚠️ No signals found in {file}, skipping sending.")
         except Exception as e:
             print(f"❌ Error decoding {file}: {e}")
             continue
