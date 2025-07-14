@@ -5,9 +5,13 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import time
 from collections.abc import Iterable
-from collections import defaultdict
+from typing import Literal, TypedDict, Any, Sequence
+from can import ThreadSafeBus, Message, BufferedReader, Notifier, Printer
+import cantools
+import cantools.database
 import json
 import argparse
+from multiprocessing.pool import ThreadPool
 
 vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
 vm_export_url = "http://localhost:8428/api/v1/export"
@@ -233,6 +237,54 @@ def decode_and_send(
         except Exception as e:
             print(f"❌ Error decoding {file}: {e}")
             continue
+
+
+class PortConfig(TypedDict):
+    """
+    Configuration for a CAN port to livestream data.
+    Each port should have a dictionary with the following keys:
+      - 'bus': dict of ThreadSafeBus arguments
+      - 'database': list of paths to DBC files
+    """
+
+    bus: dict[
+        str, Any
+    ]  # Arguments for ThreadSafeBus, e.g. {"channel": "can0", "bustype": "socketcan"}
+    database: str | Path | Sequence[str | Path]  # Path to DBC file
+    job: str | None  # Job name for the metrics coming from this port
+
+
+def livestream(ports: PortConfig):
+    """
+    Livestream data from CAN ports and send to VictoriaMetrics.
+
+    Each port config should be a dict with:
+      - 'bus': dict of ThreadSafeBus arguments
+      - 'database': path to DBC file
+    """
+    bus = ThreadSafeBus(**ports["bus"])
+    _reader = BufferedReader()
+    notifier = Notifier(bus, [_reader])
+    databases = [cantools.database.load_file(f) for f in Path('../files/upper/dbc').rglob("*.dbc")]
+
+    def printer(reader: BufferedReader):
+        while True:
+            msg = reader.get_message(0.5)
+            if msg is None:
+                time.sleep(0.1)
+                continue
+
+            if isinstance(msg, Message):
+                databases[0].
+
+    while True:
+        try:
+            time.sleep(1)  # Keep the bus alive
+        except KeyboardInterrupt:
+            print("\n ‼️ Livestream interrupted by user.")
+            notifier.stop()
+            bus.shutdown()
+            break
 
 
 if __name__ == "__main__":
