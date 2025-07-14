@@ -307,8 +307,39 @@ class PortConfig(TypedDict):
     bus: dict[
         str, Any
     ]  # Arguments for ThreadSafeBus, e.g. {"channel": "can0", "bustype": "socketcan"}
-    database: str | Path | Sequence[str | Path]  # Path to DBC file
+    database: str | Path | list[str | Path]  # Path to DBC file
     job: str | None  # Job name for the metrics coming from this port
+
+
+def get_cantools_databases(files: str | Path | list[str | Path]) -> list[cantools.db.Database]:
+    """
+    Load and return a list of DBC databases from the configured paths.
+    """
+    db_paths: list[Path] = []
+    if isinstance(files, str | Path):
+        if Path(files).is_dir():
+            db_paths.extend(list(Path(files).rglob("*.[dD][bB][cC]")))
+        elif Path(files).is_file() and Path(files).suffix.lower() == '.dbc':
+            db_paths.append(Path(files))
+    elif isinstance(files, list):
+        for db in files:
+            if Path(db).is_dir():
+                db_paths.extend(list(Path(db).rglob("*.[dD][bB][cC]")))
+            else:
+                db_paths.append(Path(db))
+
+    databases: list[cantools.db.Database] = []
+    for db in db_paths:
+        if not db.exists():
+            print(f"⚠️ DBC file {db} does not exist, skipping.")
+            continue
+        try:
+            _db = cantools.db.load_file(db)
+            if isinstance(_db, cantools.db.Database):
+                databases.append(_db)
+        except Exception as e:
+            print(f"⚠️ Error loading DBC file {db}: {e}")
+    return databases
 
 
 def livestream(ports: PortConfig):
@@ -322,17 +353,30 @@ def livestream(ports: PortConfig):
     bus = ThreadSafeBus(**ports["bus"])
     _reader = BufferedReader()
     notifier = Notifier(bus, [_reader])
-    databases = [cantools.database.load_file(f) for f in Path('../files/upper/dbc').rglob("*.dbc")]
 
-    def printer(reader: BufferedReader):
-        while True:
-            msg = reader.get_message(0.5)
-            if msg is None:
-                time.sleep(0.1)
-                continue
+    # Load the DBC file(s) for this port
+    db_paths: list[Path] = []
+    if isinstance(ports["database"], str | Path):
+        db_paths.extend([Path(ports["database"])])
+    elif isinstance(ports["database"], list):
+        for db in ports["database"]:
+            if Path(db).is_dir():
+                db_paths.extend(list(Path(db).rglob("*.[dD][bB][cC]")))
+            else:
+                db_paths.append(Path(db))
 
-            if isinstance(msg, Message):
-                databases[0].
+    databases: list[cantools.database.Database] = []
+
+    for db in db_paths:
+        if not db.exists():
+            print(f"⚠️ DBC file {db} does not exist, skipping.")
+            continue
+        try:
+            _db = cantools.database.load_file(db)
+            if isinstance(_db, cantools.database.Database):
+                databases.append(_db)
+        except Exception as e:
+            print(f"⚠️ Error loading DBC file {db}: {e}")
 
     while True:
         try:
