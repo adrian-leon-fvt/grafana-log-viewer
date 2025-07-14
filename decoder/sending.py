@@ -275,6 +275,27 @@ def decode_and_send(
             continue
 
 
+def send_d65_onedrive():
+    if d65_onedrive_files is None:
+        print(
+            "⚠️ D65 OneDrive path not found. Please check your PATH environment variable."
+        )
+        return
+    else:
+        decode_and_send(
+            d65_onedrive_files / "Upper",
+            dbc_directory=grafana_log_viewer_files / "dbc" / "upper",
+            job="upper",
+        )
+        print("=> Upper 👍")
+        decode_and_send(
+            d65_onedrive_files / "Lower",
+            dbc_directory=grafana_log_viewer_files / "dbc" / "lower",
+            job="lower",
+        )
+        print("=> Lower 👍")
+
+
 class PortConfig(TypedDict):
     """
     Configuration for a CAN port to livestream data.
@@ -324,13 +345,14 @@ def livestream(ports: PortConfig):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Decode MDF4 files and send to VictoriaMetrics."
-    )
-    parser.add_argument("directory", type=str, help="Directory containing MDF4 files.")
-    parser.add_argument("job", type=str, default=None, help="Job name for the metrics.")
+    # parser = argparse.ArgumentParser(
+    #     description="Decode MDF4 files and send to VictoriaMetrics."
+    # )
+    # parser.add_argument("directory", type=str, help="Directory containing MDF4 files.")
+    # parser.add_argument("job", type=str, default=None, help="Job name for the metrics.")
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    decode_and_send(args.directory, args.job)
-    print("👍 Decoding and sending completed 👍")
+    # decode_and_send(args.directory, args.job)
+    # print("👍 Decoding and sending completed 👍")
+    send_d65_onedrive()
