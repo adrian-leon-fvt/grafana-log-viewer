@@ -22,7 +22,7 @@
   "links": [],
   "panels": [
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -30,312 +30,313 @@
         "y": 0
       },
       "id": 3,
-      "panels": [],
-      "title": "Faults and errors",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P4169E866C3094E38"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P4169E866C3094E38"
           },
-          "custom": {
-            "axisPlacement": "auto",
-            "fillOpacity": 70,
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineWidth": 0,
-            "spanNulls": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#484848"
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
               },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "State"
-            },
-            "properties": [
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#484848"
-                    },
-                    {
-                      "color": "#484848",
-                      "value": 4
-                    },
-                    {
-                      "color": "green",
-                      "value": 8
-                    },
-                    {
-                      "color": "red",
-                      "value": 15
-                    }
-                  ]
-                }
+              "custom": {
+                "axisPlacement": "auto",
+                "fillOpacity": 70,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 0,
+                "spanNulls": false
               },
-              {
-                "id": "mappings",
-                "value": [
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
                   {
-                    "options": {
-                      "1": {
-                        "index": 0,
-                        "text": "Sleep"
-                      },
-                      "2": {
-                        "index": 1,
-                        "text": "Disabled"
-                      },
-                      "4": {
-                        "index": 2,
-                        "text": "Power Off"
-                      },
-                      "8": {
-                        "index": 3,
-                        "text": "Power On"
-                      },
-                      "15": {
-                        "index": 4,
-                        "text": "Fault"
+                    "color": "#484848"
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "State"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "#484848"
+                        },
+                        {
+                          "color": "#484848",
+                          "value": 4
+                        },
+                        {
+                          "color": "green",
+                          "value": 8
+                        },
+                        {
+                          "color": "red",
+                          "value": 15
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "options": {
+                          "1": {
+                            "index": 0,
+                            "text": "Sleep"
+                          },
+                          "2": {
+                            "index": 1,
+                            "text": "Disabled"
+                          },
+                          "4": {
+                            "index": 2,
+                            "text": "Power Off"
+                          },
+                          "8": {
+                            "index": 3,
+                            "text": "Power On"
+                          },
+                          "15": {
+                            "index": 4,
+                            "text": "Fault"
+                          }
+                        },
+                        "type": "value"
                       }
-                    },
-                    "type": "value"
+                    ]
                   }
                 ]
               }
             ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 7,
-        "x": 0,
-        "y": 1
-      },
-      "id": 4,
-      "options": {
-        "alignValue": "left",
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "mergeValues": true,
-        "rowHeight": 0.9,
-        "showValue": "auto",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "{__name__=~\"^BPath[1-2].+\",message=~\"^.+_Control\"}",
-          "legendFormat": "{{message}}:{{__name__}}",
-          "range": true,
-          "refId": "Command"
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 7,
+            "x": 0,
+            "y": 2
+          },
+          "id": 4,
+          "options": {
+            "alignValue": "left",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.2",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "{__name__=~\"^BPath[1-2].+\",message=~\"^.+_Control\"}",
+              "legendFormat": "{{message}}:{{__name__}}",
+              "range": true,
+              "refId": "Command"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P4169E866C3094E38"
+              },
+              "editorMode": "code",
+              "expr": "{__name__=~\"(NState|NPath.State)\"}",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "{{message}}:{{__name__}}",
+              "range": true,
+              "refId": "State"
+            }
+          ],
+          "title": "Path request",
+          "type": "state-timeline"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "P4169E866C3094E38"
           },
-          "editorMode": "code",
-          "expr": "{__name__=~\"(NState|NPath.State)\"}",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "{{message}}:{{__name__}}",
-          "range": true,
-          "refId": "State"
-        }
-      ],
-      "title": "Path request",
-      "type": "state-timeline"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P4169E866C3094E38"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "axisPlacement": "auto",
-            "fillOpacity": 70,
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineWidth": 0,
-            "spanNulls": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
               },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 24,
-        "w": 7,
-        "x": 7,
-        "y": 1
-      },
-      "id": 2,
-      "interval": "100ms",
-      "options": {
-        "alignValue": "left",
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "mergeValues": true,
-        "rowHeight": 0.9,
-        "showValue": "auto",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "{__name__=~\"^.+B.+(Fault|Error)$\"} > 0",
-          "legendFormat": "{{message}}:{{__name__}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Errors",
-      "type": "state-timeline"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P4169E866C3094E38"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "axisPlacement": "auto",
-            "fillOpacity": 70,
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineWidth": 0,
-            "spanNulls": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
+              "custom": {
+                "axisPlacement": "auto",
+                "fillOpacity": 70,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 0,
+                "spanNulls": false
               },
-              {
-                "color": "red",
-                "value": 1
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
               }
-            ]
-          }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 24,
+            "w": 7,
+            "x": 7,
+            "y": 2
+          },
+          "id": 2,
+          "interval": "100ms",
+          "options": {
+            "alignValue": "left",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.2",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "{__name__=~\"^.+B.+(Fault|Error)$\"} > 0",
+              "legendFormat": "{{message}}:{{__name__}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Errors",
+          "type": "state-timeline"
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 7,
-        "x": 0,
-        "y": 13
-      },
-      "id": 1,
-      "interval": "100ms",
-      "options": {
-        "alignValue": "left",
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "mergeValues": true,
-        "rowHeight": 0.9,
-        "showValue": "auto",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "P4169E866C3094E38"
           },
-          "editorMode": "code",
-          "expr": "BFaultSignal > 0",
-          "legendFormat": "{{message}}",
-          "range": true,
-          "refId": "A"
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "axisPlacement": "auto",
+                "fillOpacity": 70,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 0,
+                "spanNulls": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 7,
+            "x": 0,
+            "y": 38
+          },
+          "id": 1,
+          "interval": "100ms",
+          "options": {
+            "alignValue": "left",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.2",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P4169E866C3094E38"
+              },
+              "editorMode": "code",
+              "expr": "BFaultSignal > 0",
+              "legendFormat": "{{message}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Fault signal",
+          "type": "state-timeline"
         }
       ],
-      "title": "Fault signal",
-      "type": "state-timeline"
+      "title": "Faults and errors",
+      "type": "row"
     },
     {
       "collapsed": true,
@@ -343,7 +344,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 1
       },
       "id": 5,
       "panels": [
@@ -411,7 +412,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 92
+            "y": 189
           },
           "id": 6,
           "interval": "100ms",
@@ -505,7 +506,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 100
+            "y": 197
           },
           "id": 7,
           "interval": "100ms",
@@ -599,7 +600,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 108
+            "y": 205
           },
           "id": 8,
           "interval": "100ms",
@@ -639,7 +640,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 2
       },
       "id": 9,
       "panels": [
@@ -707,7 +708,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 321
+            "y": 418
           },
           "id": 10,
           "interval": "100ms",
@@ -801,7 +802,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 377
+            "y": 474
           },
           "id": 11,
           "interval": "100ms",
@@ -907,7 +908,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 385
+            "y": 482
           },
           "id": 12,
           "interval": "100ms",
@@ -959,7 +960,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 3
       },
       "id": 13,
       "panels": [
@@ -1027,7 +1028,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 226
+            "y": 323
           },
           "id": 14,
           "interval": "100ms",
@@ -1121,7 +1122,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 282
+            "y": 379
           },
           "id": 15,
           "interval": "100ms",
@@ -1215,7 +1216,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 290
+            "y": 387
           },
           "id": 16,
           "interval": "100ms",
@@ -1255,7 +1256,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 4
       },
       "id": 26,
       "panels": [
@@ -1323,7 +1324,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 227
+            "y": 324
           },
           "id": 27,
           "interval": "100ms",
@@ -1429,7 +1430,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 283
+            "y": 380
           },
           "id": 28,
           "interval": "100ms",
@@ -1535,7 +1536,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 291
+            "y": 388
           },
           "id": 29,
           "interval": "100ms",
@@ -1587,7 +1588,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 5
       },
       "id": 17,
       "panels": [
@@ -1655,7 +1656,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 228
+            "y": 54
           },
           "id": 18,
           "interval": "100ms",
@@ -1750,7 +1751,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 268
+            "y": 62
           },
           "id": 19,
           "interval": "100ms",
@@ -1791,7 +1792,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 6
       },
       "id": 20,
       "panels": [
@@ -1859,7 +1860,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 229
+            "y": 326
           },
           "id": 21,
           "interval": "100ms",
@@ -1954,7 +1955,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 253
+            "y": 350
           },
           "id": 22,
           "interval": "100ms",
@@ -2008,7 +2009,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 7
       },
       "id": 23,
       "panels": [
@@ -2076,7 +2077,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 230
+            "y": 327
           },
           "id": 24,
           "interval": "100ms",
@@ -2171,7 +2172,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 238
+            "y": 335
           },
           "id": 25,
           "interval": "100ms",
@@ -2220,17 +2221,372 @@
       "type": "row"
     },
     {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 30,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P4169E866C3094E38"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "axisPlacement": "auto",
+                "fillOpacity": 70,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineWidth": 1
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "#484848"
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "Feedbacks"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "#484848"
+                        },
+                        {
+                          "color": "green",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*(drum|overtemp).*/"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "#484848"
+                        },
+                        {
+                          "color": "red",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "C2S_cr_k61_auto_selected"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "#484848"
+                        },
+                        {
+                          "color": "purple",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 25,
+            "w": 14,
+            "x": 0,
+            "y": 73
+          },
+          "id": 32,
+          "interval": "100ms",
+          "options": {
+            "colWidth": 0.9,
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "rowHeight": 0.9,
+            "showValue": "never",
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.2",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "{__name__=~\"C2S_cr.+cmd\"} or {__name__=~\"S2C_ScreenCr.+\"}",
+              "legendFormat": "{{__name__}}",
+              "range": true,
+              "refId": "Commands"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P4169E866C3094E38"
+              },
+              "editorMode": "code",
+              "expr": "{__name__=~\"C2S_cr.+\",__name__!~\"C2S_cr.+cmd\"}",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "{{__name__}}",
+              "range": true,
+              "refId": "Feedbacks"
+            }
+          ],
+          "title": "Cable Reel I/O",
+          "type": "status-history"
+        }
+      ],
+      "title": "Cable Reel",
+      "type": "row"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 9
       },
-      "id": 30,
+      "id": 33,
       "panels": [],
-      "title": "Cable Reel",
+      "title": "EVCC",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P4169E866C3094E38"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "id": 36,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "{message=~\"EVCC_Charge(To|From)Vehicle\",__name__!~\"(crc|cnt)\"}",
+          "legendFormat": "{{__name__}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "To/From Vehicle",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P4169E866C3094E38"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "volt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 34,
+      "interval": "100ms",
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "{message=~\"EVCC.+\",__name__=~\"control_pilot.+\"}",
+          "legendFormat": "{{__name__}}",
+          "range": true,
+          "refId": "ControlPilot"
+        }
+      ],
+      "title": "Control Pilot",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -2260,7 +2616,7 @@
                 "color": "#484848"
               },
               {
-                "color": "blue",
+                "color": "yellow",
                 "value": 1
               }
             ]
@@ -2270,68 +2626,17 @@
           {
             "matcher": {
               "id": "byFrameRefID",
-              "options": "Feedbacks"
+              "options": "FanSpeed"
             },
             "properties": [
               {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#484848"
-                    },
-                    {
-                      "color": "green",
-                      "value": 1
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "/.*(drum|overtemp).*/"
-            },
-            "properties": [
+                "id": "unit",
+                "value": "rotrpm"
+              },
               {
-                "id": "thresholds",
+                "id": "color",
                 "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#484848"
-                    },
-                    {
-                      "color": "red",
-                      "value": 1
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "C2S_cr_k61_auto_selected"
-            },
-            "properties": [
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#484848"
-                    },
-                    {
-                      "color": "purple",
-                      "value": 1
-                    }
-                  ]
+                  "mode": "continuous-YlBl"
                 }
               }
             ]
@@ -2339,12 +2644,12 @@
         ]
       },
       "gridPos": {
-        "h": 25,
-        "w": 14,
+        "h": 8,
+        "w": 12,
         "x": 0,
-        "y": 33
+        "y": 26
       },
-      "id": 32,
+      "id": 35,
       "interval": "100ms",
       "options": {
         "colWidth": 0.9,
@@ -2354,10 +2659,10 @@
           "showLegend": false
         },
         "rowHeight": 0.9,
-        "showValue": "never",
+        "showValue": "auto",
         "tooltip": {
           "hideZeros": false,
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
@@ -2365,10 +2670,10 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "{__name__=~\"C2S_cr.+cmd\"} or {__name__=~\"S2C_ScreenCr.+\"}",
+          "expr": "FAN_Inverter_Enable_State",
           "legendFormat": "{{__name__}}",
           "range": true,
-          "refId": "Commands"
+          "refId": "FanEnableState"
         },
         {
           "datasource": {
@@ -2376,15 +2681,15 @@
             "uid": "P4169E866C3094E38"
           },
           "editorMode": "code",
-          "expr": "{__name__=~\"C2S_cr.+\",__name__!~\"C2S_cr.+cmd\"}",
+          "expr": "FAN_Motor_Speed",
           "hide": false,
           "instant": false,
           "legendFormat": "{{__name__}}",
           "range": true,
-          "refId": "Feedbacks"
+          "refId": "FanSpeed"
         }
       ],
-      "title": "Cable Reel I/O",
+      "title": "Fan enable",
       "type": "status-history"
     }
   ],
@@ -2395,12 +2700,12 @@
     "list": []
   },
   "time": {
-    "from": "2025-06-26T14:42:23.776Z",
-    "to": "2025-06-27T04:49:27.306Z"
+    "from": "2025-07-03T16:01:04.289Z",
+    "to": "2025-07-04T22:03:02.102Z"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "D65",
   "uid": "3f2e43d2-45d5-4766-961e-e2a1b1293078",
-  "version": 10
+  "version": 13
 }
