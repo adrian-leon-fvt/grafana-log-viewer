@@ -21,17 +21,19 @@ vm_query_range_url = "http://localhost:8428/api/v1/query_range"
 
 
 def get_onedrive_path() -> Path | None:
-    # Find the first /mnt/c/Users/<username>/... entry in PATH
+    """
+    Try to find the OneDrive CANEdge path on both Windows and WSL/Linux.
+    Looks for a suitable path in the PATH environment variable or defaults to a common location.
+    """
     path_env = os.environ.get("PATH", "")
+    # Check for WSL/Linux paths
     for entry in path_env.split(os.pathsep):
         if entry.startswith("/mnt/c/Users/"):
-            # Try to reconstruct the full path to CANEdge
             base = entry.split(os.sep)
-            # base: ['', 'mnt', 'c', 'Users', '<username>', ...]
             if len(base) >= 5:
                 user_dir = os.sep.join(base[:5])
                 return Path(
-                    user_dir,
+                    user_dir.replace("_T2adm",""),
                     "Epiroc",
                     "Rig Crew - Private - General",
                     "5. Testing",
@@ -39,6 +41,23 @@ def get_onedrive_path() -> Path | None:
                     "D65 Mine Site Testing Software Documentation",
                     "CANEdge",
                 )
+    # Check for Windows paths
+    for entry in path_env.split(os.pathsep):
+        if "\\Users\\" in entry:
+            # e.g. C:\Users\<username>\...
+            parts = entry.split("\\")
+            for i, part in enumerate(parts):
+                if part.lower() == "users" and i + 1 < len(parts):
+                    user_dir = "\\".join(parts[:i + 2])
+                    return Path(
+                        user_dir.replace("_T2adm", ""),
+                        "Epiroc",
+                        "Rig Crew - Private - General",
+                        "5. Testing",
+                        "4. Lafarge Field Trial",
+                        "D65 Mine Site Testing Software Documentation",
+                        "CANEdge",
+                    )
     # Fallback to default path if not found
     return None
 
@@ -259,6 +278,9 @@ def decode_and_send(
 
     for file in files:
         mdf = MDF(file, process_bus_logging=False)
+        if mdf.start_time.date() < datetime.now().date():
+            print(f"  ⏩ Skipping {file} (start time {mdf.start_time} is before today)")
+            continue
         try:
             start = time.time()
             print(f" ⏳ Decoding {file} ...", end="\r", flush=True)

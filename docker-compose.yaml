@@ -25,7 +25,7 @@ services:
       - monitoring
     volumes:
       - ./provisioning/datasources:/etc/grafana/provisioning/datasources:ro
-      - ./provisioning/dashboards:/var/lib/grafana/dashboards:ro
+      - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
 
 volumes:
   victoriametrics-data:
