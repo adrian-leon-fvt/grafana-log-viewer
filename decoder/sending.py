@@ -37,8 +37,6 @@ def get_onedrive_path() -> Path | None:
                     "Epiroc",
                     "Rig Crew - Private - General",
                     "5. Testing",
-                    "4. Lafarge Field Trial",
-                    "D65 Mine Site Testing Software Documentation",
                     "CANEdge",
                 )
     # Check for Windows paths
@@ -54,8 +52,6 @@ def get_onedrive_path() -> Path | None:
                         "Epiroc",
                         "Rig Crew - Private - General",
                         "5. Testing",
-                        "4. Lafarge Field Trial",
-                        "D65 Mine Site Testing Software Documentation",
                         "CANEdge",
                     )
     # Fallback to default path if not found
