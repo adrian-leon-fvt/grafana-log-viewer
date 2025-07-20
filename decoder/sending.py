@@ -2,17 +2,19 @@ from asammdf import MDF, Signal
 from asammdf.blocks.types import DbcFileType, BusType, StrPath
 import requests
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 from collections.abc import Iterable
 from typing import Literal, TypedDict, Any, Sequence
 from can import ThreadSafeBus, Message, BufferedReader, Notifier, Printer
 import cantools
+
 import cantools.database
 import json
 import argparse
 from multiprocessing.pool import ThreadPool
 import os
+import pickle
 
 vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
 vm_export_url = "http://localhost:8428/api/v1/export"
@@ -33,7 +35,7 @@ def get_onedrive_path() -> Path | None:
             if len(base) >= 5:
                 user_dir = os.sep.join(base[:5])
                 return Path(
-                    user_dir.replace("_T2adm",""),
+                    user_dir.replace("_T2adm", ""),
                     "Epiroc",
                     "Rig Crew - Private - General",
                     "5. Testing",
@@ -46,7 +48,7 @@ def get_onedrive_path() -> Path | None:
             parts = entry.split("\\")
             for i, part in enumerate(parts):
                 if part.lower() == "users" and i + 1 < len(parts):
-                    user_dir = "\\".join(parts[:i + 2])
+                    user_dir = "\\".join(parts[: i + 2])
                     return Path(
                         user_dir.replace("_T2adm", ""),
                         "Epiroc",
@@ -60,7 +62,21 @@ def get_onedrive_path() -> Path | None:
 
 d65_onedrive_files = get_onedrive_path()
 
-grafana_log_viewer_files = Path(__file__).parent.parent / "files"
+d65_dbc_files = {
+    "Lower": [
+        "D65_CH0_NV.dbc",
+        "D65_CH1_LV_PDU.dbc",
+        "D65_CH2_RCS_J1939.dbc",
+        "D65_CH3_RCS_Module.dbc",
+        "D65_CH4_Main.dbc",
+    ],
+    "Upper": [
+        "D65_CH5_CM.dbc",
+        "D65_CH6_EVCC.dbc",
+    ],
+}
+
+d65_canedge_file_data = None
 
 
 def get_time_str(start_time: float) -> str:
@@ -195,7 +211,7 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
             except Exception as e:
                 print(f"\n ‼️ Error sending batch: {e}", flush=True)
             batch = []
-            time.sleep(0.1)
+            time.sleep(0.1)  # Avoid overwhelming the server
     if batch:
         try:
             requests.post(vm_import_url, data="".join(batch))
@@ -249,6 +265,7 @@ def decode_and_send(
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
     """
     files = get_mf4_files(directory)
+    global d65_canedge_file_data
 
     database_files: dict[BusType, Iterable[DbcFileType]] = {}
 
@@ -273,43 +290,65 @@ def decode_and_send(
         return
 
     for file in files:
+        # Only process files with start_time after 2025-07-03
+        cutoff_date = datetime(2025, 7, 3).astimezone()
+        if d65_canedge_file_data is not None:
+            if str(file) in d65_canedge_file_data["File"].values:
+                try:
+                    # Get the end date from the pre-processed data
+                    end_date = datetime.fromisoformat(
+                        d65_canedge_file_data.loc[
+                            d65_canedge_file_data["File"] == str(file), "End Time"
+                        ].values[0]
+                    )
+                    end_date = end_date.replace(tzinfo=cutoff_date.tzinfo)
+                    if end_date is not None and cutoff_date > end_date:
+                        continue
+                except Exception as e:
+                    pass
         mdf = MDF(file, process_bus_logging=False)
-        if mdf.start_time.date() < datetime.now().date():
-            print(f"  ⏩ Skipping {file} (start time {mdf.start_time} is before today)")
+        if mdf.start_time < cutoff_date:
             continue
+        # If d65_canedge_file_data is not None, check end date from there
+        _dispname = "/".join(str(file).split("/")[str(file).split("/").index(job) :])
         try:
             start = time.time()
-            print(f" ⏳ Decoding {file} ...", end="\r", flush=True)
+            print(f" ⏳ Decoding {_dispname} ...", end="\r", flush=True)
             decoded = mdf.extract_bus_logging(
                 database_files, ignore_value2text_conversion=True
             )
-            print(f" ✅ Decoded {file} in {time.time() - start:.3f}s", flush=True)
+            print(f" ✅ Decoded {_dispname} in {time.time() - start:.3f}s", flush=True)
             if list(decoded.iter_channels()):
                 send_decoded(decoded, job)
             else:
-                print(f"⚠️ No signals found in {file}, skipping sending.")
+                print(f"⚠️ No signals found in {_dispname}, skipping sending.")
         except Exception as e:
-            print(f"❌ Error decoding {file}: {e}")
+            print(f"❌ Error decoding {_dispname}: {e}")
             continue
 
 
 def send_d65_onedrive():
+    global d65_canedge_file_data
+    with open(Path(__file__).parents[0] / "d65_canedge_file_data.pkl", "rb") as f:
+        d65_canedge_file_data = pickle.load(f)
+
     if d65_onedrive_files is None:
         print(
             "⚠️ D65 OneDrive path not found. Please check your PATH environment variable."
         )
         return
     else:
+        _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
         decode_and_send(
             d65_onedrive_files / "Upper",
-            dbc_directory=grafana_log_viewer_files / "dbc" / "upper",
-            job="upper",
+            dbc_files=[(Path.joinpath(_d65_loc, "busses", dbc), 0) for dbc in d65_dbc_files["Upper"]] + [(Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"),0)],
+            job="Upper",
         )
         print("=> Upper 👍")
         decode_and_send(
             d65_onedrive_files / "Lower",
-            dbc_directory=grafana_log_viewer_files / "dbc" / "lower",
-            job="lower",
+            dbc_files=[(_d65_loc / dbc, 0) for dbc in d65_dbc_files["Lower"]],
+            job="Lower",
         )
         print("=> Lower 👍")
 
@@ -329,7 +368,9 @@ class PortConfig(TypedDict):
     job: str | None  # Job name for the metrics coming from this port
 
 
-def get_cantools_databases(files: str | Path | list[str | Path]) -> list[cantools.db.Database]:
+def get_cantools_databases(
+    files: str | Path | list[str | Path],
+) -> list[cantools.db.Database]:
     """
     Load and return a list of DBC databases from the configured paths.
     """
@@ -337,7 +378,7 @@ def get_cantools_databases(files: str | Path | list[str | Path]) -> list[cantool
     if isinstance(files, str | Path):
         if Path(files).is_dir():
             db_paths.extend(list(Path(files).rglob("*.[dD][bB][cC]")))
-        elif Path(files).is_file() and Path(files).suffix.lower() == '.dbc':
+        elif Path(files).is_file() and Path(files).suffix.lower() == ".dbc":
             db_paths.append(Path(files))
     elif isinstance(files, list):
         for db in files:
@@ -417,4 +458,13 @@ if __name__ == "__main__":
 
     # decode_and_send(args.directory, args.job)
     # print("👍 Decoding and sending completed 👍")
-    send_d65_onedrive()
+
+    try:
+        resp = requests.get(vm_query_url, params={"query": "up"}, timeout=5)
+        if resp.status_code == 200:
+            send_d65_onedrive()
+        else:
+            print(f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}")
+    except Exception as e:
+        print(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
+
