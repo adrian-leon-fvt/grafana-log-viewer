@@ -15,6 +15,7 @@ import argparse
 from multiprocessing.pool import ThreadPool
 import os
 import pickle
+import pandas as pd
 
 vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
 vm_export_url = "http://localhost:8428/api/v1/export"
@@ -29,26 +30,13 @@ def get_onedrive_path() -> Path | None:
     """
     path_env = os.environ.get("PATH", "")
     # Check for WSL/Linux paths
-    for entry in path_env.split(os.pathsep):
-        if entry.startswith("/mnt/c/Users/"):
-            base = entry.split(os.sep)
-            if len(base) >= 5:
-                user_dir = os.sep.join(base[:5])
-                return Path(
-                    user_dir.replace("_T2adm", ""),
-                    "Epiroc",
-                    "Rig Crew - Private - General",
-                    "5. Testing",
-                    "CANEdge",
-                )
-    # Check for Windows paths
-    for entry in path_env.split(os.pathsep):
-        if "\\Users\\" in entry:
-            # e.g. C:\Users\<username>\...
-            parts = entry.split("\\")
-            for i, part in enumerate(parts):
-                if part.lower() == "users" and i + 1 < len(parts):
-                    user_dir = "\\".join(parts[: i + 2])
+
+    if os.name == "posix":
+        for entry in path_env.split(os.pathsep):
+            if entry.startswith("/mnt/c/Users/"):
+                base = entry.split(os.sep)
+                if len(base) >= 5:
+                    user_dir = os.sep.join(base[:5])
                     return Path(
                         user_dir.replace("_T2adm", ""),
                         "Epiroc",
@@ -56,6 +44,22 @@ def get_onedrive_path() -> Path | None:
                         "5. Testing",
                         "CANEdge",
                     )
+    elif os.name == "nt":
+        # Check for Windows paths
+        for entry in path_env.split(os.pathsep):
+            if "\\Users\\" in entry:
+                # e.g. C:\Users\<username>\...
+                parts = entry.split("\\")
+                for i, part in enumerate(parts):
+                    if part.lower() == "users" and i + 1 < len(parts):
+                        user_dir = "\\".join(parts[: i + 2])
+                        return Path(
+                            user_dir.replace("_T2adm", ""),
+                            "Epiroc",
+                            "Rig Crew - Private - General",
+                            "5. Testing",
+                            "CANEdge",
+                        )
     # Fallback to default path if not found
     return None
 
@@ -264,8 +268,21 @@ def decode_and_send(
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
     """
-    files = get_mf4_files(directory)
     global d65_canedge_file_data
+
+    files = list()
+    if not d65_canedge_file_data:
+        files = get_mf4_files(directory)
+    else:
+        # Get a subset to process
+        _df = d65_canedge_file_data[
+            pd.to_datetime(d65_canedge_file_data["End Time"])
+            > pd.Timestamp("2025-07-03", tz="UTC")
+        ]
+        files = [
+            Path(file if os.name == "posix" else file.replace("/mnt/c/", "C:/"))
+            for file in _df["File"]
+        ]
 
     database_files: dict[BusType, Iterable[DbcFileType]] = {}
 
@@ -290,26 +307,9 @@ def decode_and_send(
         return
 
     for file in files:
-        # Only process files with start_time after 2025-07-03
-        cutoff_date = datetime(2025, 7, 3).astimezone()
-        if d65_canedge_file_data is not None:
-            if str(file) in d65_canedge_file_data["File"].values:
-                try:
-                    # Get the end date from the pre-processed data
-                    end_date = datetime.fromisoformat(
-                        d65_canedge_file_data.loc[
-                            d65_canedge_file_data["File"] == str(file), "End Time"
-                        ].values[0]
-                    )
-                    end_date = end_date.replace(tzinfo=cutoff_date.tzinfo)
-                    if end_date is not None and cutoff_date > end_date:
-                        continue
-                except Exception as e:
-                    pass
         mdf = MDF(file, process_bus_logging=False)
-        if mdf.start_time < cutoff_date:
-            continue
-        # If d65_canedge_file_data is not None, check end date from there
+        if job is None:
+            job = file.stem
         _dispname = "/".join(str(file).split("/")[str(file).split("/").index(job) :])
         try:
             start = time.time()
@@ -338,10 +338,21 @@ def send_d65_onedrive():
         )
         return
     else:
-        _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
+        _d65_loc = Path.joinpath(
+            Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
+        )
+        if os.name == "nt":
+            _d65_loc = Path(
+                r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
+            )
+
         decode_and_send(
             d65_onedrive_files / "Upper",
-            dbc_files=[(Path.joinpath(_d65_loc, "busses", dbc), 0) for dbc in d65_dbc_files["Upper"]] + [(Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"),0)],
+            dbc_files=[
+                (Path.joinpath(_d65_loc, "busses", dbc), 0)
+                for dbc in d65_dbc_files["Upper"]
+            ]
+            + [(Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0)],
             job="Upper",
         )
         print("=> Upper 👍")
@@ -464,7 +475,8 @@ if __name__ == "__main__":
         if resp.status_code == 200:
             send_d65_onedrive()
         else:
-            print(f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}")
+            print(
+                f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}"
+            )
     except Exception as e:
         print(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
-
