@@ -70,8 +70,8 @@ d65_dbc_files = {
     "Lower": [
         "D65_CH0_NV.dbc",
         "D65_CH1_LV_PDU.dbc",
-        "D65_CH2_RCS_J1939.dbc",
-        "D65_CH3_RCS_Module.dbc",
+        # "D65_CH2_RCS_J1939.dbc",
+        # "D65_CH3_RCS_Module.dbc",
         "D65_CH4_Main.dbc",
     ],
     "Upper": [
@@ -271,13 +271,16 @@ def decode_and_send(
     global d65_canedge_file_data
 
     files = list()
-    if not d65_canedge_file_data:
+    if d65_canedge_file_data is None:
         files = get_mf4_files(directory)
     else:
         # Get a subset to process
         _df = d65_canedge_file_data[
-            pd.to_datetime(d65_canedge_file_data["End Time"])
-            > pd.Timestamp("2025-07-03", tz="UTC")
+            (
+                pd.to_datetime(d65_canedge_file_data["End Time"])
+                > pd.Timestamp("2025-07-03", tz="UTC")
+            )
+            & (d65_canedge_file_data.Group == job)
         ]
         files = [
             Path(file if os.name == "posix" else file.replace("/mnt/c/", "C:/"))
@@ -310,14 +313,18 @@ def decode_and_send(
         mdf = MDF(file, process_bus_logging=False)
         if job is None:
             job = file.stem
-        _dispname = "/".join(str(file).split("/")[str(file).split("/").index(job) :])
+        _file = str(file.as_posix())
+        _split = _file.split("/")
+        _dispname = "/".join(_split[_split.index(job) :])
         try:
             start = time.time()
-            print(f" ⏳ Decoding {_dispname} ...", end="\r", flush=True)
+            print(f" ⏳ Decoding ../{_dispname} ...", end="\r", flush=True)
             decoded = mdf.extract_bus_logging(
                 database_files, ignore_value2text_conversion=True
             )
-            print(f" ✅ Decoded {_dispname} in {time.time() - start:.3f}s", flush=True)
+            print(
+                f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s", flush=True
+            )
             if list(decoded.iter_channels()):
                 send_decoded(decoded, job)
             else:
@@ -345,20 +352,23 @@ def send_d65_onedrive():
             _d65_loc = Path(
                 r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
             )
-
-        decode_and_send(
-            d65_onedrive_files / "Upper",
-            dbc_files=[
+        
+        upper_dbc_files = [
                 (Path.joinpath(_d65_loc, "busses", dbc), 0)
                 for dbc in d65_dbc_files["Upper"]
             ]
-            + [(Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0)],
-            job="Upper",
-        )
-        print("=> Upper 👍")
+        upper_dbc_files.append((Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0))
+        # decode_and_send(
+        #     d65_onedrive_files / "Upper",
+        #     dbc_files=upper_dbc_files,
+        #     job="Upper",
+        # )
+        # print("=> Upper 👍")
+        lower_dbc_files = [(Path.joinpath(_d65_loc, "busses", dbc), 0)  
+                for dbc in d65_dbc_files["Lower"]]
         decode_and_send(
             d65_onedrive_files / "Lower",
-            dbc_files=[(_d65_loc / dbc, 0) for dbc in d65_dbc_files["Lower"]],
+            dbc_files=lower_dbc_files,
             job="Lower",
         )
         print("=> Lower 👍")
@@ -470,13 +480,17 @@ if __name__ == "__main__":
     # decode_and_send(args.directory, args.job)
     # print("👍 Decoding and sending completed 👍")
 
+    resp_status_code = 404
+
     try:
         resp = requests.get(vm_query_url, params={"query": "up"}, timeout=5)
-        if resp.status_code == 200:
-            send_d65_onedrive()
-        else:
+        resp_status_code = resp.status_code
+        if resp.status_code != 200:
             print(
                 f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}"
             )
     except Exception as e:
         print(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
+
+    if resp_status_code == 200:
+        send_d65_onedrive()

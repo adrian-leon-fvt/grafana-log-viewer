@@ -4,7 +4,8 @@ providers:
     orgId: 1
     folder: ''
     type: file
-    disableDeletion: false
+    disableDeletion: true
     editable: true
+    allowsUiUpdates: true
     options:
       path: /etc/grafana/provisioning/dashboards/d65.json
