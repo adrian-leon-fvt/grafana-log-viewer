@@ -194,8 +194,11 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
 
     message, metric_name = get_channel_data(_signal)
     unit = _signal.unit if _signal.unit else ""
+    _sig_start_str = start_time + timedelta(seconds=_signal.timestamps[0])
+    _sig_end_str = start_time + timedelta(seconds=_signal.timestamps[-1])
+    _time_str = f"{_sig_start_str.isoformat()} - {_sig_end_str.isoformat()}, {len(_signal.timestamps)} samples"
 
-    print(f"  📨 Sending {metric_name} ...", end="\r", flush=True)
+    print(f"  📨 Sending {metric_name} [{_time_str}] ...", end="\r", flush=True)
     start = time.time()
     batch: list[str] = []
     batch_size = 50000
@@ -215,7 +218,7 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
             except Exception as e:
                 print(f"\n ‼️ Error sending batch: {e}", flush=True)
             batch = []
-            time.sleep(0.1)  # Avoid overwhelming the server
+            time.sleep(0.01)  # Avoid overwhelming the server
     if batch:
         try:
             requests.post(vm_import_url, data="".join(batch))
@@ -223,7 +226,7 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
             print(f"\n ‼️ Error sending final batch: {e}", flush=True)
 
     time_str = get_time_str(start)
-    print(f"  📨 Sending {metric_name} ... sent in {time_str}   ", flush=True)
+    print(f"  📨 Sending {metric_name} [{_time_str}] ... sent in {time_str}   ", flush=True)
 
 
 def send_file(filename: Path, job: str | None = None):
@@ -278,7 +281,7 @@ def decode_and_send(
         _df = d65_canedge_file_data[
             (
                 pd.to_datetime(d65_canedge_file_data["End Time"])
-                > pd.Timestamp("2025-07-03", tz="UTC")
+                > pd.Timestamp("2025-07-15", tz="UTC")
             )
             & (d65_canedge_file_data.Group == job)
         ]
@@ -358,12 +361,12 @@ def send_d65_onedrive():
                 for dbc in d65_dbc_files["Upper"]
             ]
         upper_dbc_files.append((Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0))
-        # decode_and_send(
-        #     d65_onedrive_files / "Upper",
-        #     dbc_files=upper_dbc_files,
-        #     job="Upper",
-        # )
-        # print("=> Upper 👍")
+        decode_and_send(
+            d65_onedrive_files / "Upper",
+            dbc_files=upper_dbc_files,
+            job="Upper",
+        )
+        print("=> Upper 👍")
         lower_dbc_files = [(Path.joinpath(_d65_loc, "busses", dbc), 0)  
                 for dbc in d65_dbc_files["Lower"]]
         decode_and_send(
