@@ -19,7 +19,6 @@ services:
       - "3030:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
-    network_mode: host
     depends_on:
       - victoriametrics
     networks:
