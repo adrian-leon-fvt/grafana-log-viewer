@@ -16,11 +16,20 @@ from multiprocessing.pool import ThreadPool
 import os
 import pickle
 import pandas as pd
+import logging
 
-vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
-vm_export_url = "http://localhost:8428/api/v1/export"
-vm_query_url = "http://localhost:8428/api/v1/query"
-vm_query_range_url = "http://localhost:8428/api/v1/query_range"
+from config import *
+from CANReader import CANReader
+from DBCDecoder import DBCDecoder
+
+os.environ["NO_PROXY"] = "localhost"  # Bypass proxy for VictoriaMetrics
+
+
+def setup_logging():
+    logging.basicConfig(
+        level=LOG_LEVEL,
+        format=LOG_FORMAT
+    )
 
 
 def get_onedrive_path() -> Path | None:
@@ -128,6 +137,15 @@ def get_channel_data(signal: Signal) -> tuple[str, str]:
     return message, name
 
 
+def is_valid_sample(sample):
+    """Check if sample can be converted to a numeric value"""
+    try:
+        float(sample)  # Try converting to float
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
 def make_metric_line(
     metric_name: str,
     message: str,
@@ -146,8 +164,10 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
     """
     # Query VictoriaMetrics to check if data for this signal exists in the given time range
     message, metric_name = get_channel_data(signal)
-    start_ts = (start_time + timedelta(seconds=signal.timestamps[0])).timestamp()
-    end_ts = (start_time + timedelta(seconds=signal.timestamps[-1])).timestamp()
+    start_ts = (
+        start_time + timedelta(seconds=signal.timestamps[0])).timestamp()
+    end_ts = (
+        start_time + timedelta(seconds=signal.timestamps[-1])).timestamp()
 
     params: dict[str, str] = {
         "match[]": f'{metric_name}{{message="{message}"}}',
@@ -182,7 +202,8 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
             newsig = older_data.extend(newer_data)
             return newsig if len(newsig.timestamps) > 0 else None
     except Exception as e:
-        print(f"⚠️ Warning: Could not check Signal range for {metric_name}: {e}")
+        print(
+            f"⚠️ Warning: Could not check Signal range for {metric_name}: {e}")
     return signal
 
 
@@ -203,6 +224,8 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
     batch: list[str] = []
     batch_size = 50000
     for sample, ts in zip(_signal.samples, _signal.timestamps):
+        if not is_valid_sample(sample): # Check if sample is not float (e.g. string)
+            continue  # Skip this sample
         data = make_metric_line(
             metric_name,
             message,
@@ -226,7 +249,8 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
             print(f"\n ‼️ Error sending final batch: {e}", flush=True)
 
     time_str = get_time_str(start)
-    print(f"  📨 Sending {metric_name} [{_time_str}] ... sent in {time_str}   ", flush=True)
+    print(
+        f"  📨 Sending {metric_name} [{_time_str}] ... sent in {time_str}   ", flush=True)
 
 
 def send_file(filename: Path, job: str | None = None):
@@ -318,7 +342,7 @@ def decode_and_send(
             job = file.stem
         _file = str(file.as_posix())
         _split = _file.split("/")
-        _dispname = "/".join(_split[_split.index(job) :])
+        _dispname = "/".join(_split[_split.index(job):])
         try:
             start = time.time()
             print(f" ⏳ Decoding ../{_dispname} ...", end="\r", flush=True)
@@ -349,26 +373,27 @@ def send_d65_onedrive():
         return
     else:
         _d65_loc = Path.joinpath(
-            Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
+            Path.home(), "work/ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
         )
         if os.name == "nt":
             _d65_loc = Path(
                 r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
             )
-        
+
         upper_dbc_files = [
-                (Path.joinpath(_d65_loc, "busses", dbc), 0)
-                for dbc in d65_dbc_files["Upper"]
-            ]
-        upper_dbc_files.append((Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0))
+            (Path.joinpath(_d65_loc, "busses", dbc), 0)
+            for dbc in d65_dbc_files["Upper"]
+        ]
+        upper_dbc_files.append(
+            (Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0))
         decode_and_send(
             d65_onedrive_files / "Upper",
             dbc_files=upper_dbc_files,
             job="Upper",
         )
         print("=> Upper 👍")
-        lower_dbc_files = [(Path.joinpath(_d65_loc, "busses", dbc), 0)  
-                for dbc in d65_dbc_files["Lower"]]
+        lower_dbc_files = [(Path.joinpath(_d65_loc, "busses", dbc), 0)
+                           for dbc in d65_dbc_files["Lower"]]
         decode_and_send(
             d65_onedrive_files / "Lower",
             dbc_files=lower_dbc_files,
@@ -471,17 +496,9 @@ def livestream(ports: PortConfig):
             break
 
 
-if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(
-    #     description="Decode MDF4 files and send to VictoriaMetrics."
-    # )
-    # parser.add_argument("directory", type=str, help="Directory containing MDF4 files.")
-    # parser.add_argument("job", type=str, default=None, help="Job name for the metrics.")
-
-    # args = parser.parse_args()
-
-    # decode_and_send(args.directory, args.job)
-    # print("👍 Decoding and sending completed 👍")
+def main():
+    setup_logging()
+    logger = logging.getLogger('main')
 
     resp_status_code = 404
 
@@ -496,4 +513,65 @@ if __name__ == "__main__":
         print(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
 
     if resp_status_code == 200:
-        send_d65_onedrive()
+        if LIVE_STREAMING:  # Streaming live CAN data
+            dbc_decoder = None
+            if DBC_FILE_PATHS:
+                logger.info("Initializing DBC decoder...")
+                dbc_decoder = DBCDecoder(DBC_FILE_PATHS)
+
+            # Initialize CAN reader
+            logger.info("Initializing CAN reader...")
+            can_reader = CANReader(
+                interface=CAN_INTERFACE,
+                channel=CAN_CHANNEL,
+                dbc_decoder=dbc_decoder
+            )
+
+            if not can_reader.connect():
+                logger.error("Failed to initialize CAN interface")
+                return
+
+            logger.info("Starting CAN monitoring...")
+            while True:
+                try:
+                    timestamp, message_data = can_reader.read_decoded_message()
+                    if not message_data:
+                        continue
+                    message = message_data["message"]
+                    decoded_signals = message_data["decoded_signals"]
+                    if message:
+                        for signal in decoded_signals.keys():
+                            data = make_metric_line(
+                                message.name,
+                                signal,
+                                None,
+                                decoded_signals[signal],
+                                timestamp,
+                                job="",
+                            )
+                            try:
+                                requests.post(vm_import_url, data="".join(data))
+                            except Exception as e:
+                                logging.error(f"\n ‼️ Error sending data: {e}")
+
+                except KeyboardInterrupt: # Shutting down properly
+                    break
+
+            logger.info("Shutting down...")
+            can_reader.shutdown()
+        else:  # Sending MF4 files
+            send_d65_onedrive()
+
+
+if __name__ == "__main__":
+    # parser = argparse.ArgumentParser(
+    #     description="Decode MDF4 files and send to VictoriaMetrics."
+    # )
+    # parser.add_argument("directory", type=str, help="Directory containing MDF4 files.")
+    # parser.add_argument("job", type=str, default=None, help="Job name for the metrics.")
+
+    # args = parser.parse_args()
+
+    # decode_and_send(args.directory, args.job)
+    # print("👍 Decoding and sending completed 👍")
+    main()
