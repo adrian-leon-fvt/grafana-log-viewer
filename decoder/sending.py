@@ -305,7 +305,7 @@ def decode_and_send(
         _df = d65_canedge_file_data[
             (
                 pd.to_datetime(d65_canedge_file_data["End Time"])
-                > pd.Timestamp("2025-07-15", tz="UTC")
+                > pd.Timestamp("2025-07-25", tz="UTC")
             )
             & (d65_canedge_file_data.Group == job)
         ]
