@@ -2,8 +2,11 @@ import sys
 import can
 import io
 import os
-
 import contextlib
+import cantools
+
+from threading import Lock
+
 from can.typechecking import AutoDetectedConfig
 from PySide6.QtWidgets import (
     QApplication,
@@ -199,6 +202,66 @@ class DbcTable(QTableWidget):
 
 class MainWindow(QMainWindow):
 
+    class BusReader(QThread):
+        def __init__(self, bus, dbc_paths, bus_name, parent=None):
+            super().__init__(parent)
+            from threading import Lock
+            self.bus = bus
+            self.dbc_paths = list(dbc_paths)
+            self.bus_name = bus_name
+            self.running = True
+            self.db_list = []
+            self._dbc_lock = Lock()
+            try:
+                for path in self.dbc_paths:
+                    try:
+                        db = cantools.database.load_file(path)
+                        self.db_list.append(db)
+                    except Exception as e:
+                        print(f"Failed to load DBC {path}: {e}")
+            except ImportError:
+                pass
+        def run(self):
+            while self.running:
+                try:
+                    msg = self.bus.recv(timeout=0.2)
+                    if msg is None:
+                        continue
+                    found = False
+                    with self._dbc_lock:
+                        dbs = list(self.db_list)
+                    for db in dbs:
+                        try:
+                            decoded = db.decode_message(msg.arbitration_id, msg.data)
+                            print(f"[{self.bus_name}] {db.get_message_by_frame_id(msg.arbitration_id).name}: {decoded}")
+                            found = True
+                        except Exception:
+                            continue
+                    if not found:
+                        print(f"[{self.bus_name}] Unknown message: 0x{msg.arbitration_id:X} {msg.data.hex()}")
+                except Exception as e:
+                    print(f"[{self.bus_name}] Error reading: {e}")
+        def stop(self):
+            self.running = False
+            self.wait()
+            
+        def update_dbcs(self, dbc_paths):
+            if not hasattr(self, '_dbc_lock'):
+                self._dbc_lock = Lock()
+            with self._dbc_lock:
+                self.dbc_paths = list(dbc_paths)
+                self.db_list = []
+                try:
+                    for path in self.dbc_paths:
+                        try:
+                            db = cantools.database.load_file(path)
+                            self.db_list.append(db)
+                        except Exception as e:
+                            print(f"Failed to load DBC {path}: {e}")
+                except ImportError:
+                    pass
+        # Store checked signals per bus: device -> set of signal names
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Live Stream Decoder")
@@ -354,6 +417,8 @@ class MainWindow(QMainWindow):
         # Store bus tabs: device_name -> QWidget
         self.bus_tabs = {}
 
+        self._bus_checked_signals = {}
+
         # Store connected busses and chips
         self.connected_busses = {}  # device_name: (bus, chip_widget)
 
@@ -377,8 +442,21 @@ class MainWindow(QMainWindow):
 
     def on_dbc_assignment_changed(self):
         # Called when a DBC file is assigned/unassigned to a bus
-        # Refresh all bus tabs
+        # Update DBCs for each active reader and refresh all bus tabs
         for device in list(self.bus_tabs.keys()):
+            # Update reader DBCs if bus is connected
+            if device in self.connected_busses:
+                bus, chip, reader = self.connected_busses[device]
+                # Find assigned DBCs for this bus
+                assigned_dbcs = []
+                for row in range(self.dbc_table.rowCount()):
+                    widget = self.dbc_table.cellWidget(row, 2)
+                    if isinstance(widget, QComboBox) and widget.currentText() == device:
+                        for f in self.dbc_table.files:
+                            item = self.dbc_table.item(row, 0)
+                            if item is not None and item.text() in f:
+                                assigned_dbcs.append(f)
+                reader.update_dbcs(assigned_dbcs)
             self._add_bus_tab(device)
 
     def closeEvent(self, event):
@@ -479,7 +557,7 @@ class MainWindow(QMainWindow):
         # Set python-can filters for the bus to only allow selected CAN IDs
         if device not in self.connected_busses:
             return
-        bus, _ = self.connected_busses[device]
+        bus, _, _ = self.connected_busses[device]
         tab = self.bus_tabs.get(device)
         if not tab:
             return
@@ -542,7 +620,19 @@ class MainWindow(QMainWindow):
             # Create chip for this connection
             chip = self._create_chip(device, bitrate)
             self.chip_layout.addWidget(chip)
-            self.connected_busses[device] = (bus, chip)
+            # Find assigned DBCs for this bus
+            assigned_dbcs = []
+            for row in range(self.dbc_table.rowCount()):
+                widget = self.dbc_table.cellWidget(row, 2)
+                if isinstance(widget, QComboBox) and widget.currentText() == device:
+                    for f in self.dbc_table.files:
+                        item = self.dbc_table.item(row, 0)
+                        if item is not None and item.text() in f:
+                            assigned_dbcs.append(f)
+            # Start a thread to read messages for this bus
+            reader = self.BusReader(bus, assigned_dbcs, device)
+            reader.start()
+            self.connected_busses[device] = (bus, chip, reader)
             self._update_connect_button()
             self.update_dbc_bus_dropdowns()
             self._add_bus_tab(device)
@@ -551,10 +641,22 @@ class MainWindow(QMainWindow):
 
     def _add_bus_tab(self, device):
         # Remove if already exists
+        # Save checked signals before removing tab
+        checked_signals = set()
         if device in self.bus_tabs:
+            tab = self.bus_tabs[device]
+            for child in tab.children():
+                if isinstance(child, QTableWidget):
+                    table = child
+                    for row in range(table.rowCount()):
+                        cb = table.cellWidget(row, 0)
+                        name_item = table.item(row, 1)
+                        if isinstance(cb, QCheckBox) and cb.isChecked() and name_item:
+                            checked_signals.add(name_item.text())
             idx = self.tabs.indexOf(self.bus_tabs[device])
             if idx >= 0:
                 self.tabs.removeTab(idx)
+        self._bus_checked_signals[device] = checked_signals
         # Create new tab for this bus
         tab = QWidget()
         layout = QVBoxLayout()
@@ -576,9 +678,12 @@ class MainWindow(QMainWindow):
         # Populate table with signals from assigned DBCs
         signals = self._get_signals_for_bus(device)
         table.setRowCount(len(signals))
+        checked_signals = self._bus_checked_signals.get(device, set())
         for i, sig in enumerate(signals):
             # Checkbox
             cb = QCheckBox()
+            if sig["name"] in checked_signals:
+                cb.setChecked(True)
             table.setCellWidget(i, 0, cb)
             # Signal name
             table.setItem(i, 1, QTableWidgetItem(sig["name"]))
@@ -738,7 +843,6 @@ class MainWindow(QMainWindow):
         return signals
 
     def _create_chip(self, device, bitrate):
-        from PySide6.QtWidgets import QFrame, QLabel, QPushButton, QHBoxLayout
 
         chip = QFrame()
         chip.setObjectName("chip")
@@ -768,7 +872,11 @@ class MainWindow(QMainWindow):
     def _disconnect_bus(self, device):
         # Remove chip and disconnect bus
         if device in self.connected_busses:
-            bus, chip = self.connected_busses.pop(device)
+            bus, chip, reader = self.connected_busses.pop(device)
+            try:
+                reader.stop()
+            except Exception:
+                pass
             try:
                 bus.shutdown()
             except Exception:
