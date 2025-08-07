@@ -429,6 +429,40 @@ class MainWindow(QMainWindow):
         else:
             self.connect_btn.setEnabled(True)
 
+    def _set_bus_filters_for_device(self, device):
+        # Set python-can filters for the bus to only allow selected CAN IDs
+        if device not in self.connected_busses:
+            return
+        bus, _ = self.connected_busses[device]
+        tab = self.bus_tabs.get(device)
+        if not tab:
+            return
+        table = None
+        for child in tab.children():
+            if isinstance(child, QTableWidget):
+                table = child
+                break
+        if table is None:
+            return
+        can_ids = set()
+        for row in range(table.rowCount()):
+            cb = table.cellWidget(row, 0)
+            if isinstance(cb, QCheckBox) and cb.isChecked():
+                can_id_item = table.item(row, 3)
+                if can_id_item:
+                    try:
+                        can_id_val = int(str(can_id_item.text()), 16) if str(can_id_item.text()).startswith('0x') else int(str(can_id_item.text()))
+                        can_ids.add(can_id_val)
+                    except Exception:
+                        continue
+        # Ensure unique CAN IDs in filters
+        unique_can_ids = list(can_ids)
+        filters = [{'can_id': cid, 'can_mask': 0x1FFFFFFF} for cid in unique_can_ids] if unique_can_ids else None
+        try:
+            bus.set_filters(filters)
+        except Exception as e:
+            print(f"Failed to set filters for {device}: {e}")
+
     def connect_device(self):
         # Get the full device name from the combobox data
         idx = self.device_combo.currentIndex()
@@ -505,14 +539,17 @@ class MainWindow(QMainWindow):
         def table_keyPressEvent(event):
             if event.key() == Qt.Key.Key_Space:
                 selected = table.selectionModel().selectedRows()
+                changed = False
                 for idx in selected:
                     row = idx.row()
                     cb = table.cellWidget(row, 0)
                     if isinstance(cb, QCheckBox):
                         cb.setChecked(not cb.isChecked())
+                        changed = True
+                if changed:
+                    self._set_bus_filters_for_device(device)
                 event.accept()
             else:
-                # Call base implementation
                 QTableWidget.keyPressEvent(table, event)
         table.keyPressEvent = table_keyPressEvent
 
@@ -556,10 +593,10 @@ class MainWindow(QMainWindow):
                 if isinstance(cb, QCheckBox):
                     cb.setChecked(False)
 
-        select_all_btn.clicked.connect(select_all)
-        deselect_all_btn.clicked.connect(deselect_all)
-        enable_selected_btn.clicked.connect(enable_selected)
-        disable_selected_btn.clicked.connect(disable_selected)
+        select_all_btn.clicked.connect(lambda: (select_all(), self._set_bus_filters_for_device(device)))
+        deselect_all_btn.clicked.connect(lambda: (deselect_all(), self._set_bus_filters_for_device(device)))
+        enable_selected_btn.clicked.connect(lambda: (enable_selected(), self._set_bus_filters_for_device(device)))
+        disable_selected_btn.clicked.connect(lambda: (disable_selected(), self._set_bus_filters_for_device(device)))
 
         # Disable enable/disable selected buttons if nothing is selected
         def update_enable_disable_buttons():
@@ -574,6 +611,8 @@ class MainWindow(QMainWindow):
         layout.addWidget(table)
         self.tabs.addTab(tab, device)
         self.bus_tabs[device] = tab
+        # Set filters initially
+        self._set_bus_filters_for_device(device)
 
     def _get_signals_for_bus(self, device):
         # Find all DBCs assigned to this bus
