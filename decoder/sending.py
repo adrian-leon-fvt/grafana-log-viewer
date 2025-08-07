@@ -14,6 +14,7 @@ import json
 import argparse
 from multiprocessing.pool import ThreadPool
 import os
+import subprocess
 import pickle
 import pandas as pd
 import logging
@@ -26,10 +27,7 @@ os.environ["NO_PROXY"] = "localhost"  # Bypass proxy for VictoriaMetrics
 
 
 def setup_logging():
-    logging.basicConfig(
-        level=LOG_LEVEL,
-        format=LOG_FORMAT
-    )
+    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 
 
 def get_onedrive_path() -> Path | None:
@@ -37,40 +35,16 @@ def get_onedrive_path() -> Path | None:
     Try to find the OneDrive CANEdge path on both Windows and WSL/Linux.
     Looks for a suitable path in the PATH environment variable or defaults to a common location.
     """
-    path_env = os.environ.get("PATH", "")
-    # Check for WSL/Linux paths
-
-    if os.name == "posix":
-        for entry in path_env.split(os.pathsep):
-            if entry.startswith("/mnt/c/Users/"):
-                base = entry.split(os.sep)
-                if len(base) >= 5:
-                    user_dir = os.sep.join(base[:5])
-                    return Path(
-                        user_dir.replace("_T2adm", ""),
-                        "Epiroc",
-                        "Rig Crew - Private - General",
-                        "5. Testing",
-                        "CANEdge",
-                    )
-    elif os.name == "nt":
-        # Check for Windows paths
-        for entry in path_env.split(os.pathsep):
-            if "\\Users\\" in entry:
-                # e.g. C:\Users\<username>\...
-                parts = entry.split("\\")
-                for i, part in enumerate(parts):
-                    if part.lower() == "users" and i + 1 < len(parts):
-                        user_dir = "\\".join(parts[: i + 2])
-                        return Path(
-                            user_dir.replace("_T2adm", ""),
-                            "Epiroc",
-                            "Rig Crew - Private - General",
-                            "5. Testing",
-                            "CANEdge",
-                        )
+    rig_crew_canedge = Path.joinpath(
+        (
+            Path(os.environ["USERPROFILE"])
+            if os.name == "nt"
+            else f'/mnt/c/Users/{subprocess.run(["powershell.exe", "Write-Host $env:USERNAME"], capture_output=True, text=True).stdout.strip()}'
+        ),
+        r"Epiroc/Rig Crew - Private - General/5. Testing/CANEdge",
+    )
     # Fallback to default path if not found
-    return None
+    return rig_crew_canedge
 
 
 d65_onedrive_files = get_onedrive_path()
@@ -98,15 +72,23 @@ def get_time_str(start_time: float) -> str:
     return f"{mins:.0f}m{secs:.3f}s" if mins else f"{secs:.3f}s"
 
 
-def get_mf4_files(directory: Path | str):
+def get_mf4_files(
+    directory: Path | str, datetime_after: datetime | None = None
+) -> list[Path]:
     """
     Get all MDF4 files in the specified directory.
+    If datetime_after is provided, only return files modified after that datetime.
     """
-
     if not isinstance(directory, Path):
         directory = Path(directory)
 
-    return list(directory.rglob("*.[mM][fF]4"))
+    files = list(directory.rglob("*.[mM][fF]4"))
+    if datetime_after is not None:
+        files = [
+            f for f in files
+            if datetime.fromtimestamp(f.stat().st_mtime, tz=datetime_after.tzinfo) > datetime_after
+        ]
+    return files
 
 
 def get_dbc_files(directory: Path | str) -> list[StrPath]:
@@ -164,10 +146,8 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
     """
     # Query VictoriaMetrics to check if data for this signal exists in the given time range
     message, metric_name = get_channel_data(signal)
-    start_ts = (
-        start_time + timedelta(seconds=signal.timestamps[0])).timestamp()
-    end_ts = (
-        start_time + timedelta(seconds=signal.timestamps[-1])).timestamp()
+    start_ts = (start_time + timedelta(seconds=signal.timestamps[0])).timestamp()
+    end_ts = (start_time + timedelta(seconds=signal.timestamps[-1])).timestamp()
 
     params: dict[str, str] = {
         "match[]": f'{metric_name}{{message="{message}"}}',
@@ -202,14 +182,13 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
             newsig = older_data.extend(newer_data)
             return newsig if len(newsig.timestamps) > 0 else None
     except Exception as e:
-        print(
-            f"⚠️ Warning: Could not check Signal range for {metric_name}: {e}")
+        print(f"⚠️ Warning: Could not check Signal range for {metric_name}: {e}")
     return signal
 
 
 def send_signal(signal: Signal, start_time: datetime, job: str | None):
     _signal = check_signal_range(signal, start_time)
-    if _signal is None or len(_signal.timestamps) == 0:
+    if _signal is None or len(_signal.timestamps) < 5:
         print(f"  ☑️ No new data for {signal.name}, skipping ...", flush=True)
         return
 
@@ -224,7 +203,7 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
     batch: list[str] = []
     batch_size = 50000
     for sample, ts in zip(_signal.samples, _signal.timestamps):
-        if not is_valid_sample(sample): # Check if sample is not float (e.g. string)
+        if not is_valid_sample(sample):  # Check if sample is not float (e.g. string)
             continue  # Skip this sample
         data = make_metric_line(
             metric_name,
@@ -250,7 +229,9 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
 
     time_str = get_time_str(start)
     print(
-        f"  📨 Sending {metric_name} [{_time_str}] ... sent in {time_str}   ", flush=True)
+        f"  📨 Sending {metric_name} [{_time_str}] ... sent in {time_str}   ",
+        flush=True,
+    )
 
 
 def send_file(filename: Path, job: str | None = None):
@@ -299,13 +280,16 @@ def decode_and_send(
 
     files = list()
     if d65_canedge_file_data is None:
-        files = get_mf4_files(directory)
+        files = get_mf4_files(
+            directory, 
+            datetime_after=datetime(2025, 8, 4, tzinfo=datetime.now().astimezone().tzinfo)
+        )
     else:
         # Get a subset to process
         _df = d65_canedge_file_data[
             (
                 pd.to_datetime(d65_canedge_file_data["End Time"])
-                > pd.Timestamp("2025-07-25", tz="UTC")
+                > pd.Timestamp("2025-07-31", tz="UTC")
             )
             & (d65_canedge_file_data.Group == job)
         ]
@@ -342,7 +326,7 @@ def decode_and_send(
             job = file.stem
         _file = str(file.as_posix())
         _split = _file.split("/")
-        _dispname = "/".join(_split[_split.index(job):])
+        _dispname = "/".join(_split[_split.index(job) :])
         try:
             start = time.time()
             print(f" ⏳ Decoding ../{_dispname} ...", end="\r", flush=True)
@@ -362,10 +346,6 @@ def decode_and_send(
 
 
 def send_d65_onedrive():
-    global d65_canedge_file_data
-    with open(Path(__file__).parents[0] / "d65_canedge_file_data.pkl", "rb") as f:
-        d65_canedge_file_data = pickle.load(f)
-
     if d65_onedrive_files is None:
         print(
             "⚠️ D65 OneDrive path not found. Please check your PATH environment variable."
@@ -373,7 +353,7 @@ def send_d65_onedrive():
         return
     else:
         _d65_loc = Path.joinpath(
-            Path.home(), "work/ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
+            Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
         )
         if os.name == "nt":
             _d65_loc = Path(
@@ -385,15 +365,18 @@ def send_d65_onedrive():
             for dbc in d65_dbc_files["Upper"]
         ]
         upper_dbc_files.append(
-            (Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0))
+            (Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0)
+        )
         decode_and_send(
             d65_onedrive_files / "Upper",
             dbc_files=upper_dbc_files,
             job="Upper",
         )
         print("=> Upper 👍")
-        lower_dbc_files = [(Path.joinpath(_d65_loc, "busses", dbc), 0)
-                           for dbc in d65_dbc_files["Lower"]]
+        lower_dbc_files = [
+            (Path.joinpath(_d65_loc, "busses", dbc), 0)
+            for dbc in d65_dbc_files["Lower"]
+        ]
         decode_and_send(
             d65_onedrive_files / "Lower",
             dbc_files=lower_dbc_files,
@@ -498,7 +481,7 @@ def livestream(ports: PortConfig):
 
 def main():
     setup_logging()
-    logger = logging.getLogger('main')
+    logger = logging.getLogger("main")
 
     resp_status_code = 404
 
@@ -522,9 +505,7 @@ def main():
             # Initialize CAN reader
             logger.info("Initializing CAN reader...")
             can_reader = CANReader(
-                interface=CAN_INTERFACE,
-                channel=CAN_CHANNEL,
-                dbc_decoder=dbc_decoder
+                interface=CAN_INTERFACE, channel=CAN_CHANNEL, dbc_decoder=dbc_decoder
             )
 
             if not can_reader.connect():
@@ -554,7 +535,7 @@ def main():
                             except Exception as e:
                                 logging.error(f"\n ‼️ Error sending data: {e}")
 
-                except KeyboardInterrupt: # Shutting down properly
+                except KeyboardInterrupt:  # Shutting down properly
                     break
 
             logger.info("Shutting down...")
