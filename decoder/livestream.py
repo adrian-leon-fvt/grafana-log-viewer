@@ -7,9 +7,10 @@ from can.typechecking import AutoDetectedConfig
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget,
     QPushButton, QComboBox, QHBoxLayout,
-    QScrollArea, QFrame, QSizePolicy
+    QScrollArea, QFrame, QSizePolicy,
+    QTableWidget, QTableWidgetItem, QFileDialog, QAbstractItemView, QHeaderView
 )
-from PySide6.QtCore import QTimer, QThread, Signal, QObject
+from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
 from PySide6.QtGui import QColor, QPalette
 
 
@@ -74,7 +75,91 @@ class DeviceScanner(QObject):
             self.devices_found.emit([], f"Error scanning devices: {e}")
 
 
+# DBC file table area
+class DbcTable(QTableWidget):
+
+    def __init__(self, parent=None, get_busses=None):
+        super().__init__(0, 3, parent)
+        self.setHorizontalHeaderLabels(["DBC File", "Status", "Assigned Bus"])
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.setAcceptDrops(True)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
+        self.files = set()
+        self.get_busses = get_busses  # function to get current busses
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        # Set minimum height to fit at least 4 rows
+        row_height = self.verticalHeader().defaultSectionSize()
+        header_height = self.horizontalHeader().height()
+        self.setMinimumHeight(header_height + row_height * 4 + 4)  # +4 for grid lines
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            super().dragEnterEvent(event)
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                path = url.toLocalFile()
+                if path.lower().endswith('.dbc'):
+                    self.add_dbc_file(path)
+            event.acceptProposedAction()
+        else:
+            super().dropEvent(event)
+
+    def add_dbc_file(self, path):
+        import os
+        if path in self.files:
+            return
+        status = self.validate_dbc(path)
+        row = self.rowCount()
+        self.insertRow(row)
+        file_item = QTableWidgetItem(os.path.basename(path))
+        status_item = QTableWidgetItem(status)
+        # If invalid, set tooltip with error
+        if status.startswith("Invalid: "):
+            error_msg = status[len("Invalid: "):]
+            status_item.setToolTip(error_msg)
+        self.setItem(row, 0, file_item)
+        self.setItem(row, 1, status_item)
+        # Add dropdown for bus assignment
+        from PySide6.QtWidgets import QComboBox
+        combo = QComboBox()
+        combo.setEditable(False)
+        combo.addItem("")  # Unassigned
+        if self.get_busses:
+            for bus in self.get_busses():
+                combo.addItem(bus)
+        self.setCellWidget(row, 2, combo)
+        self.files.add(path)
+
+    def validate_dbc(self, path):
+        try:
+            import cantools
+            cantools.database.load_file(path)
+            return "Valid"
+        except Exception as e:
+            return f"Invalid: {e}" if str(e) else "Invalid"
+
+    def get_valid_files(self):
+        return [f for i, f in enumerate(self.files)
+                if (self.item(i, 1) is not None and getattr(self.item(i, 1), "text", lambda: None)() == "Valid")]
+
+
 class MainWindow(QMainWindow):
+    def closeEvent(self, event):
+        # Gracefully stop the scanner thread
+        if hasattr(self, 'scanner_thread') and self.scanner_thread.isRunning():
+            self.scanner_thread.quit()
+            self.scanner_thread.wait()
+        super().closeEvent(event)
 
     def __init__(self):
         super().__init__()
@@ -175,6 +260,44 @@ class MainWindow(QMainWindow):
         self.device_combo.currentIndexChanged.connect(self._update_connect_button)
         self._update_connect_button()  # Initial state
 
+        # DBC area (resizable)
+        from PySide6.QtWidgets import QSplitter
+        dbc_area = QWidget()
+        dbc_layout = QVBoxLayout()
+        dbc_area.setLayout(dbc_layout)
+        def get_busses():
+            return list(self.connected_busses.keys())
+        self.dbc_table = DbcTable(get_busses=get_busses)
+        dbc_layout.addWidget(self.dbc_table)
+        self.add_dbc_btn = QPushButton("Add DBC File(s)...")
+        dbc_layout.addWidget(self.add_dbc_btn)
+        # Use a splitter to make the DBC area resizable
+        splitter = QSplitter(Qt.Orientation.Vertical)
+        splitter.addWidget(dbc_area)
+        splitter.addWidget(QWidget())  # Filler for resizing
+        splitter.setSizes([200, 100])
+        main_layout.addWidget(splitter)
+
+        def open_dbc_dialog():
+            files, _ = QFileDialog.getOpenFileNames(self, "Select DBC Files", "", "DBC Files (*.dbc)")
+            for f in files:
+                self.dbc_table.add_dbc_file(f)
+        self.add_dbc_btn.clicked.connect(open_dbc_dialog)
+
+    def update_dbc_bus_dropdowns(self):
+        # Update all bus assignment dropdowns in the DBC table
+        for row in range(self.dbc_table.rowCount()):
+            widget = self.dbc_table.cellWidget(row, 2)
+            if isinstance(widget, QComboBox):
+                current = widget.currentText()
+                widget.clear()
+                widget.addItem("")
+                for bus in self.connected_busses.keys():
+                    widget.addItem(bus)
+                idx = widget.findText(current)
+                if idx >= 0:
+                    widget.setCurrentIndex(idx)
+
         # Initial scan
         self.scanner.scan()
 
@@ -238,6 +361,7 @@ class MainWindow(QMainWindow):
             self.chip_layout.addWidget(chip)
             self.connected_busses[device] = (bus, chip)
             self._update_connect_button()
+            self.update_dbc_bus_dropdowns()
         except Exception as e:
             self.status.showMessage(f"Connection failed: {e}")
 
@@ -278,12 +402,13 @@ class MainWindow(QMainWindow):
             chip.deleteLater()
             self.status.showMessage(f"Disconnected {device}.")
             self._update_connect_button()
+            self.update_dbc_bus_dropdowns()
 
 from PySide6.QtCore import Qt
 
 if __name__ == "__main__":
     app = QApplication([])
     mw = MainWindow()
-    mw.resize(400, 200)
+    mw.resize(600, 600)
     mw.show()
     sys.exit(app.exec())
