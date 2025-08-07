@@ -218,6 +218,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Live Stream Decoder")
+        self.setAcceptDrops(True)
 
         # Central widget and main layout
         self.tabs = QTabWidget()
@@ -298,10 +299,51 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.chip_scroll)
         main_layout.addStretch(1)
 
-        # DBC area (resizable)
-        dbc_area = QWidget()
-        dbc_layout = QVBoxLayout()
-        dbc_area.setLayout(dbc_layout)
+        # DBC area (resizable) with drag-and-drop support for the entire area (including splitter)
+        class DragDropDbcArea(QWidget):
+            def __init__(self, dbc_table, parent=None):
+                super().__init__(parent)
+                self.dbc_table = dbc_table
+                self.setAcceptDrops(True)
+                # Layout for this area
+                layout = QVBoxLayout(self)
+                # Compose the DBC area and splitter
+                dbc_layout = QVBoxLayout()
+                dbc_layout.addWidget(self.dbc_table)
+                self.add_dbc_btn = QPushButton("Add DBC File(s)...")
+                dbc_layout.addWidget(self.add_dbc_btn)
+                dbc_widget = QWidget()
+                dbc_widget.setLayout(dbc_layout)
+                splitter = QSplitter(Qt.Orientation.Vertical)
+                splitter.addWidget(dbc_widget)
+                splitter.addWidget(QWidget())  # Filler for resizing
+                splitter.setSizes([200, 100])
+                layout.addWidget(splitter)
+
+            def dragEnterEvent(self, event):
+                if event.mimeData().hasUrls():
+                    for url in event.mimeData().urls():
+                        if url.toLocalFile().lower().endswith(".dbc"):
+                            event.acceptProposedAction()
+                            self.setCursor(Qt.CursorShape.DragCopyCursor)
+                            return
+                self.unsetCursor()
+                event.ignore()
+
+            def dropEvent(self, event):
+                self.unsetCursor()
+                if event.mimeData().hasUrls():
+                    for url in event.mimeData().urls():
+                        path = url.toLocalFile()
+                        if path.lower().endswith(".dbc"):
+                            self.dbc_table.add_dbc_file(path)
+                    event.acceptProposedAction()
+                else:
+                    event.ignore()
+
+            def dragLeaveEvent(self, event):
+                self.unsetCursor()
+                event.accept()
 
         def get_busses():
             return list(self.connected_busses.keys())
@@ -310,14 +352,8 @@ class MainWindow(QMainWindow):
             get_busses=get_busses,
             on_dbc_assignment_changed=self.on_dbc_assignment_changed,
         )
-        dbc_layout.addWidget(self.dbc_table)
-        self.add_dbc_btn = QPushButton("Add DBC File(s)...")
-        dbc_layout.addWidget(self.add_dbc_btn)
-        splitter = QSplitter(Qt.Orientation.Vertical)
-        splitter.addWidget(dbc_area)
-        splitter.addWidget(QWidget())  # Filler for resizing
-        splitter.setSizes([200, 100])
-        main_layout.addWidget(splitter)
+        self.dbc_area = DragDropDbcArea(self.dbc_table)
+        main_layout.addWidget(self.dbc_area)
 
         def open_dbc_dialog():
             files, _ = QFileDialog.getOpenFileNames(
@@ -326,7 +362,8 @@ class MainWindow(QMainWindow):
             for f in files:
                 self.dbc_table.add_dbc_file(f)
 
-        self.add_dbc_btn.clicked.connect(open_dbc_dialog)
+        # Connect the button inside DragDropDbcArea
+        self.dbc_area.add_dbc_btn.clicked.connect(open_dbc_dialog)
 
         self.tabs.addTab(main_tab, "Main")
 
@@ -419,6 +456,32 @@ class MainWindow(QMainWindow):
         self._update_connect_button()
 
     # ...existing code...
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                if url.toLocalFile().lower().endswith(".dbc"):
+                    event.acceptProposedAction()
+                    event.setDropAction(Qt.DropAction.CopyAction)
+                    self.setCursor(Qt.CursorShape.DragCopyCursor)
+                    return
+        self.unsetCursor()
+        event.ignore()
+
+    def dropEvent(self, event):
+        self.unsetCursor()
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                path = url.toLocalFile()
+                if path.lower().endswith(".dbc"):
+                    self.dbc_table.add_dbc_file(path)
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dragLeaveEvent(self, event):
+        self.unsetCursor()
+        event.accept()
 
     def _update_connect_button(self):
         idx = self.device_combo.currentIndex()
