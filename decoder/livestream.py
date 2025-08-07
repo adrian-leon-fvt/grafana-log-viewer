@@ -125,22 +125,6 @@ class DbcTable(QTableWidget):
         header_height = self.horizontalHeader().height()
         self.setMinimumHeight(header_height + row_height * 4 + 4)  # +4 for grid lines
 
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            event.acceptProposedAction()
-        else:
-            super().dragEnterEvent(event)
-
-    def dropEvent(self, event):
-        if event.mimeData().hasUrls():
-            for url in event.mimeData().urls():
-                path = url.toLocalFile()
-                if path.lower().endswith(".dbc"):
-                    self.add_dbc_file(path)
-            event.acceptProposedAction()
-        else:
-            super().dropEvent(event)
-
     def add_dbc_file(self, path):
         if path in self.files:
             return
@@ -523,8 +507,6 @@ class MainWindow(QMainWindow):
                         continue
         # Ensure unique CAN IDs in filters
         unique_can_ids = list(can_ids)
-        for cid in unique_can_ids:
-            print(f"Setting filter for {device}: {cid:#x}")
         filters = (
             [{"can_id": cid, "can_mask": 0x1FFFFFFF} for cid in unique_can_ids]
             if unique_can_ids
@@ -607,6 +589,10 @@ class MainWindow(QMainWindow):
             # Mux values
             table.setItem(i, 4, QTableWidgetItem(sig["mux"]))
 
+            cb.checkStateChanged.connect(
+                lambda: self._set_bus_filters_for_device(device)
+            )
+
         # Add keyPressEvent to toggle checkboxes with spacebar
         def table_keyPressEvent(event):
             if event.key() == Qt.Key.Key_Space:
@@ -616,7 +602,9 @@ class MainWindow(QMainWindow):
                     row = idx.row()
                     cb = table.cellWidget(row, 0)
                     if isinstance(cb, QCheckBox):
+                        cb.blockSignals(True)
                         cb.setChecked(not cb.isChecked())
+                        cb.blockSignals(False)
                         changed = True
                 if changed:
                     self._set_bus_filters_for_device(device)
@@ -642,13 +630,17 @@ class MainWindow(QMainWindow):
             for row in range(table.rowCount()):
                 cb = table.cellWidget(row, 0)
                 if isinstance(cb, QCheckBox):
+                    cb.blockSignals(True)
                     cb.setChecked(True)
+                    cb.blockSignals(False)
 
         def deselect_all():
             for row in range(table.rowCount()):
                 cb = table.cellWidget(row, 0)
                 if isinstance(cb, QCheckBox):
+                    cb.blockSignals(True)
                     cb.setChecked(False)
+                    cb.blockSignals(False)
 
         def enable_selected():
             selected = table.selectionModel().selectedRows()
@@ -656,7 +648,9 @@ class MainWindow(QMainWindow):
                 row = idx.row()
                 cb = table.cellWidget(row, 0)
                 if isinstance(cb, QCheckBox):
+                    cb.blockSignals(True)
                     cb.setChecked(True)
+                    cb.blockSignals(False)
 
         def disable_selected():
             selected = table.selectionModel().selectedRows()
@@ -664,7 +658,9 @@ class MainWindow(QMainWindow):
                 row = idx.row()
                 cb = table.cellWidget(row, 0)
                 if isinstance(cb, QCheckBox):
+                    cb.blockSignals(True)
                     cb.setChecked(False)
+                    cb.blockSignals(False)
 
         select_all_btn.clicked.connect(
             lambda: (select_all(), self._set_bus_filters_for_device(device))
