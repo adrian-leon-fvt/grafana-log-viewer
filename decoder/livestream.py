@@ -357,7 +357,6 @@ class MainWindow(QMainWindow):
     def on_dbc_assignment_changed(self):
         # Called when a DBC file is assigned/unassigned to a bus
         # Refresh all bus tabs
-        print("DBC assignment changed, refreshing bus tabs")
         for device in list(self.bus_tabs.keys()):
             self._add_bus_tab(device)
 
@@ -451,13 +450,23 @@ class MainWindow(QMainWindow):
                 can_id_item = table.item(row, 3)
                 if can_id_item:
                     try:
-                        can_id_val = int(str(can_id_item.text()), 16) if str(can_id_item.text()).startswith('0x') else int(str(can_id_item.text()))
+                        can_id_val = (
+                            int(str(can_id_item.text()), 16)
+                            if str(can_id_item.text()).startswith("0x")
+                            else int(str(can_id_item.text()))
+                        )
                         can_ids.add(can_id_val)
                     except Exception:
                         continue
         # Ensure unique CAN IDs in filters
         unique_can_ids = list(can_ids)
-        filters = [{'can_id': cid, 'can_mask': 0x1FFFFFFF} for cid in unique_can_ids] if unique_can_ids else None
+        for cid in unique_can_ids:
+            print(f"Setting filter for {device}: {cid:#x}")
+        filters = (
+            [{"can_id": cid, "can_mask": 0x1FFFFFFF} for cid in unique_can_ids]
+            if unique_can_ids
+            else None
+        )
         try:
             bus.set_filters(filters)
         except Exception as e:
@@ -551,6 +560,7 @@ class MainWindow(QMainWindow):
                 event.accept()
             else:
                 QTableWidget.keyPressEvent(table, event)
+
         table.keyPressEvent = table_keyPressEvent
 
         # Add Select All / Deselect All / Enable Selected / Disable Selected buttons
@@ -593,10 +603,18 @@ class MainWindow(QMainWindow):
                 if isinstance(cb, QCheckBox):
                     cb.setChecked(False)
 
-        select_all_btn.clicked.connect(lambda: (select_all(), self._set_bus_filters_for_device(device)))
-        deselect_all_btn.clicked.connect(lambda: (deselect_all(), self._set_bus_filters_for_device(device)))
-        enable_selected_btn.clicked.connect(lambda: (enable_selected(), self._set_bus_filters_for_device(device)))
-        disable_selected_btn.clicked.connect(lambda: (disable_selected(), self._set_bus_filters_for_device(device)))
+        select_all_btn.clicked.connect(
+            lambda: (select_all(), self._set_bus_filters_for_device(device))
+        )
+        deselect_all_btn.clicked.connect(
+            lambda: (deselect_all(), self._set_bus_filters_for_device(device))
+        )
+        enable_selected_btn.clicked.connect(
+            lambda: (enable_selected(), self._set_bus_filters_for_device(device))
+        )
+        disable_selected_btn.clicked.connect(
+            lambda: (disable_selected(), self._set_bus_filters_for_device(device))
+        )
 
         # Disable enable/disable selected buttons if nothing is selected
         def update_enable_disable_buttons():
@@ -604,7 +622,9 @@ class MainWindow(QMainWindow):
             enable_selected_btn.setEnabled(has_selection)
             disable_selected_btn.setEnabled(has_selection)
 
-        table.selectionModel().selectionChanged.connect(lambda *_: update_enable_disable_buttons())
+        table.selectionModel().selectionChanged.connect(
+            lambda *_: update_enable_disable_buttons()
+        )
         update_enable_disable_buttons()
 
         layout.addLayout(btn_layout)
