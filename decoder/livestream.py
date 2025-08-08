@@ -661,15 +661,26 @@ class MainWindow(QMainWindow):
         tab = QWidget()
         layout = QVBoxLayout()
         tab.setLayout(layout)
-
-        # Search box for filtering signals
-        search_layout = QHBoxLayout()
+        # Search box for filtering signals, hidden under a loupe button
+        from PySide6.QtWidgets import QLineEdit, QLabel, QPushButton
+        search_row = QHBoxLayout()
+        loupe_btn = QPushButton("🔍")
+        loupe_btn.setFixedWidth(28)
+        loupe_btn.setToolTip("Show/hide search box")
         search_label = QLabel("Search (regex):")
         search_box = QLineEdit()
         search_box.setPlaceholderText("Type to filter signals...")
-        search_layout.addWidget(search_label)
-        search_layout.addWidget(search_box)
-        layout.addLayout(search_layout)
+        search_label.setVisible(False)
+        search_box.setVisible(False)
+        def toggle_search():
+            vis = not search_box.isVisible()
+            search_box.setVisible(vis)
+            search_label.setVisible(vis)
+        loupe_btn.clicked.connect(toggle_search)
+        search_row.addWidget(loupe_btn)
+        search_row.addWidget(search_label)
+        search_row.addWidget(search_box)
+        layout.addLayout(search_row)
         # Table for signals
         table = QTableWidget()
         table.setColumnCount(5)
