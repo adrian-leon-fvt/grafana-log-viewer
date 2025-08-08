@@ -18,6 +18,7 @@ import re
 
 class SignalsTab(QWidget):
     signalsChecked = Signal()
+    jobNameChanged = Signal(str)
 
     def __init__(self, parent=None, name: str = "", signals: list = []):
         super().__init__(parent)
@@ -31,10 +32,17 @@ class SignalsTab(QWidget):
         # Job name row
         job_row = QHBoxLayout()
         job_label = QLabel("Job name:")
-        self.job_name_edit = QLineEdit()
+        self.job_name_edit = QLineEdit(self.name)
         self.job_name_edit.setPlaceholderText("Enter job name...")
+        update_job_name_btn = QPushButton()
+        from PySide6.QtWidgets import QStyle
+        update_job_name_btn.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogApplyButton))
+        update_job_name_btn.setFixedWidth(28)
+        update_job_name_btn.clicked.connect(lambda: self.jobNameChanged.emit(self.job_name_edit.text()))
+        self.job_name_edit.returnPressed.connect(lambda: self.jobNameChanged.emit(self.job_name_edit.text()))
         job_row.addWidget(job_label)
         job_row.addWidget(self.job_name_edit)
+        job_row.addWidget(update_job_name_btn)
         layout.addLayout(job_row)
 
         # Search bar

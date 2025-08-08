@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from asammdf.blocks.types import StrPath
 import requests
-from .config import *
+from config import *
 
 
 def get_time_str(start_time: float) -> str:

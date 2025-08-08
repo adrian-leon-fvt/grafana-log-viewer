@@ -30,15 +30,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
 from PySide6.QtGui import QColor, QPalette
 
-from config import (
-    vm_export_url,
-    vm_import_url,
-    vm_query_url,
-    vm_query_range_url,
-)
-
 from dbc_table import DbcTable as DbcTableBase
 from signals_tab import SignalsTab
+from metrics_manager import MetricsManager
+from utils import make_metric_line
 
 # Capture stdout while detecting
 buf = io.StringIO()
@@ -142,7 +137,12 @@ class DbcTable(DbcTableBase):
         if self.on_dbc_assignment_changed:
             self.on_dbc_assignment_changed()
 
+
+# Singleton MetricsManager instance
+metrics_manager = MetricsManager()
+
 class MainWindow(QMainWindow):
+
 
     class BusReader(QThread):
         update_signals_requested = Signal(list)
@@ -150,7 +150,6 @@ class MainWindow(QMainWindow):
 
         def __init__(self, bus, bus_name, parent=None, status_callback=None):
             super().__init__(parent)
-
             self.bus = bus
             self.bus_name = bus_name
             self.running = True
@@ -158,10 +157,10 @@ class MainWindow(QMainWindow):
             self.db = cantools.database.Database()
             self.update_signals_requested.connect(self._do_update_signals)
             self.update_status.connect(status_callback) if status_callback else None
+            self.job_name: str = bus_name
 
         def run(self):
             while self.running:
-                # Check for pending signal updates
                 try:
                     msg = self.bus.recv(timeout=0.2)
                     if msg is None:
@@ -170,10 +169,26 @@ class MainWindow(QMainWindow):
                         db = self.db
                     try:
                         decoded = db.decode_message(msg.arbitration_id, msg.data)
-                        if decoded:
-                            print(
-                                f"[{self.bus_name}] {db.get_message_by_frame_id(msg.arbitration_id).name} [{msg.timestamp}]: {decoded}"
-                            )
+                        if decoded and isinstance(decoded, dict):
+                            message_obj = db.get_message_by_frame_id(msg.arbitration_id)
+                            for sig_name, value in decoded.items():
+                                if not isinstance(value, (int, float)):
+                                    continue
+                                # Find signal object for unit if available
+                                unit = ""
+                                for sig in message_obj.signals:
+                                    if sig.name == sig_name:
+                                        unit = getattr(sig, "unit", "")
+                                        break
+                                metric_line = make_metric_line(
+                                    metric_name=sig_name,
+                                    message=message_obj.name,
+                                    unit=unit,
+                                    value=value,
+                                    timestamp=msg.timestamp,
+                                    job=self.job_name,
+                                )
+                                metrics_manager.add_metric(metric_line)
                     except Exception:
                         pass
                 except Exception as e:
@@ -184,13 +199,11 @@ class MainWindow(QMainWindow):
             self.wait()
 
         def update_signals(self, messages):
-            # Request update in background thread
             if hasattr(self, "update_status"):
                 self.update_status.emit(f"Updating signals for {self.bus_name}...")
             self.update_signals_requested.emit(messages)
 
         def _do_update_signals(self, messages):
-            # messages: list of cantools.db.Message (with only selected signals)
             total_signals = sum(len(msg.signals) for msg in messages)
             print(
                 f"Updating signals for {self.bus_name}: {len(messages)} messages and {total_signals} signals"
@@ -666,6 +679,10 @@ class MainWindow(QMainWindow):
         self.bus_tabs[device] = tab
         # Set filters initially
         self._set_bus_filters_for_device(device)
+        # Connect the jobNameChanged signal to update the reader
+        if device in self.connected_busses:
+            _, _, reader = self.connected_busses[device]
+            tab.jobNameChanged.connect(lambda name: setattr(reader, "job_name", name))
 
     def _get_signals_for_bus(self, device):
         # Find all DBCs assigned to this bus
