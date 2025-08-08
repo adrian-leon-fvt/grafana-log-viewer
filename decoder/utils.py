@@ -5,6 +5,7 @@ from asammdf.blocks.types import StrPath
 import requests
 from .config import *
 
+
 def get_time_str(start_time: float) -> str:
     elapsed = time.time() - start_time
     mins, secs = divmod(elapsed, 60)
@@ -48,5 +49,5 @@ def is_victoriametrics_online(timeout: float = 3.0) -> bool:
     except Exception as e:
         print(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
         return False
-    
+
     return resp_status_code == 200
