@@ -20,7 +20,7 @@ import pandas as pd
 import logging
 
 from config import *
-from .utils import *
+from utils import *
 from CANReader import CANReader
 from DBCDecoder import DBCDecoder
 
