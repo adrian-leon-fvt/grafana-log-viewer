@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QGridLayout,
     QCheckBox,
+    QLineEdit,
 )
 
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
@@ -459,12 +460,18 @@ class MainWindow(QMainWindow):
             self._add_bus_tab(device)
 
     def closeEvent(self, event):
+        # Gracefully stop all BusReader threads
+        for device, (bus, chip, reader) in list(self.connected_busses.items()):
+            try:
+                reader.stop()
+            except Exception:
+                pass
         # Gracefully stop the scanner thread
         if hasattr(self, "scanner_thread") and self.scanner_thread.isRunning():
             self.scanner_thread.quit()
             self.scanner_thread.wait()
         super().closeEvent(event)
-
+    
     def update_dbc_bus_dropdowns(self):
         # Update all bus assignment dropdowns in the DBC table
         for row in range(self.dbc_table.rowCount()):
@@ -613,7 +620,10 @@ class MainWindow(QMainWindow):
                 else int(bitrate[:-1]) * 1000000
             )
             bus = can.interface.Bus(
-                interface=iface, channel=name, bitrate=int(_bitrate)
+                interface=iface,
+                channel=name,
+                bitrate=int(_bitrate),
+                state=can.BusState.PASSIVE,
             )
             self.status.showMessage(f"Connected to {device} at {bitrate} bps.")
             # Create chip for this connection
@@ -651,6 +661,15 @@ class MainWindow(QMainWindow):
         tab = QWidget()
         layout = QVBoxLayout()
         tab.setLayout(layout)
+
+        # Search box for filtering signals
+        search_layout = QHBoxLayout()
+        search_label = QLabel("Search (regex):")
+        search_box = QLineEdit()
+        search_box.setPlaceholderText("Type to filter signals...")
+        search_layout.addWidget(search_label)
+        search_layout.addWidget(search_box)
+        layout.addLayout(search_layout)
         # Table for signals
         table = QTableWidget()
         table.setColumnCount(5)
@@ -659,7 +678,9 @@ class MainWindow(QMainWindow):
         )
         # Make all columns resizable by user
         header = table.horizontalHeader()
-        for col in range(5):
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        table.setColumnWidth(0, 32)  # Small width for checkbox column
+        for col in range(1, 5):
             header.setSectionResizeMode(col, QHeaderView.ResizeMode.Interactive)
         table.setSortingEnabled(True)
         # Enable multiple row selection
@@ -691,6 +712,36 @@ class MainWindow(QMainWindow):
                 )
             )
 
+        # Search/filter logic
+        def filter_table():
+            import re
+
+            pattern = search_box.text()
+            if not pattern:
+                for row in range(table.rowCount()):
+                    table.setRowHidden(row, False)
+                search_box.setStyleSheet("")
+                return
+            try:
+                regex = re.compile(pattern, re.IGNORECASE)
+                search_box.setStyleSheet("")
+            except re.error:
+                # Invalid regex: mark box red, hide all rows
+                search_box.setStyleSheet("background: #ffcccc;")
+                for row in range(table.rowCount()):
+                    table.setRowHidden(row, True)
+                return
+            for row in range(table.rowCount()):
+                match = False
+                for col in range(1, 5):  # Don't search checkbox col
+                    item = table.item(row, col)
+                    if item and regex.search(str(item.text())):
+                        match = True
+                        break
+                table.setRowHidden(row, not match)
+
+        search_box.textChanged.connect(filter_table)
+
         # Add keyPressEvent to toggle checkboxes with spacebar
         def table_keyPressEvent(event):
             if event.key() == Qt.Key.Key_Space:
@@ -706,6 +757,7 @@ class MainWindow(QMainWindow):
                         changed = True
                 if changed:
                     self._set_bus_filters_for_device(device)
+                    self._update_busreader_signals(device)
                 event.accept()
             else:
                 QTableWidget.keyPressEvent(table, event)
