@@ -42,6 +42,8 @@ from config import (
     vm_query_range_url,
 )
 
+from dbc_table import DbcTable as DbcTableBase
+
 # Capture stdout while detecting
 buf = io.StringIO()
 with contextlib.redirect_stdout(buf):
@@ -109,60 +111,21 @@ class DeviceScanner(QObject):
 
 
 # DBC file table area
-class DbcTable(QTableWidget):
-
+class DbcTable(DbcTableBase):
     def __init__(self, parent=None, get_busses=None, on_dbc_assignment_changed=None):
-        super().__init__(0, 4, parent)
-        self.setHorizontalHeaderLabels(["DBC File", "Status", "Assigned Bus", " "])
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.horizontalHeader().setSectionResizeMode(
-            1, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self.horizontalHeader().setSectionResizeMode(
-            2, QHeaderView.ResizeMode.ResizeToContents
-        )
+        super().__init__(parent, cols=4)
+        self.setHorizontalHeaderLabels([" ", "DBC File", "Status", "Assigned Bus"])
         self.horizontalHeader().setSectionResizeMode(
             3, QHeaderView.ResizeMode.ResizeToContents
         )
-        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.setAcceptDrops(True)
-        self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
-        self.files = set()
-        self.db_cache = {}  # path -> loaded cantools db
         self.get_busses = get_busses  # function to get current busses
         self.on_dbc_assignment_changed = on_dbc_assignment_changed
 
-    def showEvent(self, event):
-        super().showEvent(event)
-        # Set minimum height to fit at least 4 rows
-        row_height = self.verticalHeader().defaultSectionSize()
-        header_height = self.horizontalHeader().height()
-        self.setMinimumHeight(header_height + row_height * 4 + 4)  # +4 for grid lines
+        # Connect the dbcAdded signal to _add_bus_box
+        self.dbcAdded.connect(self._dbc_added)
+        self.dbcRemoved.connect(lambda _: self._dbc_removed())
 
-    def add_dbc_file(self, path):
-        if path in self.files:
-            return
-        valid, error_msg = self.validate_dbc(path)
-        db = None
-        if valid:
-            try:
-                import cantools
-
-                db = cantools.database.load_file(path)
-            except Exception as e:
-                valid = False
-                error_msg = str(e)
-        row = self.rowCount()
-        self.insertRow(row)
-        file_item = QTableWidgetItem(os.path.basename(path))
-        file_item.setToolTip(path)
-        status_item = QTableWidgetItem("Valid" if valid else "Invalid")
-        if not valid and error_msg:
-            status_item.setToolTip(str(error_msg))
-        self.setItem(row, 0, file_item)
-        self.setItem(row, 1, status_item)
-
+    def _dbc_added(self, row):
         # Add dropdown for bus assignment
         combo = QComboBox()
         combo.setEditable(False)
@@ -170,71 +133,14 @@ class DbcTable(QTableWidget):
         if self.get_busses:
             for bus in self.get_busses():
                 combo.addItem(bus)
-        self.setCellWidget(row, 2, combo)
-        # Add remove button
-        remove_btn = QPushButton("🗑️")
-        remove_btn.setToolTip("Remove DBC file")
-        remove_btn.setFixedSize(28, 28)
-
-        def remove_row():
-            self.remove_dbc_row(row)
-
-        remove_btn.clicked.connect(remove_row)
-        self.setCellWidget(row, 3, remove_btn)
-        self.files.add(path)
-        if valid and db:
-            self.db_cache[path] = db
+        self.setCellWidget(row, 3, combo)
         # Connect signal to update bus tab when assignment changes
         if self.on_dbc_assignment_changed:
             combo.currentIndexChanged.connect(self.on_dbc_assignment_changed)
-
-    def remove_dbc_row(self, row):
-        file_item = self.item(row, 0)
-        if file_item:
-            name = file_item.text()
-            # Find full path in self.files
-            for f in list(self.files):
-                if os.path.basename(f) == name:
-                    self.files.remove(f)
-                    if f in self.db_cache:
-                        del self.db_cache[f]
-                    break
-        self.removeRow(row)
-        # Update bus tabs/signals if any row was removed
+    
+    def _dbc_removed(self):
         if self.on_dbc_assignment_changed:
             self.on_dbc_assignment_changed()
-
-    def keyPressEvent(self, event):
-        # Allow deleting selected rows with Del or Backspace
-        if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
-            selected = self.selectionModel().selectedRows()
-            changed = False
-            for idx in sorted([s.row() for s in selected], reverse=True):
-                self.remove_dbc_row(idx)
-                changed = True
-            event.accept()
-        else:
-            super().keyPressEvent(event)
-
-    def validate_dbc(self, path):
-        try:
-            import cantools
-
-            cantools.database.load_file(path)
-            return True, None
-        except Exception as e:
-            return False, str(e) if str(e) else "Invalid"
-
-    def get_valid_files(self):
-        return [
-            f
-            for i, f in enumerate(self.files)
-            if (
-                self.item(i, 1) is not None
-                and getattr(self.item(i, 1), "text", lambda: None)() == "Valid"
-            )
-        ]
-
 
 class MainWindow(QMainWindow):
 
@@ -493,10 +399,10 @@ class MainWindow(QMainWindow):
                 checked_signals = self._get_checked_signals_for_bus(device)
                 selected_msgs = []
                 for row in range(self.dbc_table.rowCount()):
-                    widget = self.dbc_table.cellWidget(row, 2)
+                    widget = self.dbc_table.cellWidget(row, 3)
                     if isinstance(widget, QComboBox) and widget.currentText() == device:
                         for f in self.dbc_table.files:
-                            item = self.dbc_table.item(row, 0)
+                            item = self.dbc_table.item(row, 1)
                             if item is not None and item.text() in f:
                                 db = self.dbc_table.db_cache.get(f)
                                 if db:
@@ -526,7 +432,7 @@ class MainWindow(QMainWindow):
     def update_dbc_bus_dropdowns(self):
         # Update all bus assignment dropdowns in the DBC table
         for row in range(self.dbc_table.rowCount()):
-            widget = self.dbc_table.cellWidget(row, 2)
+            widget = self.dbc_table.cellWidget(row, 3)
             if isinstance(widget, QComboBox):
                 current = widget.currentText()
                 widget.clear()
@@ -950,11 +856,11 @@ class MainWindow(QMainWindow):
         # Find all DBCs assigned to this bus
         assigned = []
         for row in range(self.dbc_table.rowCount()):
-            widget = self.dbc_table.cellWidget(row, 2)
+            widget = self.dbc_table.cellWidget(row, 3)
             if isinstance(widget, QComboBox) and widget.currentText() == device:
                 # Find the file path for this row
                 for f in self.dbc_table.files:
-                    item = self.dbc_table.item(row, 0)
+                    item = self.dbc_table.item(row, 1)
                     if item is not None and item.text() in f:
                         assigned.append(f)
         # For each DBC, extract signals
