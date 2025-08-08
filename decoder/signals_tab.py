@@ -27,6 +27,16 @@ class SignalsTab(QWidget):
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
+
+        # Job name row
+        job_row = QHBoxLayout()
+        job_label = QLabel("Job name:")
+        self.job_name_edit = QLineEdit()
+        self.job_name_edit.setPlaceholderText("Enter job name...")
+        job_row.addWidget(job_label)
+        job_row.addWidget(self.job_name_edit)
+        layout.addLayout(job_row)
+
         # Search bar
         search_row = QHBoxLayout()
         search_row.setAlignment(Qt.AlignmentFlag.AlignLeft)
