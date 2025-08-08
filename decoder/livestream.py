@@ -7,7 +7,6 @@ import cantools
 
 from threading import Lock
 
-from can.typechecking import AutoDetectedConfig
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -35,6 +34,12 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
 from PySide6.QtGui import QColor, QPalette
 
+from config import (
+    vm_export_url,
+    vm_import_url,
+    vm_query_url,
+    vm_query_range_url,
+)
 
 # Capture stdout while detecting
 buf = io.StringIO()
@@ -471,7 +476,7 @@ class MainWindow(QMainWindow):
             self.scanner_thread.quit()
             self.scanner_thread.wait()
         super().closeEvent(event)
-    
+
     def update_dbc_bus_dropdowns(self):
         # Update all bus assignment dropdowns in the DBC table
         for row in range(self.dbc_table.rowCount()):
@@ -663,6 +668,7 @@ class MainWindow(QMainWindow):
         tab.setLayout(layout)
         # Search box for filtering signals, hidden under a loupe button
         from PySide6.QtWidgets import QLineEdit, QLabel, QPushButton
+
         search_row = QHBoxLayout()
         loupe_btn = QPushButton("🔍")
         loupe_btn.setFixedWidth(28)
@@ -672,10 +678,12 @@ class MainWindow(QMainWindow):
         search_box.setPlaceholderText("Type to filter signals...")
         search_label.setVisible(False)
         search_box.setVisible(False)
+
         def toggle_search():
             vis = not search_box.isVisible()
             search_box.setVisible(vis)
             search_label.setVisible(vis)
+
         loupe_btn.clicked.connect(toggle_search)
         search_row.addWidget(loupe_btn)
         search_row.addWidget(search_label)

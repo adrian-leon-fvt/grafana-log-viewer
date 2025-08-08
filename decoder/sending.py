@@ -20,6 +20,7 @@ import pandas as pd
 import logging
 
 from config import *
+from .utils import *
 from CANReader import CANReader
 from DBCDecoder import DBCDecoder
 
@@ -66,12 +67,6 @@ d65_dbc_files = {
 d65_canedge_file_data = None
 
 
-def get_time_str(start_time: float) -> str:
-    elapsed = time.time() - start_time
-    mins, secs = divmod(elapsed, 60)
-    return f"{mins:.0f}m{secs:.3f}s" if mins else f"{secs:.3f}s"
-
-
 def get_mf4_files(
     directory: Path | str, datetime_after: datetime | None = None
 ) -> list[Path]:
@@ -89,17 +84,6 @@ def get_mf4_files(
             if datetime.fromtimestamp(f.stat().st_mtime, tz=datetime_after.tzinfo) > datetime_after
         ]
     return files
-
-
-def get_dbc_files(directory: Path | str) -> list[StrPath]:
-    """
-    Get all DBC files in the specified directory.
-    """
-
-    if not isinstance(directory, Path):
-        directory = Path(directory)
-
-    return list(directory.rglob("*.[dD][bB][cC]"))
 
 
 def get_dbc_dict(directory: Path | str) -> dict[BusType, Iterable[DbcFileType]]:
@@ -126,18 +110,6 @@ def is_valid_sample(sample):
         return True
     except (ValueError, TypeError):
         return False
-
-
-def make_metric_line(
-    metric_name: str,
-    message: str,
-    unit: str,
-    value: float,
-    timestamp: datetime | float,
-    job: str = "",
-) -> str:
-    # Format the metric line for Prometheus
-    return f'{metric_name}{{job="{job}",message="{message}",unit="{unit}"}} {value} {timestamp.timestamp() if type(timestamp) is datetime else timestamp}\n'
 
 
 def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
