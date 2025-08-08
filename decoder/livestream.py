@@ -2,6 +2,7 @@ import sys
 import can
 import io
 import os
+import re
 import contextlib
 import cantools
 import cantools.database
@@ -43,6 +44,7 @@ from config import (
 )
 
 from dbc_table import DbcTable as DbcTableBase
+from signals_tab import SignalsTab
 
 # Capture stdout while detecting
 buf = io.StringIO()
@@ -102,6 +104,7 @@ class DeviceScanner(QObject):
             import can
 
             available = can.detect_available_configs(interfaces=list(valid_interfaces))
+            available.sort(key=lambda d: (str(d.get("interface", "")), str(d.get("channel", ""))))
             self.devices_found.emit(
                 available,
                 "",
@@ -150,7 +153,6 @@ class MainWindow(QMainWindow):
 
         def __init__(self, bus, bus_name, parent=None, status_callback=None):
             super().__init__(parent)
-            from threading import Lock
 
             self.bus = bus
             self.bus_name = bus_name
@@ -618,230 +620,22 @@ class MainWindow(QMainWindow):
                     for row in range(table.rowCount()):
                         cb = table.cellWidget(row, 0)
                         name_item = table.item(row, 1)
-                        if isinstance(cb, QCheckBox) and cb.isChecked() and name_item:
-                            checked_signals.add(name_item.text())
+                        msg_item = table.item(row, 2)
+                        if isinstance(cb, QCheckBox) and cb.isChecked() and name_item and msg_item:
+                            checked_signals.add((name_item.text(), msg_item.text()))
             idx = self.tabs.indexOf(self.bus_tabs[device])
             if idx >= 0:
                 self.tabs.removeTab(idx)
         self._bus_checked_signals[device] = checked_signals
-        # Create new tab for this bus
-        tab = QWidget()
-        layout = QVBoxLayout()
-        tab.setLayout(layout)
-
-        search_row = QHBoxLayout()
-        loupe_btn = QPushButton("🔍")
-        loupe_btn.setFixedWidth(28)
-        loupe_btn.setToolTip("Show/hide search box")
-        search_label = QLabel("Search (regex):")
-        search_box = QLineEdit()
-        search_box.setPlaceholderText("Type to filter signals...")
-        search_label.setVisible(False)
-        search_box.setVisible(False)
-
-        def toggle_search():
-            vis = not search_box.isVisible()
-            search_box.setVisible(vis)
-            search_label.setVisible(vis)
-            if not vis:
-                search_box.setText("")  # Clear filter when hiding
-
-        loupe_btn.clicked.connect(toggle_search)
-        search_row.addWidget(loupe_btn)
-        search_row.addWidget(search_label)
-        search_row.addWidget(search_box)
-        layout.addLayout(search_row)
-        # Table for signals
-        table = QTableWidget()
-        table.setColumnCount(5)
-        table.setHorizontalHeaderLabels(
-            ["", "Signal Name", "Message", "CAN ID", "Mux Value(s)"]
-        )
-        # Make all columns resizable by user
-        header = table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
-        table.setColumnWidth(0, 32)  # Small width for checkbox column
-        for col in range(1, 5):
-            header.setSectionResizeMode(col, QHeaderView.ResizeMode.Interactive)
-        table.setSortingEnabled(True)
-        # Enable multiple row selection
-        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        # Populate table with signals from assigned DBCs
+        # Get signals from DBC files assigned to this bus
         signals = self._get_signals_for_bus(device)
-        table.setRowCount(len(signals))
-        checked_signals = self._bus_checked_signals.get(device, set())
-        for i, sig in enumerate(signals):
-            # Checkbox
-            cb = QCheckBox()
-            if sig["name"] in checked_signals:
-                cb.setChecked(True)
-            table.setCellWidget(i, 0, cb)
-            cb_item = table.itemAt(i, 0)
-            if cb_item:
-                cb_item.setTextAlignment(Qt.AlignmentFlag.AlignHCenter)
-            # Signal name
-            table.setItem(i, 1, QTableWidgetItem(sig["name"]))
-            # Message name
-            table.setItem(i, 2, QTableWidgetItem(sig["message"]))
-            # CAN ID
-            table.setItem(i, 3, QTableWidgetItem(str(sig["can_id"])))
-            # Mux values
-            table.setItem(i, 4, QTableWidgetItem(sig["mux"]))
+        # Create new tab for this bus
+        tab = SignalsTab(parent=self, name=device, signals=signals)
+        tab.signalsChecked.connect(lambda: (
+            self._set_bus_filters_for_device(device),
+            self._update_busreader_signals(device),
+        ))
 
-            cb.checkStateChanged.connect(
-                lambda _, dev=device: (
-                    self._set_bus_filters_for_device(dev),
-                    self._update_busreader_signals(dev),
-                )
-            )
-
-        # Search/filter logic
-        def filter_table():
-            import re
-
-            pattern = search_box.text()
-            if not pattern:
-                for row in range(table.rowCount()):
-                    table.setRowHidden(row, False)
-                search_box.setStyleSheet("")
-                return
-            try:
-                regex = re.compile(pattern, re.IGNORECASE)
-                search_box.setStyleSheet("")
-            except re.error:
-                # Invalid regex: mark box red, hide all rows
-                search_box.setStyleSheet("background: #ffcccc;")
-                for row in range(table.rowCount()):
-                    table.setRowHidden(row, True)
-                return
-            for row in range(table.rowCount()):
-                match = False
-                for col in range(1, 5):  # Don't search checkbox col
-                    item = table.item(row, col)
-                    if item and regex.search(str(item.text())):
-                        match = True
-                        break
-                table.setRowHidden(row, not match)
-
-        search_box.textChanged.connect(filter_table)
-
-        # Add keyPressEvent to toggle checkboxes with spacebar
-        def table_keyPressEvent(event):
-            if event.key() == Qt.Key.Key_Space:
-                selected = table.selectionModel().selectedRows()
-                changed = False
-                for idx in selected:
-                    row = idx.row()
-                    cb = table.cellWidget(row, 0)
-                    if isinstance(cb, QCheckBox):
-                        cb.blockSignals(True)
-                        cb.setChecked(not cb.isChecked())
-                        cb.blockSignals(False)
-                        changed = True
-                if changed:
-                    self._set_bus_filters_for_device(device)
-                    self._update_busreader_signals(device)
-                event.accept()
-            else:
-                QTableWidget.keyPressEvent(table, event)
-
-        table.keyPressEvent = table_keyPressEvent
-
-        # Add Select All / Deselect All / Enable Selected / Disable Selected buttons
-        btn_layout = QHBoxLayout()
-        select_all_btn = QPushButton("Select All")
-        deselect_all_btn = QPushButton("Deselect All")
-        enable_selected_btn = QPushButton("Enable Selected")
-        disable_selected_btn = QPushButton("Disable Selected")
-        btn_layout.addWidget(select_all_btn)
-        btn_layout.addWidget(deselect_all_btn)
-        btn_layout.addWidget(enable_selected_btn)
-        btn_layout.addWidget(disable_selected_btn)
-        btn_layout.addStretch(1)
-
-        def select_all():
-            for row in range(table.rowCount()):
-                if table.isRowHidden(row):
-                    continue
-                cb = table.cellWidget(row, 0)
-                if isinstance(cb, QCheckBox):
-                    cb.blockSignals(True)
-                    cb.setChecked(True)
-                    cb.blockSignals(False)
-
-        def deselect_all():
-            for row in range(table.rowCount()):
-                if table.isRowHidden(row):
-                    continue
-                cb = table.cellWidget(row, 0)
-                if isinstance(cb, QCheckBox):
-                    cb.blockSignals(True)
-                    cb.setChecked(False)
-                    cb.blockSignals(False)
-
-        def enable_selected():
-            selected = table.selectionModel().selectedRows()
-            for idx in selected:
-                row = idx.row()
-                cb = table.cellWidget(row, 0)
-                if isinstance(cb, QCheckBox):
-                    cb.blockSignals(True)
-                    cb.setChecked(True)
-                    cb.blockSignals(False)
-
-        def disable_selected():
-            selected = table.selectionModel().selectedRows()
-            for idx in selected:
-                row = idx.row()
-                cb = table.cellWidget(row, 0)
-                if isinstance(cb, QCheckBox):
-                    cb.blockSignals(True)
-                    cb.setChecked(False)
-                    cb.blockSignals(False)
-
-        select_all_btn.clicked.connect(
-            lambda: (
-                select_all(),
-                self._set_bus_filters_for_device(device),
-                self._update_busreader_signals(device),
-            )
-        )
-        deselect_all_btn.clicked.connect(
-            lambda: (
-                deselect_all(),
-                self._set_bus_filters_for_device(device),
-                self._update_busreader_signals(device),
-            )
-        )
-        enable_selected_btn.clicked.connect(
-            lambda: (
-                enable_selected(),
-                self._set_bus_filters_for_device(device),
-                self._update_busreader_signals(device),
-            )
-        )
-        disable_selected_btn.clicked.connect(
-            lambda: (
-                disable_selected(),
-                self._set_bus_filters_for_device(device),
-                self._update_busreader_signals(device),
-            )
-        )
-
-        # Disable enable/disable selected buttons if nothing is selected
-        def update_enable_disable_buttons():
-            has_selection = bool(table.selectionModel().selectedRows())
-            enable_selected_btn.setEnabled(has_selection)
-            disable_selected_btn.setEnabled(has_selection)
-
-        table.selectionModel().selectionChanged.connect(
-            lambda *_: update_enable_disable_buttons()
-        )
-        update_enable_disable_buttons()
-
-        layout.addLayout(btn_layout)
-        layout.addWidget(table)
         self.tabs.addTab(tab, device)
         self.bus_tabs[device] = tab
         # Set filters initially
