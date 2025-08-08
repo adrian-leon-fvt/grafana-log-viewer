@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
                         decoded = db.decode_message(msg.arbitration_id, msg.data)
                         if decoded:
                             print(
-                                f"[{self.bus_name}] {db.get_message_by_frame_id(msg.arbitration_id).name}: {decoded}"
+                                f"[{self.bus_name}] {db.get_message_by_frame_id(msg.arbitration_id).name} [{msg.timestamp}]: {decoded}"
                             )
                     except Exception:
                         pass
