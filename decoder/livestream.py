@@ -4,6 +4,7 @@ import io
 import os
 import contextlib
 import cantools
+import cantools.database
 
 from threading import Lock
 
@@ -266,19 +267,14 @@ class MainWindow(QMainWindow):
                         continue
                     with self._dbc_lock:
                         db = self.db
-                    found = False
                     try:
                         decoded = db.decode_message(msg.arbitration_id, msg.data)
-                        print(
-                            f"[{self.bus_name}] {db.get_message_by_frame_id(msg.arbitration_id).name}: {decoded}"
-                        )
-                        found = True
+                        if decoded:
+                            print(
+                                f"[{self.bus_name}] {db.get_message_by_frame_id(msg.arbitration_id).name}: {decoded}"
+                            )
                     except Exception:
                         pass
-                    if not found:
-                        print(
-                            f"[{self.bus_name}] Unknown message: 0x{msg.arbitration_id:X} {msg.data.hex()}"
-                        )
                 except Exception as e:
                     print(f"[{self.bus_name}] Error reading: {e}")
 
@@ -746,6 +742,8 @@ class MainWindow(QMainWindow):
             vis = not search_box.isVisible()
             search_box.setVisible(vis)
             search_label.setVisible(vis)
+            if not vis:
+                search_box.setText("")  # Clear filter when hiding
 
         loupe_btn.clicked.connect(toggle_search)
         search_row.addWidget(loupe_btn)
