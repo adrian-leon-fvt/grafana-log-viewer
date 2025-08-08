@@ -147,6 +147,7 @@ class DbcTable(QTableWidget):
         if valid:
             try:
                 import cantools
+
                 db = cantools.database.load_file(path)
             except Exception as e:
                 valid = False
@@ -173,8 +174,10 @@ class DbcTable(QTableWidget):
         remove_btn = QPushButton("🗑️")
         remove_btn.setToolTip("Remove DBC file")
         remove_btn.setFixedSize(28, 28)
+
         def remove_row():
             self.remove_dbc_row(row)
+
         remove_btn.clicked.connect(remove_row)
         self.setCellWidget(row, 3, remove_btn)
         self.files.add(path)
@@ -183,6 +186,7 @@ class DbcTable(QTableWidget):
         # Connect signal to update bus tab when assignment changes
         if self.on_dbc_assignment_changed:
             combo.currentIndexChanged.connect(self.on_dbc_assignment_changed)
+
     def remove_dbc_row(self, row):
         file_item = self.item(row, 0)
         if file_item:
@@ -234,7 +238,10 @@ class DbcTable(QTableWidget):
 class MainWindow(QMainWindow):
 
     class BusReader(QThread):
-        def __init__(self, bus, bus_name, parent=None):
+        update_signals_requested = Signal(list)
+        update_status = Signal(str)
+
+        def __init__(self, bus, bus_name, parent=None, status_callback=None):
             super().__init__(parent)
             from threading import Lock
 
@@ -243,9 +250,16 @@ class MainWindow(QMainWindow):
             self.running = True
             self._dbc_lock = Lock()
             self.db = cantools.database.Database()
+            self._pending_signals = None
+            self.update_signals_requested.connect(self._do_update_signals)
+            self.update_status.connect(status_callback) if status_callback else None
 
         def run(self):
             while self.running:
+                # Check for pending signal updates
+                if self._pending_signals is not None:
+                    self._do_update_signals(self._pending_signals)
+                    self._pending_signals = None
                 try:
                     msg = self.bus.recv(timeout=0.2)
                     if msg is None:
@@ -273,11 +287,22 @@ class MainWindow(QMainWindow):
             self.wait()
 
         def update_signals(self, messages):
+            # Request update in background thread
+            if hasattr(self, "update_status"):
+                self.update_status.emit(f"Updating signals for {self.bus_name}...")
+            self._pending_signals = messages
+            self.update_signals_requested.emit(messages)
+
+        def _do_update_signals(self, messages):
             # messages: list of cantools.db.Message (with only selected signals)
             total_signals = sum(len(msg.signals) for msg in messages)
             print(
                 f"Updating signals for {self.bus_name}: {len(messages)} messages and {total_signals} signals"
             )
+            if hasattr(self, "update_status"):
+                self.update_status.emit(
+                    f"Signals updated for {self.bus_name} ({len(messages)} messages, {total_signals} signals)"
+                )
             with self._dbc_lock:
                 self.db = cantools.database.Database()
                 for msg in messages:
@@ -537,11 +562,11 @@ class MainWindow(QMainWindow):
                 else name[: max_display_len - 3] + "..."
             )
             data = {
-                'name': name,
-                'display_name': display,
-                'interface': dev_dict['interface'],
-                'channel': dev_dict['channel'],
-                'AutoDetectedConfig': dev_dict,
+                "name": name,
+                "display_name": display,
+                "interface": dev_dict["interface"],
+                "channel": dev_dict["channel"],
+                "AutoDetectedConfig": dev_dict,
             }
             self.device_combo.addItem(display, data)
             idx = self.device_combo.findText(display)
@@ -596,7 +621,7 @@ class MainWindow(QMainWindow):
     def _update_connect_button(self):
         idx = self.device_combo.currentIndex()
         device = self.device_combo.itemData(idx) if idx >= 0 else {}
-        if device and device['name'] in self.connected_busses:
+        if device and device["name"] in self.connected_busses:
             self.connect_btn.setEnabled(False)
         else:
             self.connect_btn.setEnabled(True)
@@ -651,12 +676,12 @@ class MainWindow(QMainWindow):
         if not device:
             self.status.showMessage("No device selected.")
             return
-        if device['name'] in self.connected_busses:
+        if device["name"] in self.connected_busses:
             self.status.showMessage(f"Already connected to {device['name']}.")
             return
         try:
-            iface = device['interface']
-            channel = device['channel']
+            iface = device["interface"]
+            channel = device["channel"]
             _bitrate = (
                 int(bitrate[:-1]) * 1000
                 if bitrate[-1] == "k"
@@ -670,15 +695,17 @@ class MainWindow(QMainWindow):
             )
             self.status.showMessage(f"Connected to {device['name']} at {bitrate} bps.")
             # Create chip for this connection
-            chip = self._create_chip(device['name'], bitrate)
+            chip = self._create_chip(device["name"], bitrate)
             self.chip_layout.addWidget(chip)
             # Start a thread to read messages for this bus
-            reader = self.BusReader(bus, device)
+            reader = self.BusReader(
+                bus, device["name"], status_callback=self.status.showMessage
+            )
             reader.start()
-            self.connected_busses[device['name']] = (bus, chip, reader)
+            self.connected_busses[device["name"]] = (bus, chip, reader)
             self._update_connect_button()
             self.update_dbc_bus_dropdowns()
-            self._add_bus_tab(device['name'])
+            self._add_bus_tab(device["name"])
         except Exception as e:
             self.status.showMessage(f"Connection failed: {e}")
 
@@ -936,7 +963,11 @@ class MainWindow(QMainWindow):
         signals = []
         try:
             for dbc_path in assigned:
-                db = self.dbc_table.db_cache.get(dbc_path) if hasattr(self, 'dbc_table') else None
+                db = (
+                    self.dbc_table.db_cache.get(dbc_path)
+                    if hasattr(self, "dbc_table")
+                    else None
+                )
                 if not db:
                     continue
                 # Use db.messages if available, else fallback to db._messages for compatibility
@@ -973,7 +1004,12 @@ class MainWindow(QMainWindow):
                         cb = table.cellWidget(i, 0)
                         name_item = table.item(i, 1)
                         message_item = table.item(i, 2)
-                        if isinstance(cb, QCheckBox) and cb.isChecked() and name_item and message_item:
+                        if (
+                            isinstance(cb, QCheckBox)
+                            and cb.isChecked()
+                            and name_item
+                            and message_item
+                        ):
                             checked_signals.add((name_item.text(), message_item.text()))
         return checked_signals
 
