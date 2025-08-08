@@ -157,16 +157,12 @@ class MainWindow(QMainWindow):
             self.running = True
             self._dbc_lock = Lock()
             self.db = cantools.database.Database()
-            self._pending_signals = None
             self.update_signals_requested.connect(self._do_update_signals)
             self.update_status.connect(status_callback) if status_callback else None
 
         def run(self):
             while self.running:
                 # Check for pending signal updates
-                if self._pending_signals is not None:
-                    self._do_update_signals(self._pending_signals)
-                    self._pending_signals = None
                 try:
                     msg = self.bus.recv(timeout=0.2)
                     if msg is None:
@@ -192,7 +188,6 @@ class MainWindow(QMainWindow):
             # Request update in background thread
             if hasattr(self, "update_status"):
                 self.update_status.emit(f"Updating signals for {self.bus_name}...")
-            self._pending_signals = messages
             self.update_signals_requested.emit(messages)
 
         def _do_update_signals(self, messages):
@@ -964,10 +959,10 @@ class MainWindow(QMainWindow):
             checked_signals = self._get_checked_signals_for_bus(device)
             selected_msgs = []
             for row in range(self.dbc_table.rowCount()):
-                widget = self.dbc_table.cellWidget(row, 2)
+                widget = self.dbc_table.cellWidget(row, 3)
                 if isinstance(widget, QComboBox) and widget.currentText() == device:
                     for f in self.dbc_table.files:
-                        item = self.dbc_table.item(row, 0)
+                        item = self.dbc_table.item(row, 1)
                         if item is not None and item.text() in f:
                             db = self.dbc_table.db_cache.get(f)
                             if db:
