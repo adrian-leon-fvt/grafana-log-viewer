@@ -254,7 +254,7 @@ def decode_and_send(
     if d65_canedge_file_data is None:
         files = get_mf4_files(
             directory, 
-            datetime_after=datetime(2025, 8, 4, tzinfo=datetime.now().astimezone().tzinfo)
+            datetime_after=datetime.now() - timedelta(days=2)
         )
     else:
         # Get a subset to process
