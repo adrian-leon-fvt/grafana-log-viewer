@@ -100,7 +100,8 @@ class DeviceScanner(QObject):
 
             available = can.detect_available_configs(interfaces=list(valid_interfaces))
             self.devices_found.emit(
-                [f"{cfg['interface']} {cfg['channel']}" for cfg in available], ""
+                available,
+                "",
             )
         except Exception as e:
             self.devices_found.emit([], f"Error scanning devices: {e}")
@@ -491,7 +492,7 @@ class MainWindow(QMainWindow):
                 if idx >= 0:
                     widget.setCurrentIndex(idx)
 
-    def update_devices(self, device_names, error_msg):
+    def update_devices(self, devices_dict, error_msg):
         if error_msg:
             self.status.showMessage(error_msg)
         current = self.device_combo.currentText()
@@ -500,13 +501,25 @@ class MainWindow(QMainWindow):
         max_display_len = (
             36  # chars to show before truncating (fits most socketcand names)
         )
-        for name in device_names:
+        for dev_dict in devices_dict:
+            name = f"{dev_dict['interface']} {dev_dict['channel']}"
+            if dev_dict["interface"] == "kvaser" and dev_dict["device_name"].startswith(
+                "Kvaser Virtual"
+            ):
+                name = f"{dev_dict['device_name']} {dev_dict['channel']}"
             display = (
                 name
                 if len(name) <= max_display_len
                 else name[: max_display_len - 3] + "..."
             )
-            self.device_combo.addItem(display, name)
+            data = {
+                'name': name,
+                'display_name': display,
+                'interface': dev_dict['interface'],
+                'channel': dev_dict['channel'],
+                'AutoDetectedConfig': dev_dict,
+            }
+            self.device_combo.addItem(display, data)
             idx = self.device_combo.findText(display)
             # Set tooltip for each item if truncated
             if idx >= 0:
@@ -558,8 +571,8 @@ class MainWindow(QMainWindow):
 
     def _update_connect_button(self):
         idx = self.device_combo.currentIndex()
-        device = self.device_combo.itemData(idx) if idx >= 0 else ""
-        if device and device in self.connected_busses:
+        device = self.device_combo.itemData(idx) if idx >= 0 else {}
+        if device and device['name'] in self.connected_busses:
             self.connect_btn.setEnabled(False)
         else:
             self.connect_btn.setEnabled(True)
@@ -609,16 +622,17 @@ class MainWindow(QMainWindow):
     def connect_device(self):
         # Get the full device name from the combobox data
         idx = self.device_combo.currentIndex()
-        device = self.device_combo.itemData(idx) if idx >= 0 else ""
+        device = self.device_combo.itemData(idx) if idx >= 0 else {}
         bitrate = self.bitrate_combo.currentText()
         if not device:
             self.status.showMessage("No device selected.")
             return
-        if device in self.connected_busses:
-            self.status.showMessage(f"Already connected to {device}.")
+        if device['name'] in self.connected_busses:
+            self.status.showMessage(f"Already connected to {device['name']}.")
             return
         try:
-            iface, name = device.split(" ")
+            iface = device['interface']
+            channel = device['channel']
             _bitrate = (
                 int(bitrate[:-1]) * 1000
                 if bitrate[-1] == "k"
@@ -626,21 +640,21 @@ class MainWindow(QMainWindow):
             )
             bus = can.interface.Bus(
                 interface=iface,
-                channel=name,
+                channel=channel,
                 bitrate=int(_bitrate),
                 state=can.BusState.PASSIVE,
             )
-            self.status.showMessage(f"Connected to {device} at {bitrate} bps.")
+            self.status.showMessage(f"Connected to {device['name']} at {bitrate} bps.")
             # Create chip for this connection
-            chip = self._create_chip(device, bitrate)
+            chip = self._create_chip(device['name'], bitrate)
             self.chip_layout.addWidget(chip)
             # Start a thread to read messages for this bus
             reader = self.BusReader(bus, device)
             reader.start()
-            self.connected_busses[device] = (bus, chip, reader)
+            self.connected_busses[device['name']] = (bus, chip, reader)
             self._update_connect_button()
             self.update_dbc_bus_dropdowns()
-            self._add_bus_tab(device)
+            self._add_bus_tab(device['name'])
         except Exception as e:
             self.status.showMessage(f"Connection failed: {e}")
 
