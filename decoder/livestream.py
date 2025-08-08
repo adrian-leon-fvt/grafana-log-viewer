@@ -233,7 +233,6 @@ class MainWindow(QMainWindow):
 
         # Controls
         self.device_combo = QComboBox()
-        self.device_combo.setFixedWidth(320)
         self.refresh_btn = QPushButton("🔄")
         self.refresh_btn.setToolTip("Refresh device list")
         self.refresh_btn.setFixedSize(32, 32)
@@ -264,20 +263,36 @@ class MainWindow(QMainWindow):
         self.bitrate_combo.addItems(["1M", "500k", "250k", "125k"])
         self.bitrate_combo.setToolTip("Select CAN bitrate")
         self.bitrate_combo.setCurrentIndex(1)
+        # Set width to fit "500k"
+        font_metrics = self.bitrate_combo.fontMetrics()
+        text_width = font_metrics.horizontalAdvance("500k") + 32  # padding for dropdown arrow
+        self.bitrate_combo.setFixedWidth(text_width)
 
         self.connect_btn = QPushButton("Connect")
+        # Set width to fit "Connect"
+        font_metrics = self.connect_btn.fontMetrics()
+        text_width = font_metrics.horizontalAdvance("Connect") + 24  # padding for button
+        self.connect_btn.setFixedWidth(text_width)
+
+        self.disconnect_all_btn = QPushButton("Disconnect All")
+        self.disconnect_all_btn.setToolTip("Disconnect from all devices")
+        font_metrics = self.disconnect_all_btn.fontMetrics()
+        text_width = font_metrics.horizontalAdvance("Disconnect All") + 24
+        self.disconnect_all_btn.setFixedWidth(text_width)
 
         # Row 0: labels (reload button first)
         grid.addWidget(QLabel(""), 0, 0)  # Empty for button
         grid.addWidget(QLabel("Device:"), 0, 1)
         grid.addWidget(QLabel("Bitrate:"), 0, 2)
         grid.addWidget(QLabel(""), 0, 3)  # Empty for button alignment
+        grid.addWidget(QLabel(""), 0, 4)  # Empty for button alignment
 
         # Row 1: controls (reload button first)
         grid.addWidget(self.refresh_btn, 1, 0)
         grid.addWidget(self.device_combo, 1, 1)
         grid.addWidget(self.bitrate_combo, 1, 2)
         grid.addWidget(self.connect_btn, 1, 3)
+        grid.addWidget(self.disconnect_all_btn, 1, 4)
 
         # Align everything to the top
         main_layout.addLayout(grid)
@@ -291,8 +306,16 @@ class MainWindow(QMainWindow):
         self.chip_layout.setSpacing(8)
         self.chip_container.setLayout(self.chip_layout)
         self.chip_scroll.setWidget(self.chip_container)
+        # Set minimum height to fit 3 rows of chips (each chip ~32px + spacing)
+        chip_height = 32
+        spacing = self.chip_layout.spacing()
+        rows = 3
+        min_height = rows * chip_height + (rows - 1) * spacing + 16
+        self.chip_scroll.setMinimumHeight(min_height)
+        self.chip_scroll.setMaximumHeight(min_height + 32)
+        # Make chip area expand horizontally with window
+        self.chip_scroll.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         main_layout.addWidget(self.chip_scroll)
-        main_layout.addStretch(1)
 
         # DBC area (resizable) with drag-and-drop support for the entire area (including splitter)
         class DragDropDbcArea(QWidget):
@@ -378,6 +401,25 @@ class MainWindow(QMainWindow):
         self.refresh_btn.clicked.connect(self.scanner.scan)
         self.connect_btn.clicked.connect(self.connect_device)
 
+        def disconnect_all_busses():
+            for device, (bus, chip, reader) in list(self.connected_busses.items()):
+                try:
+                    reader.stop()
+                except Exception:
+                    pass
+                bus.shutdown()
+                self.chip_layout.removeWidget(chip)
+                chip.deleteLater()
+                del self.connected_busses[device]
+                # Remove tab for this bus
+                if device in self.bus_tabs:
+                    idx = self.tabs.indexOf(self.bus_tabs[device])
+                    if idx >= 0:
+                        self.tabs.removeTab(idx)
+                    del self.bus_tabs[device]
+
+        self.disconnect_all_btn.clicked.connect(disconnect_all_busses)
+
         # Update connect button state when device selection changes
         self.device_combo.currentIndexChanged.connect(self._update_connect_button)
         self._update_connect_button()  # Initial state
@@ -452,35 +494,21 @@ class MainWindow(QMainWindow):
         current = self.device_combo.currentText()
         self.device_combo.blockSignals(True)
         self.device_combo.clear()
-        max_display_len = (
-            36  # chars to show before truncating (fits most socketcand names)
-        )
         for dev_dict in devices_dict:
             name = f"{dev_dict['interface']} {dev_dict['channel']}"
             if dev_dict["interface"] == "kvaser" and dev_dict["device_name"].startswith(
                 "Kvaser Virtual"
             ):
                 name = f"{dev_dict['device_name']} {dev_dict['channel']}"
-            display = (
-                name
-                if len(name) <= max_display_len
-                else name[: max_display_len - 3] + "..."
-            )
             data = {
                 "name": name,
-                "display_name": display,
+                "display_name": name,
                 "interface": dev_dict["interface"],
                 "channel": dev_dict["channel"],
                 "AutoDetectedConfig": dev_dict,
             }
-            self.device_combo.addItem(display, data)
-            idx = self.device_combo.findText(display)
-            # Set tooltip for each item if truncated
-            if idx >= 0:
-                tooltip = name if len(name) > max_display_len else ""
-                self.device_combo.setItemData(
-                    idx, tooltip, role=Qt.ItemDataRole.ToolTipRole
-                )
+            self.device_combo.addItem(name, data)
+            idx = self.device_combo.findText(name)
         # Restore previous selection if possible
         idx = -1
         for i in range(self.device_combo.count()):
@@ -494,8 +522,6 @@ class MainWindow(QMainWindow):
             self.device_combo.setCurrentIndex(idx)
         self.device_combo.blockSignals(False)
         self._update_connect_button()
-
-    # ...existing code...
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
