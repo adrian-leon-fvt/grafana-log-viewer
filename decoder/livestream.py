@@ -136,6 +136,9 @@ class DbcTable(DbcTableBase):
         if self.get_busses:
             for bus in self.get_busses():
                 combo.addItem(bus)
+        status = self.item(row, 2)
+        if status and status.text() != "Valid":
+            combo.setDisabled(True)
         self.setCellWidget(row, 3, combo)
         # Connect signal to update bus tab when assignment changes
         if self.on_dbc_assignment_changed:
@@ -430,6 +433,12 @@ class MainWindow(QMainWindow):
         # Update all bus assignment dropdowns in the DBC table
         for row in range(self.dbc_table.rowCount()):
             widget = self.dbc_table.cellWidget(row, 3)
+            status = self.dbc_table.item(row, 2)
+
+            # Disable if DBC file is not valid
+            if status and status.text() != "Valid":
+                widget.setDisabled(True)
+
             if isinstance(widget, QComboBox):
                 current = widget.currentText()
                 widget.clear()
@@ -439,6 +448,7 @@ class MainWindow(QMainWindow):
                 idx = widget.findText(current)
                 if idx >= 0:
                     widget.setCurrentIndex(idx)
+                    widget.setDisabled(False)
 
     def update_devices(self, devices_dict, error_msg):
         if error_msg:
