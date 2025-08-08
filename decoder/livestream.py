@@ -309,11 +309,7 @@ class MainWindow(QMainWindow):
                 dbc_layout.addWidget(self.add_dbc_btn)
                 dbc_widget = QWidget()
                 dbc_widget.setLayout(dbc_layout)
-                splitter = QSplitter(Qt.Orientation.Vertical)
-                splitter.addWidget(dbc_widget)
-                splitter.addWidget(QWidget())  # Filler for resizing
-                splitter.setSizes([200, 100])
-                layout.addWidget(splitter)
+                layout.addWidget(dbc_widget)
 
             def dragEnterEvent(self, event):
                 if event.mimeData().hasUrls():
