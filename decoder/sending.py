@@ -455,19 +455,7 @@ def main():
     setup_logging()
     logger = logging.getLogger("main")
 
-    resp_status_code = 404
-
-    try:
-        resp = requests.get(vm_query_url, params={"query": "up"}, timeout=5)
-        resp_status_code = resp.status_code
-        if resp.status_code != 200:
-            print(
-                f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}"
-            )
-    except Exception as e:
-        print(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
-
-    if resp_status_code == 200:
+    if is_victoriametrics_online():
         if LIVE_STREAMING:  # Streaming live CAN data
             dbc_decoder = None
             if DBC_FILE_PATHS:

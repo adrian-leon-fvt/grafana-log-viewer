@@ -1,9 +1,9 @@
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable
-from asammdf.blocks.types import DbcFileType, BusType, StrPath
-
+from asammdf.blocks.types import StrPath
+import requests
+from .config import *
 
 def get_time_str(start_time: float) -> str:
     elapsed = time.time() - start_time
@@ -32,3 +32,21 @@ def make_metric_line(
 ) -> str:
     # Format the metric line for Prometheus
     return f'{metric_name}{{job="{job}",message="{message}",unit="{unit}"}} {value} {timestamp.timestamp() if type(timestamp) is datetime else timestamp}\n'
+
+
+def is_victoriametrics_online(timeout: float = 3.0) -> bool:
+    resp_status_code = 404
+
+    try:
+        resp = requests.get(vm_query_url, params={"query": "up"}, timeout=timeout)
+        resp_status_code = resp.status_code
+        if resp.status_code != 200:
+            print(
+                f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}"
+            )
+            return False
+    except Exception as e:
+        print(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
+        return False
+    
+    return resp_status_code == 200
