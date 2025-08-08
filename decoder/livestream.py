@@ -203,64 +203,54 @@ class DbcTable(QTableWidget):
 class MainWindow(QMainWindow):
 
     class BusReader(QThread):
-        def __init__(self, bus, dbc_paths, bus_name, parent=None):
+        def __init__(self, bus, bus_name, parent=None):
             super().__init__(parent)
             from threading import Lock
+
             self.bus = bus
-            self.dbc_paths = list(dbc_paths)
             self.bus_name = bus_name
             self.running = True
-            self.db_list = []
             self._dbc_lock = Lock()
-            try:
-                for path in self.dbc_paths:
-                    try:
-                        db = cantools.database.load_file(path)
-                        self.db_list.append(db)
-                    except Exception as e:
-                        print(f"Failed to load DBC {path}: {e}")
-            except ImportError:
-                pass
+            self.db = cantools.database.Database()
+
         def run(self):
             while self.running:
                 try:
                     msg = self.bus.recv(timeout=0.2)
                     if msg is None:
                         continue
-                    found = False
                     with self._dbc_lock:
-                        dbs = list(self.db_list)
-                    for db in dbs:
-                        try:
-                            decoded = db.decode_message(msg.arbitration_id, msg.data)
-                            print(f"[{self.bus_name}] {db.get_message_by_frame_id(msg.arbitration_id).name}: {decoded}")
-                            found = True
-                        except Exception:
-                            continue
+                        db = self.db
+                    found = False
+                    try:
+                        decoded = db.decode_message(msg.arbitration_id, msg.data)
+                        print(
+                            f"[{self.bus_name}] {db.get_message_by_frame_id(msg.arbitration_id).name}: {decoded}"
+                        )
+                        found = True
+                    except Exception:
+                        pass
                     if not found:
-                        print(f"[{self.bus_name}] Unknown message: 0x{msg.arbitration_id:X} {msg.data.hex()}")
+                        print(
+                            f"[{self.bus_name}] Unknown message: 0x{msg.arbitration_id:X} {msg.data.hex()}"
+                        )
                 except Exception as e:
                     print(f"[{self.bus_name}] Error reading: {e}")
+
         def stop(self):
             self.running = False
             self.wait()
-            
-        def update_dbcs(self, dbc_paths):
-            if not hasattr(self, '_dbc_lock'):
-                self._dbc_lock = Lock()
+
+        def update_signals(self, messages):
+            # messages: list of cantools.db.Message (with only selected signals)
+            total_signals = sum(len(msg.signals) for msg in messages)
+            print(
+                f"Updating signals for {self.bus_name}: {len(messages)} messages and {total_signals} signals"
+            )
             with self._dbc_lock:
-                self.dbc_paths = list(dbc_paths)
-                self.db_list = []
-                try:
-                    for path in self.dbc_paths:
-                        try:
-                            db = cantools.database.load_file(path)
-                            self.db_list.append(db)
-                        except Exception as e:
-                            print(f"Failed to load DBC {path}: {e}")
-                except ImportError:
-                    pass
-        # Store checked signals per bus: device -> set of signal names
+                self.db = cantools.database.Database()
+                for msg in messages:
+                    self.db._add_message(msg)
 
     def __init__(self):
         super().__init__()
@@ -372,6 +362,7 @@ class MainWindow(QMainWindow):
                     for url in event.mimeData().urls():
                         if url.toLocalFile().lower().endswith(".dbc"):
                             event.acceptProposedAction()
+                            event.setDropAction(Qt.DropAction.CopyAction)
                             self.setCursor(Qt.CursorShape.DragCopyCursor)
                             return
                 self.unsetCursor()
@@ -442,21 +433,29 @@ class MainWindow(QMainWindow):
 
     def on_dbc_assignment_changed(self):
         # Called when a DBC file is assigned/unassigned to a bus
-        # Update DBCs for each active reader and refresh all bus tabs
+        # Update signals for each active reader and refresh all bus tabs
         for device in list(self.bus_tabs.keys()):
-            # Update reader DBCs if bus is connected
+            # Update reader signals if bus is connected
             if device in self.connected_busses:
                 bus, chip, reader = self.connected_busses[device]
-                # Find assigned DBCs for this bus
-                assigned_dbcs = []
+                checked_signals = self._get_checked_signals_for_bus(device)
+                selected_msgs = []
                 for row in range(self.dbc_table.rowCount()):
                     widget = self.dbc_table.cellWidget(row, 2)
                     if isinstance(widget, QComboBox) and widget.currentText() == device:
                         for f in self.dbc_table.files:
                             item = self.dbc_table.item(row, 0)
                             if item is not None and item.text() in f:
-                                assigned_dbcs.append(f)
-                reader.update_dbcs(assigned_dbcs)
+                                try:
+                                    db = cantools.database.load_file(f)
+                                    selected_msgs.extend(
+                                        self._build_filtered_messages(
+                                            db, checked_signals
+                                        )
+                                    )
+                                except Exception as e:
+                                    print(f"Failed to load/parse DBC {f}: {e}")
+                reader.update_signals(selected_msgs)
             self._add_bus_tab(device)
 
     def closeEvent(self, event):
@@ -620,17 +619,8 @@ class MainWindow(QMainWindow):
             # Create chip for this connection
             chip = self._create_chip(device, bitrate)
             self.chip_layout.addWidget(chip)
-            # Find assigned DBCs for this bus
-            assigned_dbcs = []
-            for row in range(self.dbc_table.rowCount()):
-                widget = self.dbc_table.cellWidget(row, 2)
-                if isinstance(widget, QComboBox) and widget.currentText() == device:
-                    for f in self.dbc_table.files:
-                        item = self.dbc_table.item(row, 0)
-                        if item is not None and item.text() in f:
-                            assigned_dbcs.append(f)
             # Start a thread to read messages for this bus
-            reader = self.BusReader(bus, assigned_dbcs, device)
+            reader = self.BusReader(bus, device)
             reader.start()
             self.connected_busses[device] = (bus, chip, reader)
             self._update_connect_button()
@@ -695,7 +685,10 @@ class MainWindow(QMainWindow):
             table.setItem(i, 4, QTableWidgetItem(sig["mux"]))
 
             cb.checkStateChanged.connect(
-                lambda: self._set_bus_filters_for_device(device)
+                lambda _, dev=device: (
+                    self._set_bus_filters_for_device(dev),
+                    self._update_busreader_signals(dev),
+                )
             )
 
         # Add keyPressEvent to toggle checkboxes with spacebar
@@ -768,16 +761,32 @@ class MainWindow(QMainWindow):
                     cb.blockSignals(False)
 
         select_all_btn.clicked.connect(
-            lambda: (select_all(), self._set_bus_filters_for_device(device))
+            lambda: (
+                select_all(),
+                self._set_bus_filters_for_device(device),
+                self._update_busreader_signals(device),
+            )
         )
         deselect_all_btn.clicked.connect(
-            lambda: (deselect_all(), self._set_bus_filters_for_device(device))
+            lambda: (
+                deselect_all(),
+                self._set_bus_filters_for_device(device),
+                self._update_busreader_signals(device),
+            )
         )
         enable_selected_btn.clicked.connect(
-            lambda: (enable_selected(), self._set_bus_filters_for_device(device))
+            lambda: (
+                enable_selected(),
+                self._set_bus_filters_for_device(device),
+                self._update_busreader_signals(device),
+            )
         )
         disable_selected_btn.clicked.connect(
-            lambda: (disable_selected(), self._set_bus_filters_for_device(device))
+            lambda: (
+                disable_selected(),
+                self._set_bus_filters_for_device(device),
+                self._update_busreader_signals(device),
+            )
         )
 
         # Disable enable/disable selected buttons if nothing is selected
@@ -841,6 +850,79 @@ class MainWindow(QMainWindow):
         except ImportError:
             pass
         return signals
+
+    def _get_checked_signals_for_bus(self, device):
+        checked_signals = set()
+        tab = self.bus_tabs.get(device)
+        if tab:
+            for child in tab.children():
+                if isinstance(child, QTableWidget):
+                    table = child
+                    for i in range(table.rowCount()):
+                        cb = table.cellWidget(i, 0)
+                        name_item = table.item(i, 1)
+                        if isinstance(cb, QCheckBox) and cb.isChecked() and name_item:
+                            checked_signals.add(name_item.text())
+        return checked_signals
+
+    def _build_filtered_messages(self, db, checked_signals):
+        messages = getattr(db, "messages", None)
+        if messages is None:
+            messages = getattr(db, "_messages", [])
+        filtered_msgs = []
+        for msg in messages:
+            filtered_signals = [s for s in msg.signals if s.name in checked_signals]
+            if filtered_signals:
+                new_msg = cantools.database.Message(
+                    frame_id=msg.frame_id,
+                    name=msg.name,
+                    length=msg.length,
+                    signals=filtered_signals,
+                    contained_messages=msg.contained_messages,
+                    header_id=msg.header_id,
+                    header_byte_order=msg.header_byte_order,
+                    unused_bit_pattern=msg.unused_bit_pattern,
+                    senders=msg.senders,
+                    comment=msg.comment,
+                    send_type=msg.send_type,
+                    cycle_time=msg.cycle_time,
+                    dbc_specifics=(
+                        msg.dbc_specifics if hasattr(msg, "dbc_specifics") else None
+                    ),
+                    autosar_specifics=(
+                        msg.autosar_specifics
+                        if hasattr(msg, "autosar_specifics")
+                        else None
+                    ),
+                    is_extended_frame=msg.is_extended_frame,
+                    is_fd=msg.is_fd,
+                    bus_name=msg.bus_name,
+                    signal_groups=msg.signal_groups,
+                    strict=msg.strict if hasattr(msg, "strict") else False,
+                    protocol=msg.protocol,
+                )
+                filtered_msgs.append(new_msg)
+        return filtered_msgs
+
+    def _update_busreader_signals(self, device):
+        if device in self.connected_busses:
+            bus, chip, reader = self.connected_busses[device]
+            checked_signals = self._get_checked_signals_for_bus(device)
+            selected_msgs = []
+            for row in range(self.dbc_table.rowCount()):
+                widget = self.dbc_table.cellWidget(row, 2)
+                if isinstance(widget, QComboBox) and widget.currentText() == device:
+                    for f in self.dbc_table.files:
+                        item = self.dbc_table.item(row, 0)
+                        if item is not None and item.text() in f:
+                            try:
+                                db = cantools.database.load_file(f)
+                                selected_msgs.extend(
+                                    self._build_filtered_messages(db, checked_signals)
+                                )
+                            except Exception as e:
+                                print(f"Failed to load/parse DBC {f}: {e}")
+            reader.update_signals(selected_msgs)
 
     def _create_chip(self, device, bitrate):
 
