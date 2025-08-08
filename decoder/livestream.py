@@ -1,8 +1,6 @@
 import sys
 import can
 import io
-import os
-import re
 import contextlib
 import cantools
 import cantools.database
@@ -21,16 +19,12 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QFrame,
     QSizePolicy,
-    QSplitter,
     QTableWidget,
-    QTableWidgetItem,
     QFileDialog,
-    QAbstractItemView,
     QHeaderView,
     QTabWidget,
     QGridLayout,
     QCheckBox,
-    QLineEdit,
 )
 
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
