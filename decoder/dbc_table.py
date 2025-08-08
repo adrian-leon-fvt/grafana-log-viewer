@@ -81,7 +81,7 @@ class DbcTable(QTableWidget):
         self.dbcAdded.emit(row)
         
     def remove_dbc_row(self, row):
-        file_item = self.item(row, 0)
+        file_item = self.item(row, 1)
         if file_item:
             name = file_item.text()
             # Find full path in self.files
