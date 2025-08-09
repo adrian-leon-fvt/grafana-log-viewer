@@ -93,7 +93,9 @@ class DeviceScanner(QObject):
             import can
 
             available = can.detect_available_configs(interfaces=list(valid_interfaces))
-            available.sort(key=lambda d: (str(d.get("interface", "")), str(d.get("channel", ""))))
+            available.sort(
+                key=lambda d: (str(d.get("interface", "")), str(d.get("channel", "")))
+            )
             self.devices_found.emit(
                 available,
                 "",
