@@ -134,7 +134,7 @@ class DbcTable(DbcTableBase):
         # Connect signal to update bus tab when assignment changes
         if self.on_dbc_assignment_changed:
             combo.currentIndexChanged.connect(self.on_dbc_assignment_changed)
-    
+
     def _dbc_removed(self):
         if self.on_dbc_assignment_changed:
             self.on_dbc_assignment_changed()
@@ -143,8 +143,8 @@ class DbcTable(DbcTableBase):
 # Singleton MetricsManager instance
 metrics_manager = MetricsManager()
 
-class MainWindow(QMainWindow):
 
+class MainWindow(QMainWindow):
 
     class BusReader(QThread):
         update_signals_requested = Signal(list)
@@ -274,13 +274,17 @@ class MainWindow(QMainWindow):
         self.bitrate_combo.setCurrentIndex(1)
         # Set width to fit "500k"
         font_metrics = self.bitrate_combo.fontMetrics()
-        text_width = font_metrics.horizontalAdvance("500k") + 32  # padding for dropdown arrow
+        text_width = (
+            font_metrics.horizontalAdvance("500k") + 32
+        )  # padding for dropdown arrow
         self.bitrate_combo.setFixedWidth(text_width)
 
         self.connect_btn = QPushButton("Connect")
         # Set width to fit "Connect"
         font_metrics = self.connect_btn.fontMetrics()
-        text_width = font_metrics.horizontalAdvance("Connect") + 24  # padding for button
+        text_width = (
+            font_metrics.horizontalAdvance("Connect") + 24
+        )  # padding for button
         self.connect_btn.setFixedWidth(text_width)
 
         self.disconnect_all_btn = QPushButton("Disconnect All")
@@ -323,7 +327,9 @@ class MainWindow(QMainWindow):
         self.chip_scroll.setMinimumHeight(min_height)
         self.chip_scroll.setMaximumHeight(min_height + 32)
         # Make chip area expand horizontally with window
-        self.chip_scroll.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.chip_scroll.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         main_layout.addWidget(self.chip_scroll)
 
         # DBC area (resizable) with drag-and-drop support for the entire area (including splitter)
@@ -662,7 +668,12 @@ class MainWindow(QMainWindow):
                         cb = table.cellWidget(row, 0)
                         name_item = table.item(row, 1)
                         msg_item = table.item(row, 2)
-                        if isinstance(cb, QCheckBox) and cb.isChecked() and name_item and msg_item:
+                        if (
+                            isinstance(cb, QCheckBox)
+                            and cb.isChecked()
+                            and name_item
+                            and msg_item
+                        ):
                             checked_signals.add((name_item.text(), msg_item.text()))
             idx = self.tabs.indexOf(self.bus_tabs[device])
             if idx >= 0:
@@ -672,10 +683,12 @@ class MainWindow(QMainWindow):
         signals = self._get_signals_for_bus(device)
         # Create new tab for this bus
         tab = SignalsTab(parent=self, name=device, signals=signals)
-        tab.signalsChecked.connect(lambda: (
-            self._set_bus_filters_for_device(device),
-            self._update_busreader_signals(device),
-        ))
+        tab.signalsChecked.connect(
+            lambda: (
+                self._set_bus_filters_for_device(device),
+                self._update_busreader_signals(device),
+            )
+        )
 
         self.tabs.addTab(tab, device)
         self.bus_tabs[device] = tab
@@ -863,8 +876,6 @@ class MainWindow(QMainWindow):
                     self.tabs.removeTab(idx)
                 del self.bus_tabs[device]
 
-
-from PySide6.QtCore import Qt
 
 if __name__ == "__main__":
     app = QApplication([])
