@@ -480,6 +480,10 @@ class MainWindow(QMainWindow):
         if hasattr(self, "scanner_thread") and self.scanner_thread.isRunning():
             self.scanner_thread.quit()
             self.scanner_thread.wait()
+        # Stop metrics_manager thread and timer gracefully
+        if hasattr(metrics_manager, "stop"):
+            metrics_manager.stop()
+
         super().closeEvent(event)
 
     def update_dbc_bus_dropdowns(self):
