@@ -16,7 +16,7 @@ from PySide6.QtCore import Qt, Signal
 import re
 
 
-class SignalsTab(QWidget):
+class SignalsManager(QWidget):
     signalsChecked = Signal()
     jobNameChanged = Signal(str)
 
@@ -66,10 +66,14 @@ class SignalsTab(QWidget):
         self.deselect_all_btn = QPushButton("Deselect All")
         self.enable_selected_btn = QPushButton("Enable Selected")
         self.disable_selected_btn = QPushButton("Disable Selected")
+        self.show_checked_toggle = QCheckBox("Show checked")
+        self.show_checked_toggle.setToolTip("Show only checked signals")
+        self.show_checked_toggle.stateChanged.connect(self.filter_table)
         btn_layout.addWidget(self.select_all_btn)
         btn_layout.addWidget(self.deselect_all_btn)
         btn_layout.addWidget(self.enable_selected_btn)
         btn_layout.addWidget(self.disable_selected_btn)
+        btn_layout.addWidget(self.show_checked_toggle)
         btn_layout.addStretch(1)
         layout.addLayout(btn_layout)
 
@@ -131,26 +135,33 @@ class SignalsTab(QWidget):
 
     def filter_table(self):
         pattern = self.search_box.text()
+        show_checked = self.show_checked_toggle.isChecked()
         if not pattern:
-            for row in range(self.table.rowCount()):
-                self.table.setRowHidden(row, False)
-            self.search_box.setStyleSheet("")
-            return
-        try:
-            regex = re.compile(pattern, re.IGNORECASE)
-            self.search_box.setStyleSheet("")
-        except re.error:
-            self.search_box.setStyleSheet("background: #ffcccc;")
-            for row in range(self.table.rowCount()):
-                self.table.setRowHidden(row, True)
-            return
+            regex = None
+        else:
+            try:
+                regex = re.compile(pattern, re.IGNORECASE)
+                self.search_box.setStyleSheet("")
+            except re.error:
+                self.search_box.setStyleSheet("background: #ffcccc;")
+                for row in range(self.table.rowCount()):
+                    self.table.setRowHidden(row, True)
+                return
         for row in range(self.table.rowCount()):
-            match = False
-            for col in range(1, 5):
-                item = self.table.item(row, col)
-                if item and regex.search(str(item.text())):
-                    match = True
-                    break
+            match = True
+            # Filter by regex
+            if regex:
+                match = False
+                for col in range(1, 5):
+                    item = self.table.item(row, col)
+                    if item and regex.search(str(item.text())):
+                        match = True
+                        break
+            # Filter by checked
+            if show_checked:
+                cb = self.table.cellWidget(row, 0)
+                if not (isinstance(cb, QCheckBox) and cb.isChecked()):
+                    match = False
             self.table.setRowHidden(row, not match)
 
     def table_keyPressEvent(self, event):
@@ -216,3 +227,23 @@ class SignalsTab(QWidget):
         has_selection = bool(self.table.selectionModel().selectedRows())
         self.enable_selected_btn.setEnabled(has_selection)
         self.disable_selected_btn.setEnabled(has_selection)
+
+if __name__ == "__main__":
+    import sys
+    from PySide6.QtWidgets import QApplication
+
+    # Example signals data
+    example_signals = [
+        {"name": "Speed", "message": "VehicleData", "can_id": 123, "mux": "A"},
+        {"name": "RPM", "message": "EngineData", "can_id": 456, "mux": "B"},
+        {"name": "Temp", "message": "EnvData", "can_id": 789, "mux": "C"},
+    ]
+
+    app = QApplication(sys.argv)
+    widget = SignalsManager(name="Demo Job", signals=example_signals)
+    widget.setWindowTitle("SignalsTab Demo")
+    widget.resize(700, 400)
+    widget.show()
+    sys.exit(app.exec())
+
+
