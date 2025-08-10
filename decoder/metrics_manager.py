@@ -5,7 +5,6 @@ from config import *
 
 
 class MetricsManager(QThread):
-    sendNow = Signal()
 
     def __init__(
         self, parent=None, name: str = "MetricsManager", batch_limit: int = 50000
@@ -16,7 +15,6 @@ class MetricsManager(QThread):
         self.buffer = []
         self.mutex = QMutex()
         self.running = True
-        self.sendNow.connect(self._send_batch)
         self.timer = QTimer()
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.check_and_send)
@@ -27,7 +25,7 @@ class MetricsManager(QThread):
         self.mutex.lock()
         self.buffer.append(metric_line)
         if len(self.buffer) >= self.batch_limit:
-            self.sendNow.emit()
+            self._send_batch()
         self.mutex.unlock()
 
     def set_batch_limit(self, limit: int):
@@ -55,10 +53,10 @@ class MetricsManager(QThread):
         self.timer.start()
         while self.running:
             self.msleep(100)  # Keep thread alive
+        self.timer.stop()
 
     def stop(self):
         self.running = False
-        self.timer.stop()
         self.wait()
         self.mutex.lock()
         if self.buffer:
