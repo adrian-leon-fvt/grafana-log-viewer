@@ -31,7 +31,7 @@ from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
 from PySide6.QtGui import QColor, QPalette
 
 from dbc_table import DbcTable as DbcTableBase
-from signals_tab import SignalsTab
+from signals_manager import SignalsManager
 from metrics_manager import MetricsManager
 from utils import make_metric_line
 
@@ -686,7 +686,7 @@ class MainWindow(QMainWindow):
         # Get signals from DBC files assigned to this bus
         signals = self._get_signals_for_bus(device)
         # Create new tab for this bus
-        tab = SignalsTab(parent=self, name=device, signals=signals)
+        tab = SignalsManager(parent=self, name=device, signals=signals)
         tab.signalsChecked.connect(
             lambda: (
                 self._set_bus_filters_for_device(device),
