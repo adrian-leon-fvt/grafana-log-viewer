@@ -394,21 +394,15 @@ class LogFileManager(QWidget):
             return
         # Date filter: only add files whose start or end timestamps (if available) are in the range
         filtered_files = []
+        _tz = datetime.datetime.now().tzinfo
         for file_path in new_files:
             try:
-                messages = list(can.LogReader(file_path))
-                if messages:
-                    start_ts = datetime.datetime.fromtimestamp(messages[0].timestamp).date()
-                    end_ts = datetime.datetime.fromtimestamp(messages[-1].timestamp).date()
-                    # If any overlap with filter range, include
-                    if start_ts <= self.date_filter_end and end_ts >= self.date_filter_start:
+                for msg in can.LogReader(file_path):
+                    if msg and datetime.datetime.fromtimestamp(msg.timestamp, tz=_tz) >= self.date_filter_start:
                         filtered_files.append(file_path)
-                else:
-                    # If no messages, include by default
-                    filtered_files.append(file_path)
+                    break
             except Exception:
-                # If can't read, include by default
-                filtered_files.append(file_path)
+                pass
         if not filtered_files:
             return
         # Add files immediately with empty start/end
@@ -423,6 +417,7 @@ class LogFileManager(QWidget):
                 "start": "",
                 "end": "",
                 "path": file_path,
+                "messages": [],
             }
             self.files.append(file_info)
         self.populate_table()
@@ -499,6 +494,12 @@ class LogFileManager(QWidget):
             if f["path"] == file_path:
                 f["start"] = start
                 f["end"] = end
+            
+            if f["start"] and f["start"] >= self.date_filter_end:
+                self.files.pop(f)
+            
+            if f["end"] and f["end"] <= self.date_filter_start:
+                self.files.pop(f)
         self.populate_table()
 
     def add_file(self, file_path):
