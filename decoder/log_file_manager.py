@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QProgressBar,
 )
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt, Signal, QThread, QObject, Slot
 import os
 import sys
@@ -591,8 +592,11 @@ class LogFileManager(QWidget):
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
+    icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+    app.setWindowIcon(QIcon(icon_path))
     widget = LogFileManager()
     widget.setWindowTitle("LogFileManager Demo")
+    widget.setWindowIcon(QIcon(icon_path))
     widget.resize(1000, 400)
     widget.show()
     sys.exit(app.exec())

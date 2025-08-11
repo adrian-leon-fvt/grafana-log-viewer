@@ -1,6 +1,7 @@
 import sys
 import can
 import io
+import os
 import contextlib
 import cantools
 import cantools.database
@@ -28,7 +29,7 @@ from PySide6.QtWidgets import (
 )
 
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
-from PySide6.QtGui import QColor, QPalette
+from PySide6.QtGui import QColor, QPalette, QIcon
 
 from dbc_table import DbcTable as DbcTableBase
 from signals_manager import SignalsManager
@@ -883,7 +884,10 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication([])
+    icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+    app.setWindowIcon(QIcon(icon_path))
     mw = MainWindow()
     mw.resize(600, 600)
     mw.show()
+    mw.setWindowIcon(QIcon(icon_path))
     sys.exit(app.exec())

@@ -1,4 +1,6 @@
 import sys
+import os
+import optparse
 import cantools
 import cantools.database
 from can import LogReader
@@ -26,7 +28,7 @@ from PySide6.QtWidgets import (
 )
 
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
-from PySide6.QtGui import QColor, QPalette
+from PySide6.QtGui import QColor, QPalette, QIcon
 
 from signals_manager import SignalsManager
 from metrics_manager import MetricsManager
@@ -67,6 +69,9 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication([])
+    icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+    app.setWindowIcon(QIcon(icon_path))
     mw = MainWindow()
     mw.showMaximized()
+    mw.setWindowIcon(QIcon(icon_path))
     sys.exit(app.exec())
