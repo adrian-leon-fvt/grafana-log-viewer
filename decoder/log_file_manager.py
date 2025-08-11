@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QFileDialog,
     QProgressBar,
-    QDialog,
+    QFileDialog,
     QProgressBar,
 )
 from PySide6.QtCore import Qt, Signal, QThread, QObject, Slot
@@ -68,10 +68,39 @@ class LogFileManager(QWidget):
         self.setAcceptDrops(True)
         self._init_ui()
 
-    def _init_ui(self):
 
+    def _init_ui(self):
         self.main_layout = QVBoxLayout(self)
         layout = self.main_layout
+
+        # Date filter row
+        date_row = QHBoxLayout()
+        self.date_filter_start = datetime.date.today()
+        self.date_filter_end = datetime.date.today()
+        self.date_label_start = QLineEdit(self.date_filter_start.strftime('%Y-%m-%d'))
+        self.date_label_end = QLineEdit(self.date_filter_end.strftime('%Y-%m-%d'))
+        self.date_label_start.setFixedWidth(100)
+        self.date_label_end.setFixedWidth(100)
+        self.date_label_start.setToolTip("Start date (YYYY-MM-DD)")
+        self.date_label_end.setToolTip("End date (YYYY-MM-DD)")
+        self.date_label_start.editingFinished.connect(self.on_date_label_start_changed)
+        self.date_label_end.editingFinished.connect(self.on_date_label_end_changed)
+        self.today_btn = QPushButton("Today")
+        self.plus_btn = QPushButton("+")
+        self.minus_btn = QPushButton("−")
+        self.today_btn.clicked.connect(self.set_today)
+        self.plus_btn.clicked.connect(self.add_day)
+        self.minus_btn.clicked.connect(self.remove_day)
+        date_row.addWidget(QLabel("Date Filter:"))
+        date_row.addWidget(QLabel("Start:"))
+        date_row.addWidget(self.date_label_start)
+        date_row.addWidget(QLabel("End:"))
+        date_row.addWidget(self.date_label_end)
+        date_row.addWidget(self.minus_btn)
+        date_row.addWidget(self.today_btn)
+        date_row.addWidget(self.plus_btn)
+        date_row.addStretch(1)
+        layout.addLayout(date_row)
 
         # Progress bar for file adding
         self.progress_bar = QProgressBar()
@@ -79,7 +108,6 @@ class LogFileManager(QWidget):
         self.progress_bar.setMaximum(100)
         self.progress_bar.setValue(0)
         self.progress_bar.setVisible(False)
-
         layout.addWidget(self.progress_bar)
 
         # File add row
@@ -153,6 +181,90 @@ class LogFileManager(QWidget):
 
         self.populate_table()
 
+    def update_date_label(self):
+        """Update the date QLineEdit widgets to show the current filter range."""
+        self.date_label_start.setText(self.date_filter_start.strftime('%Y-%m-%d'))
+        self.date_label_end.setText(self.date_filter_end.strftime('%Y-%m-%d'))
+
+    def set_today(self):
+        """Set both start and end date filters to today."""
+        today = datetime.date.today()
+        self.date_filter_start = today
+        self.date_filter_end = today
+        self.update_date_label()
+
+    def add_day(self):
+        """Increment the date of the currently focused QLineEdit by one day."""
+        if self.date_label_start.hasFocus():
+            new_date = self.date_filter_start + datetime.timedelta(days=1)
+            if new_date <= self.date_filter_end:
+                self.date_filter_start = new_date
+                self.date_label_start.setStyleSheet("")
+                self.update_date_label()
+            else:
+                self.date_label_start.setStyleSheet("background: #ffcccc;")
+        elif self.date_label_end.hasFocus():
+            new_date = self.date_filter_end + datetime.timedelta(days=1)
+            if new_date >= self.date_filter_start:
+                self.date_filter_end = new_date
+                self.date_label_end.setStyleSheet("")
+                self.update_date_label()
+            else:
+                self.date_label_end.setStyleSheet("background: #ffcccc;")
+        else:
+            # Default: increment end date
+            self.date_filter_end += datetime.timedelta(days=1)
+            self.update_date_label()
+
+    def remove_day(self):
+        """Decrement the date of the currently focused QLineEdit by one day."""
+        if self.date_label_start.hasFocus():
+            new_date = self.date_filter_start - datetime.timedelta(days=1)
+            if new_date <= self.date_filter_end:
+                self.date_filter_start = new_date
+                self.date_label_start.setStyleSheet("")
+                self.update_date_label()
+            else:
+                self.date_label_start.setStyleSheet("background: #ffcccc;")
+        elif self.date_label_end.hasFocus():
+            new_date = self.date_filter_end - datetime.timedelta(days=1)
+            if new_date >= self.date_filter_start:
+                self.date_filter_end = new_date
+                self.date_label_end.setStyleSheet("")
+                self.update_date_label()
+            else:
+                self.date_label_end.setStyleSheet("background: #ffcccc;")
+        else:
+            # Default: decrement end date
+            self.date_filter_end -= datetime.timedelta(days=1)
+            self.update_date_label()
+
+    def on_date_label_start_changed(self):
+        text = self.date_label_start.text().strip()
+        try:
+            new_date = datetime.datetime.strptime(text, "%Y-%m-%d").date()
+            if new_date <= self.date_filter_end:
+                self.date_filter_start = new_date
+                self.date_label_start.setStyleSheet("")
+                self.update_date_label()
+            else:
+                self.date_label_start.setStyleSheet("background: #ffcccc;")
+        except Exception:
+            self.date_label_start.setStyleSheet("background: #ffcccc;")
+
+    def on_date_label_end_changed(self):
+        text = self.date_label_end.text().strip()
+        try:
+            new_date = datetime.datetime.strptime(text, "%Y-%m-%d").date()
+            if new_date >= self.date_filter_start:
+                self.date_filter_end = new_date
+                self.date_label_end.setStyleSheet("")
+                self.update_date_label()
+            else:
+                self.date_label_end.setStyleSheet("background: #ffcccc;")
+        except Exception:
+            self.date_label_end.setStyleSheet("background: #ffcccc;")
+
     def populate_table(self):
         self.table.setRowCount(len(self.files))
         for i, file in enumerate(self.files):
@@ -180,7 +292,6 @@ class LogFileManager(QWidget):
             cb.stateChanged.connect(lambda _: self.filesChecked.emit())
 
     def add_folder_dialog(self):
-        from PySide6.QtWidgets import QFileDialog
         folder = QFileDialog.getExistingDirectory(self, "Select Folder", os.getcwd())
         if folder:
             log_files = self.find_log_files_in_folder(folder)
@@ -281,9 +392,28 @@ class LogFileManager(QWidget):
         new_files = [f for f in files if f not in existing_paths]
         if not new_files:
             return
-        # Add files immediately with empty start/end
-        common_prefix = os.path.commonpath(new_files)
+        # Date filter: only add files whose start or end timestamps (if available) are in the range
+        filtered_files = []
         for file_path in new_files:
+            try:
+                messages = list(can.LogReader(file_path))
+                if messages:
+                    start_ts = datetime.datetime.fromtimestamp(messages[0].timestamp).date()
+                    end_ts = datetime.datetime.fromtimestamp(messages[-1].timestamp).date()
+                    # If any overlap with filter range, include
+                    if start_ts <= self.date_filter_end and end_ts >= self.date_filter_start:
+                        filtered_files.append(file_path)
+                else:
+                    # If no messages, include by default
+                    filtered_files.append(file_path)
+            except Exception:
+                # If can't read, include by default
+                filtered_files.append(file_path)
+        if not filtered_files:
+            return
+        # Add files immediately with empty start/end
+        common_prefix = os.path.commonpath(filtered_files)
+        for file_path in filtered_files:
             rel_path = os.path.relpath(os.path.dirname(file_path), common_prefix)
             parents = "" if rel_path == "." else rel_path + os.sep
             file_info = {
@@ -318,7 +448,7 @@ class LogFileManager(QWidget):
 
         # Threaded worker for file reading
         self.add_thread = QThread()
-        self.worker = LogFileManager.FileAddWorker(new_files)
+        self.worker = LogFileManager.FileAddWorker(filtered_files)
         self.worker.moveToThread(self.add_thread)
         self.worker.progress.connect(self.progress_bar.setValue)
         self.worker.fileTimesUpdated.connect(self.on_file_times_updated)
