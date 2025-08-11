@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QStyle,
 )
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QShortcut, QKeySequence
 
 import re
 
@@ -20,6 +21,7 @@ import re
 class SignalsManager(QWidget):
     signalsChecked = Signal()
     jobNameChanged = Signal(str)
+    can_id_hex_mode = False
 
     def __init__(self, parent=None, name: str = "", signals: list = []):
         super().__init__(parent)
@@ -62,6 +64,10 @@ class SignalsManager(QWidget):
 
         # Buttons
         btn_layout = QHBoxLayout()
+        self.toggle_canid_btn = QPushButton("CAN ID: Dec")
+        self.toggle_canid_btn.setToolTip("Toggle CAN ID display between decimal and hex (Ctrl+H)")
+        self.toggle_canid_btn.clicked.connect(self.toggle_canid_mode)
+        btn_layout.addWidget(self.toggle_canid_btn)
         self.select_all_btn = QPushButton("Select All")
         self.deselect_all_btn = QPushButton("Deselect All")
         self.enable_selected_btn = QPushButton("Enable Selected")
@@ -77,6 +83,11 @@ class SignalsManager(QWidget):
         btn_layout.addStretch(1)
         layout.addLayout(btn_layout)
 
+    # Keyboard shortcut for CAN ID toggle (global)
+        self.canid_shortcut = QShortcut(QKeySequence("Ctrl+H"), self)
+        self.canid_shortcut.setAutoRepeat(True)
+        self.canid_shortcut.activated.connect(self.toggle_canid_mode)
+
         # Table for signals
         self.table = QTableWidget()
         self.table.setColumnCount(5)
@@ -86,7 +97,10 @@ class SignalsManager(QWidget):
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         self.table.setColumnWidth(0, 32)
-        for col in range(1, 5):
+        # Make 'Signal Name' column resize automatically
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        # Other columns remain interactive
+        for col in range(2, 5):
             header.setSectionResizeMode(col, QHeaderView.ResizeMode.Interactive)
         self.table.setSortingEnabled(True)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -112,15 +126,20 @@ class SignalsManager(QWidget):
         for i, sig in enumerate(self.signals):
             cb = QCheckBox()
             self.table.setCellWidget(i, 0, cb)
+            # Center align the checkbox
+            cb_item = self.table.item(i, 0)
+            if cb_item:
+                cb_item.setTextAlignment(Qt.AlignmentFlag.AlignVCenter)
             self.table.setItem(i, 1, QTableWidgetItem(sig["name"]))
             self.table.setItem(i, 2, QTableWidgetItem(sig["message"]))
-            self.table.setItem(i, 3, QTableWidgetItem(str(sig["can_id"])))
+            canid_val = sig["can_id"]
+            if self.can_id_hex_mode:
+                canid_str = hex(canid_val)
+            else:
+                canid_str = str(canid_val)
+            self.table.setItem(i, 3, QTableWidgetItem(canid_str))
             self.table.setItem(i, 4, QTableWidgetItem(sig["mux"]))
 
-            # Center align the checkbox
-            cb_item = self.table.itemAt(i, 0)
-            if cb_item:
-                cb_item.setTextAlignment(Qt.AlignmentFlag.AlignHCenter)
 
             # Emit a signal when checkbox is toggled
             cb.stateChanged.connect(lambda _: self.signalsChecked.emit())
@@ -222,6 +241,14 @@ class SignalsManager(QWidget):
                 cb.setChecked(False)
                 cb.blockSignals(False)
         self.signalsChecked.emit()
+
+    def toggle_canid_mode(self):
+        self.can_id_hex_mode = not self.can_id_hex_mode
+        if self.can_id_hex_mode:
+            self.toggle_canid_btn.setText("CAN ID: Hex")
+        else:
+            self.toggle_canid_btn.setText("CAN ID: Dec")
+        self.populate_table()
 
     def update_enable_disable_buttons(self):
         has_selection = bool(self.table.selectionModel().selectedRows())
