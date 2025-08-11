@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QHeaderView,
     QAbstractItemView,
+    QStyle,
 )
 from PySide6.QtCore import Qt, Signal
 
@@ -35,7 +36,6 @@ class SignalsManager(QWidget):
         self.job_name_edit = QLineEdit(self.name)
         self.job_name_edit.setPlaceholderText("Enter job name...")
         update_job_name_btn = QPushButton()
-        from PySide6.QtWidgets import QStyle
         update_job_name_btn.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogApplyButton))
         update_job_name_btn.setFixedWidth(28)
         update_job_name_btn.clicked.connect(lambda: self.jobNameChanged.emit(self.job_name_edit.text()))
