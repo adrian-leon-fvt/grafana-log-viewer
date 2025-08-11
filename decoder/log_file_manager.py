@@ -33,7 +33,8 @@ class LogFileManager(QWidget):
 
     class FileAddWorker(QObject):
         progress = Signal(int)
-        finished = Signal(list)
+        fileTimesUpdated = Signal(str, str, str)  # file_path, start, end
+        finished = Signal()
 
         def __init__(self, file_paths):
             super().__init__()
@@ -44,14 +45,12 @@ class LogFileManager(QWidget):
             self._cancelled = True
 
         def run(self):
-            results = []
             total = len(self.file_paths)
             for idx, file_path in enumerate(self.file_paths):
                 if self._cancelled:
                     break
                 start_posix = ""
                 end_posix = ""
-                messages = []
                 try:
                     messages = list(can.LogReader(file_path))
                     if messages:
@@ -59,23 +58,9 @@ class LogFileManager(QWidget):
                         end_posix = str(messages[-1].timestamp)
                 except Exception:
                     pass
-                # Compute common parent directory for all files
-                common_prefix = os.path.commonpath(self.file_paths)
-                # Remove common prefix and file name, keep only parent folders
-                rel_path = os.path.relpath(os.path.dirname(file_path), common_prefix)
-                parents = "" if rel_path == "." else rel_path + os.sep
-                file_info = {
-                    "name": os.path.basename(file_path),
-                    "parents": parents,
-                    "status": "New",
-                    "start": start_posix,
-                    "end": end_posix,
-                    "path": file_path,
-                    "messages": messages,
-                }
-                results.append(file_info)
+                self.fileTimesUpdated.emit(file_path, start_posix, end_posix)
                 self.progress.emit(int((idx + 1) / total * 100))
-            self.finished.emit(results)
+            self.finished.emit()
 
     def __init__(self, parent=None, files=None):
         super().__init__(parent)
@@ -295,6 +280,21 @@ class LogFileManager(QWidget):
         new_files = [f for f in files if f not in existing_paths]
         if not new_files:
             return
+        # Add files immediately with empty start/end
+        common_prefix = os.path.commonpath(new_files)
+        for file_path in new_files:
+            rel_path = os.path.relpath(os.path.dirname(file_path), common_prefix)
+            parents = "" if rel_path == "." else rel_path + os.sep
+            file_info = {
+                "name": os.path.basename(file_path),
+                "parents": parents,
+                "status": "New",
+                "start": "",
+                "end": "",
+                "path": file_path,
+            }
+            self.files.append(file_info)
+        self.populate_table()
         # Create modal progress dialog
         self.progress_dialog = QDialog(self)
         self.progress_dialog.setWindowTitle("Loading Log Files...")
@@ -316,14 +316,14 @@ class LogFileManager(QWidget):
         self.worker = LogFileManager.FileAddWorker(new_files)
         self.worker.moveToThread(self.add_thread)
         self.worker.progress.connect(self.progress_bar.setValue)
-        self.worker.finished.connect(self.on_files_added)
-        self.add_thread.started.connect(self.worker.run)
+        self.worker.fileTimesUpdated.connect(self.on_file_times_updated)
         self.worker.finished.connect(self.progress_dialog.close)
         self.worker.finished.connect(self.add_thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.add_thread.finished.connect(self.add_thread.deleteLater)
         cancel_btn.clicked.connect(self.worker.cancel)
         cancel_btn.clicked.connect(self.progress_dialog.reject)
+        self.add_thread.started.connect(self.worker.run)
         self.add_thread.start()
         self.progress_dialog.show()
 
@@ -354,10 +354,12 @@ class LogFileManager(QWidget):
         else:
             super().keyPressEvent(event)
 
-    @Slot(list)
-    def on_files_added(self, file_infos):
-        self.files.extend(file_infos)
-        self.progress_bar.setVisible(False)
+    @Slot(str, str, str)
+    def on_file_times_updated(self, file_path, start, end):
+        for f in self.files:
+            if f["path"] == file_path:
+                f["start"] = start
+                f["end"] = end
         self.populate_table()
 
     def add_file(self, file_path):
@@ -433,11 +435,16 @@ class LogFileManager(QWidget):
     
     def closeEvent(self, event):
         # Ensure any running threads are properly stopped
-        if hasattr(self, "add_thread") and self.add_thread and self.add_thread.isRunning():
-            if hasattr(self, "worker"):
-                self.worker.cancel()
-            self.add_thread.quit()
-            self.add_thread.wait()
+        add_thread = getattr(self, "add_thread", None)
+        if add_thread is not None and hasattr(add_thread, "isRunning"):
+            try:
+                if add_thread.isRunning():
+                    if hasattr(self, "worker"):
+                        self.worker.cancel()
+                    add_thread.quit()
+                    add_thread.wait()
+            except RuntimeError:
+                pass  # Thread already deleted
         event.accept()
 
 
