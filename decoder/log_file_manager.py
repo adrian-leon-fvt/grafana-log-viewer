@@ -70,7 +70,8 @@ class LogFileManager(QWidget):
 
     def _init_ui(self):
 
-        layout = QVBoxLayout(self)
+        self.main_layout = QVBoxLayout(self)
+        layout = self.main_layout
 
         # Progress bar for file adding
         self.progress_bar = QProgressBar()
@@ -84,7 +85,7 @@ class LogFileManager(QWidget):
         # File add row
         file_row = QHBoxLayout()
         self.add_file_btn = QPushButton("Add Log File")
-        self.add_file_btn.clicked.connect(self.add_file_dialog)
+        self.add_file_btn.clicked.connect(self.add_files_with_progress)
         file_row.addWidget(self.add_file_btn)
         self.add_folder_btn = QPushButton("Add Folder")
         self.add_folder_btn.clicked.connect(self.add_folder_dialog)
@@ -295,37 +296,45 @@ class LogFileManager(QWidget):
             }
             self.files.append(file_info)
         self.populate_table()
-        # Create modal progress dialog
-        self.progress_dialog = QDialog(self)
-        self.progress_dialog.setWindowTitle("Loading Log Files...")
-        self.progress_dialog.setModal(True)
-        vlayout = QVBoxLayout(self.progress_dialog)
-        vlayout.addWidget(QLabel("Reading log files, please wait..."))
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setMinimum(0)
-        self.progress_bar.setMaximum(100)
+
+        # Show and reset progress bar below table
+        self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
-        vlayout.addWidget(self.progress_bar)
-        btn_row = QHBoxLayout()
-        cancel_btn = QPushButton("Cancel")
-        btn_row.addStretch(1)
-        btn_row.addWidget(cancel_btn)
-        vlayout.addLayout(btn_row)
-        self.progress_dialog.setLayout(vlayout)
+
+        # Create a horizontal row for progress bar and cancel button
+        if not hasattr(self, "progress_row"):
+            self.progress_row = QHBoxLayout()
+            self.progress_row.addWidget(self.progress_bar)
+            self.cancel_btn = QPushButton("✖")
+            self.cancel_btn.setFixedSize(28, 28)
+            self.cancel_btn.setStyleSheet(
+                "QPushButton { border-radius: 14px; background: #e57373; color: white; font-weight: bold; }"
+                "QPushButton:hover { background: #ef5350; }"
+            )
+            self.progress_row.addWidget(self.cancel_btn)
+            self.main_layout.addLayout(self.progress_row)
+        self.cancel_btn.setVisible(True)
+        self.progress_bar.setVisible(True)
+
+        # Threaded worker for file reading
         self.add_thread = QThread()
         self.worker = LogFileManager.FileAddWorker(new_files)
         self.worker.moveToThread(self.add_thread)
         self.worker.progress.connect(self.progress_bar.setValue)
         self.worker.fileTimesUpdated.connect(self.on_file_times_updated)
-        self.worker.finished.connect(self.progress_dialog.close)
-        self.worker.finished.connect(self.add_thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.add_thread.finished.connect(self.add_thread.deleteLater)
-        cancel_btn.clicked.connect(self.worker.cancel)
-        cancel_btn.clicked.connect(self.progress_dialog.reject)
+
+        def cleanup():
+            self.progress_bar.setVisible(False)
+            self.cancel_btn.setVisible(False)
+            self.add_thread.quit()
+            self.worker.deleteLater()
+            self.add_thread.deleteLater()
+
+        self.worker.finished.connect(cleanup)
+        self.cancel_btn.clicked.connect(self.worker.cancel)
+        # Only cancel the worker, do not hide UI immediately
         self.add_thread.started.connect(self.worker.run)
         self.add_thread.start()
-        self.progress_dialog.show()
 
     def add_file_dialog(self):
         # Only allow files supported by python-can log reader
