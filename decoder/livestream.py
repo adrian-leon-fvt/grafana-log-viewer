@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
                                     job=self.job_name,
                                 )
                                 metrics_manager.add_metric(metric_line)
-                    except Exception:
+                    except Exception as e:
                         pass
                 except Exception as e:
                     print(f"[{self.bus_name}] Error reading: {e}")
@@ -418,6 +418,9 @@ class MainWindow(QMainWindow):
         self.connect_btn.clicked.connect(self.connect_device)
 
         def disconnect_all_busses():
+            metrics_manager.check_and_send()
+            self.mm_check_timer.stop()
+
             for device, (bus, chip, reader) in list(self.connected_busses.items()):
                 try:
                     reader.stop()
@@ -442,6 +445,14 @@ class MainWindow(QMainWindow):
 
         # Initial scan
         self.scanner.scan()
+
+        # Setup a 1s timer to periodically check and send metrics
+        self.mm = metrics_manager
+        if not self.mm.isRunning():
+            self.mm.start()
+        self.mm_check_timer = QTimer(self)
+        self.mm_check_timer.setInterval(1000)
+        self.mm_check_timer.timeout.connect(metrics_manager.check_and_send)
 
     def on_dbc_assignment_changed(self):
         # Called when a DBC file is assigned/unassigned to a bus
@@ -484,6 +495,7 @@ class MainWindow(QMainWindow):
         # Stop metrics_manager thread and timer gracefully
         if hasattr(metrics_manager, "stop"):
             metrics_manager.stop()
+            self.mm_check_timer.stop()
 
         super().closeEvent(event)
 
@@ -659,6 +671,13 @@ class MainWindow(QMainWindow):
             self._add_bus_tab(device["name"])
         except Exception as e:
             self.status.showMessage(f"Connection failed: {e}")
+
+        # If any device is connected, start the metrics manager timer
+        if self.connected_busses:
+            if not metrics_manager.isRunning():
+                metrics_manager.start()
+            if not self.mm_check_timer.isActive():
+                self.mm_check_timer.start()
 
     def _add_bus_tab(self, device):
         # Remove if already exists
@@ -880,6 +899,12 @@ class MainWindow(QMainWindow):
                 if idx >= 0:
                     self.tabs.removeTab(idx)
                 del self.bus_tabs[device]
+
+        # If it's the last bus, stop the metrics manager timer
+        if not self.connected_busses:
+            if self.mm_check_timer.isActive():
+                self.mm_check_timer.stop()
+            self.status.showMessage("No active connections. Metrics manager timer stopped.")
 
 
 if __name__ == "__main__":

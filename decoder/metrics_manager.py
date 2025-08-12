@@ -35,8 +35,8 @@ class MetricsManager(QThread):
         self.mutex.unlock()
         if batch:
             try:
-                # requests.post(vm_import_url, data="".join(batch))
-                print("".join(batch))  # For debugging purposes
+                requests.post(vm_import_url, data="".join(batch))
+                # print("".join(batch))  # For debugging purposes
             except requests.RequestException as e:
                 print(f"⚠️ Error sending metrics batch: {e}")
 
@@ -45,7 +45,6 @@ class MetricsManager(QThread):
         has_data = bool(self.buffer)
         self.mutex.unlock()
         if has_data:
-            print("check_and_send called")
             self._send_batch()
 
     def run(self):
