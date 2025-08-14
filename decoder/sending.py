@@ -374,7 +374,7 @@ class PortConfig(TypedDict):
 
 def get_cantools_databases(
     files: str | Path | list[str | Path],
-) -> list[cantools.db.Database]:
+) -> list[cantools.database.Database]:
     """
     Load and return a list of DBC databases from the configured paths.
     """
@@ -391,14 +391,14 @@ def get_cantools_databases(
             else:
                 db_paths.append(Path(db))
 
-    databases: list[cantools.db.Database] = []
+    databases: list[cantools.database.Database] = []
     for db in db_paths:
         if not db.exists():
             print(f"⚠️ DBC file {db} does not exist, skipping.")
             continue
         try:
-            _db = cantools.db.load_file(db)
-            if isinstance(_db, cantools.db.Database):
+            _db = cantools.database.load_file(db)
+            if isinstance(_db, cantools.database.Database):
                 databases.append(_db)
         except Exception as e:
             print(f"⚠️ Error loading DBC file {db}: {e}")
