@@ -36,48 +36,59 @@ from signals_manager import SignalsManager
 from metrics_manager import MetricsManager
 from utils import make_metric_line
 
-# Capture stdout while detecting
-buf = io.StringIO()
-with contextlib.redirect_stdout(buf):
-    all_configs = can.detect_available_configs()
+# # Capture stdout while detecting
+# buf = io.StringIO()
+# with contextlib.redirect_stdout(buf):
+#     all_configs = can.detect_available_configs()
 
-# Get the stdout output as a string
-stdout_output = buf.getvalue()
+# # Get the stdout output as a string
+# stdout_output = buf.getvalue()
 
-# Print it for debugging (optional)
-# print(stdout_output)
+# # Print it for debugging (optional)
+# # print(stdout_output)
 
-# Common failure message patterns in python-can
-failure_keywords = [
-    "unavailable",
-    "won't be able",
-    "Failed to load",
-    "could not import",
-    "does not work",
-    "has not been initialized",
-    "not installed",
-    "required for",
-    "No module named",
-]
+# # Common failure message patterns in python-can
+# failure_keywords = [
+#     "unavailable",
+#     "won't be able",
+#     "Failed to load",
+#     "could not import",
+#     "does not work",
+#     "has not been initialized",
+#     "not installed",
+#     "required for",
+#     "No module named",
+# ]
 
-# Parse failed interface names from stdout
-excluded_interfaces = set()
-for line in stdout_output.splitlines():
-    for keyword in failure_keywords:
-        if keyword.lower() in line.lower():
-            parts = line.split()
-            if parts:
-                excluded_interfaces.add(parts[0].lower())
+# # Parse failed interface names from stdout
+# excluded_interfaces = set()
+# for line in stdout_output.splitlines():
+#     for keyword in failure_keywords:
+#         if keyword.lower() in line.lower():
+#             parts = line.split()
+#             if parts:
+#                 excluded_interfaces.add(parts[0].lower())
 
 # Build the final interface list
-valid_interfaces = {
-    cfg["interface"]
-    for cfg in all_configs
-    if cfg["interface"].lower() not in excluded_interfaces
-}
+# valid_interfaces = [
+#     cfg["interface"]
+#     for cfg in all_configs
+#     if cfg["interface"].lower() not in excluded_interfaces
+# ]
+
+valid_interfaces = [
+    # "gs_usb",
+    "pcan",
+    # "virtual",
+    # "socketcan",
+    # "socketcand",
+    # "kvaser",
+]
+
 
 # Optional: re-run filtered configs
-filtered_configs = can.detect_available_configs(interfaces=list(valid_interfaces))
+# filtered_configs = can.detect_available_configs(interfaces=list(valid_interfaces))
+filtered_configs = can.detect_available_configs(interfaces=valid_interfaces)
 
 print("Working interfaces:", valid_interfaces)
 print("Filtered configs:", filtered_configs)
