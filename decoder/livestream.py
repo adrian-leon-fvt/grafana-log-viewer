@@ -1,8 +1,6 @@
 import sys
 import can
-import io
 import os
-import contextlib
 import cantools
 import cantools.database
 
@@ -18,7 +16,6 @@ from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QScrollArea,
-    QFrame,
     QSizePolicy,
     QTableWidget,
     QFileDialog,
