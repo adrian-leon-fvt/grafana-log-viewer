@@ -672,13 +672,10 @@ class MainWindow(QMainWindow):
                 if bitrate[-1] == "k"
                 else int(bitrate[:-1]) * 1000000
             )
-            bus = can.interface.Bus(
-                interface=iface,
-                channel=channel,
-                bitrate=int(_bitrate),
-                state=can.BusState.PASSIVE,
+            bus = can.ThreadSafeBus(
+                interface=iface, channel=channel, bitrate=int(_bitrate)
             )
-            self.status.showMessage(f"Connected to {device['name']} at {bitrate} bps.")
+            self.status.showMessage(f"Connected to {device['name']} at {bitrate}bps.")
             # Create chip for this connection
             chip = self._create_chip(device["name"], bitrate)
             self.chip_layout.addWidget(chip)
