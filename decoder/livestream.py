@@ -943,7 +943,9 @@ class MainWindow(QMainWindow):
         if not self.connected_busses:
             if self.mm_check_timer.isActive():
                 self.mm_check_timer.stop()
-            self.status.showMessage("No active connections. Metrics manager timer stopped.")
+            self.status.showMessage(
+                "No active connections. Metrics manager timer stopped."
+            )
 
 
 if __name__ == "__main__":
