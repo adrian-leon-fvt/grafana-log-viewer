@@ -543,6 +543,8 @@ class MainWindow(QMainWindow):
                 "Kvaser Virtual"
             ):
                 name = f"{dev_dict['device_name']} {dev_dict['channel']}"
+            if dev_dict["interface"] == "pcan":
+                name = f"{dev_dict['device_name']} ID:0x{dev_dict['device_id']:X}"
             data = {
                 "name": name,
                 "display_name": name,
