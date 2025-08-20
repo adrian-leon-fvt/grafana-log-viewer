@@ -622,20 +622,29 @@ class MainWindow(QMainWindow):
             cb = table.cellWidget(row, 0)
             if isinstance(cb, QCheckBox) and cb.isChecked():
                 can_id_item = table.item(row, 3)
-                if can_id_item:
+                is_extended_item = table.item(row, 4)
+                if can_id_item and is_extended_item:
                     try:
                         can_id_val = (
                             int(str(can_id_item.text()), 16)
                             if str(can_id_item.text()).startswith("0x")
                             else int(str(can_id_item.text()))
                         )
-                        can_ids.add(can_id_val)
+                        is_extended = is_extended_item.text() == "X"
+                        can_ids.add((can_id_val, is_extended))
                     except Exception:
                         continue
         # Ensure unique CAN IDs in filters
         unique_can_ids = list(can_ids)
         filters = (
-            [{"can_id": cid, "can_mask": 0x1FFFFFFF} for cid in unique_can_ids]
+            [
+                {
+                    "can_id": cid,
+                    "can_mask": 0x1FFFFFFF if ext else 0x7FF,
+                    "extended": ext,
+                }
+                for (cid, ext) in unique_can_ids
+            ]
             if unique_can_ids
             else None
         )
