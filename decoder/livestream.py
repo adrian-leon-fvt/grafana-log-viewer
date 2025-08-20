@@ -799,6 +799,7 @@ class MainWindow(QMainWindow):
                                 "name": sig.name,
                                 "message": msg.name,
                                 "can_id": hex(msg.frame_id),
+                                "extended": msg.is_extended_frame,
                                 "mux": mux,
                             }
                         )
