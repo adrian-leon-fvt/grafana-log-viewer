@@ -740,7 +740,26 @@ class MainWindow(QMainWindow):
         # Connect the jobNameChanged signal to update the reader
         if device in self.connected_busses:
             _, _, reader = self.connected_busses[device]
-            tab.jobNameChanged.connect(lambda name: setattr(reader, "job_name", name))
+
+            def handle_name_submit(text):
+                setattr(reader, "job_name", text)
+                tab.update_job_name_btn.setIcon(
+                    self.style().standardIcon(
+                        QStyle.StandardPixmap.SP_DialogApplyButton
+                    )
+                )
+
+            def handle_text_changed(text):
+                # If the reader has a job_name attribute, update it and change button icon
+                if hasattr(reader, "job_name") and (reader.job_name != text):
+                    tab.update_job_name_btn.setIcon(
+                        self.style().standardIcon(
+                            QStyle.StandardPixmap.SP_DialogSaveButton
+                        )
+                    )
+
+            tab.jobNameChanged.connect(handle_name_submit)
+            tab.job_name_edit.textChanged.connect(handle_text_changed)
 
     def _get_signals_for_bus(self, device):
         # Find all DBCs assigned to this bus
