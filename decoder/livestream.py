@@ -203,14 +203,13 @@ class MainWindow(QMainWindow):
                                     job=self.job_name,
                                 )
                                 metrics_manager.add_metric(metric_line)
-                    except Exception as e:
-                        pass
-                except Exception as e:
-                    print(f"[{self.bus_name}] Error reading: {e}")
+
+                        self.msleep(1) # Avoid busy loop
 
         def stop(self):
-            self.running = False
-            self.wait()
+            self._running_event.clear()
+            self.wait(deadline=100)
+            self.terminate()
 
         def update_signals(self, messages):
             if hasattr(self, "update_status"):
@@ -497,6 +496,7 @@ class MainWindow(QMainWindow):
         for device, (bus, chip, reader) in list(self.connected_busses.items()):
             try:
                 reader.stop()
+                bus.shutdown()
             except Exception:
                 pass
         # Gracefully stop the scanner thread
