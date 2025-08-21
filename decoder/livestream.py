@@ -255,7 +255,7 @@ class MainWindow(QMainWindow):
                                 else:
                                     print(metric_line)
 
-                        self.msleep(1) # Avoid busy loop
+                        self.usleep(100) # Avoid busy loop
 
         def stop(self):
             self._running_event.clear()
