@@ -4,7 +4,7 @@ import os
 import cantools
 import cantools.database
 
-from threading import Lock
+from threading import Lock, Event
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -156,38 +156,77 @@ metrics_manager = MetricsManager()
 
 
 class MainWindow(QMainWindow):
-
     class BusReader(QThread):
         update_signals_requested = Signal(list)
         update_status = Signal(str)
+        bus_state_changed = Signal(str)
+        bus_blink = Signal()
 
-        def __init__(self, bus, bus_name, parent=None, status_callback=None):
+        def __init__(
+            self,
+            bus: can.ThreadSafeBus,
+            bus_name: str,
+            chip: BusChip,
+            parent=None,
+            status_callback=None,
+        ):
             super().__init__(parent)
             self.bus = bus
             self.bus_name = bus_name
-            self.running = True
+            self._running_event = Event()
+            self._running_event.set()
             self._dbc_lock = Lock()
             self.db = cantools.database.Database()
             self.update_signals_requested.connect(self._do_update_signals)
             self.update_status.connect(status_callback) if status_callback else None
             self.job_name: str = bus_name
+            self.chip: BusChip = chip
 
         def run(self):
-            while self.running:
-                try:
-                    msg = self.bus.recv(timeout=0.2)
-                    if msg is None:
-                        continue
+            last_state = None
+            while self._running_event.is_set():
+                # Check bus state
+                state = "active"
+                if hasattr(self.bus, "state"):
+                    if self.bus.state == can.BusState.ERROR:
+                        state = "error"
+                    elif self.bus.state == can.BusState.PASSIVE:
+                        state = "passive"
+                if state != last_state:
+                    self.bus_state_changed.emit(state)
+                    last_state = state
+
+                # Read messages from the bus
+
+                if self.bus.state == can.BusState.ERROR:
+                    continue
+                
+                for msg in self.bus:
+                    if not self._running_event.is_set():
+                        break
+                    self.chip.set_indicator_blink(True)
                     with self._dbc_lock:
                         db = self.db
-                    try:
-                        decoded = db.decode_message(msg.arbitration_id, msg.data)
+                        decoded = None
+                        try:
+                            decoded = db.decode_message(msg.arbitration_id, msg.data)
+                        except cantools.database.DecodeError:
+                            print(
+                                f"⚠️ Decode error for message {msg.arbitration_id}: {msg.data}"
+                            )
+                            decoded = None
+                        except KeyError:
+                            print(
+                                f"⚠️ KeyError decoding message {msg.arbitration_id}: {msg.data}"
+                            )
+                            print(db.messages)
+                            decoded = None
+
                         if decoded and isinstance(decoded, dict):
                             message_obj = db.get_message_by_frame_id(msg.arbitration_id)
                             for sig_name, value in decoded.items():
                                 if not isinstance(value, (int, float)):
                                     continue
-                                # Find signal object for unit if available
                                 unit = ""
                                 for sig in message_obj.signals:
                                     if sig.name == sig_name:
@@ -225,9 +264,8 @@ class MainWindow(QMainWindow):
                     f"Signals updated for {self.bus_name} ({len(messages)} messages, {total_signals} signals)"
                 )
             with self._dbc_lock:
-                self.db = cantools.database.Database()
-                for msg in messages:
-                    self.db._add_message(msg)
+                self.db = cantools.database.Database(messages=messages)
+                print(self.db.messages)
 
     def __init__(self):
         super().__init__()
@@ -680,7 +718,7 @@ class MainWindow(QMainWindow):
             self.chip_layout.addWidget(chip)
             # Start a thread to read messages for this bus
             reader = self.BusReader(
-                bus, device["name"], status_callback=self.status.showMessage
+                bus, device["name"], status_callback=self.status.showMessage, chip=chip
             )
             reader.start()
             self.connected_busses[device["name"]] = (bus, chip, reader)
