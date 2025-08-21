@@ -51,7 +51,7 @@ class MetricsManager(QThread):
                 response = requests.post(
                     f"{self.vm_url}{VM_API_IMPORT_PROMETHEUS}", data="".join(batch)
                 )
-                if response.status_code != 200:
+                if response.status_code != 204:
                     print(
                         f"⚠️ Error sending metrics batch to {self.vm_url}{VM_API_IMPORT_PROMETHEUS}: HTTP {response.status_code} - {response.text}"
                     )
