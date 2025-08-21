@@ -488,7 +488,7 @@ def main():
                                 None,
                                 decoded_signals[signal],
                                 timestamp,
-                                job="",
+                                job="test",
                             )
                             try:
                                 requests.post(vm_import_url, data="".join(data))
