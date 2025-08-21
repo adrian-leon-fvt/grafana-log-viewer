@@ -1,8 +1,10 @@
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Signal
 
 
 class BusChip(QFrame):
+    blink = Signal()
+
     def __init__(self, device, bitrate, disconnect_callback=None, parent=None):
         super().__init__(parent)
         self.setObjectName("chip")
@@ -45,6 +47,7 @@ class BusChip(QFrame):
         self.last_blink = 0
         self.blink_timer.timeout.connect(lambda: self.set_indicator_blink(False))
         self.blink_timer.setSingleShot(True)
+        self.blink.connect(self.blink_timer.start)
 
     def set_state(self, state: str):
         # state: 'error', 'active', 'passive'
@@ -68,7 +71,7 @@ class BusChip(QFrame):
             self.state_indicator.setStyleSheet(
                 self.state_indicator.styleSheet() + "; border: 2px solid #222;"
             )
-            self.blink_timer.start()
+            self.blink.emit()
         else:
             # Remove extra border
             style = self.state_indicator.styleSheet()
