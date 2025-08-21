@@ -32,6 +32,7 @@ from PySide6.QtGui import QColor, QPalette, QIcon
 from dbc_table import DbcTable as DbcTableBase
 from signals_manager import SignalsManager
 from metrics_manager import MetricsManager
+from bus_chip import BusChip
 from utils import make_metric_line
 
 # # Capture stdout while detecting
@@ -887,31 +888,7 @@ class MainWindow(QMainWindow):
             reader.update_signals(selected_msgs)
 
     def _create_chip(self, device, bitrate):
-
-        chip = QFrame()
-        chip.setObjectName("chip")
-        chip.setStyleSheet(
-            """
-            QFrame#chip {
-                border: 1px solid #bbb;
-                border-radius: 12px;
-                padding: 2px 8px 2px 8px;
-            }
-        """
-        )
-        layout = QHBoxLayout()
-        layout.setContentsMargins(8, 2, 2, 2)
-        layout.setSpacing(4)
-        label = QLabel(f"{device} @ {bitrate}")
-        close_btn = QPushButton("❌")
-        close_btn.setFixedSize(20, 20)
-        close_btn.setStyleSheet("border: none; background: transparent;")
-        close_btn.clicked.connect(lambda: self._disconnect_bus(device))
-        layout.addWidget(label)
-        layout.addWidget(close_btn)
-        chip.setLayout(layout)
-        chip.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-        return chip
+        return BusChip(device, bitrate, disconnect_callback=self._disconnect_bus)
 
     def _disconnect_bus(self, device):
         # Remove chip and disconnect bus
