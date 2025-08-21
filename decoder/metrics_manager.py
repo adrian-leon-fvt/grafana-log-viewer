@@ -1,5 +1,6 @@
-from PySide6.QtCore import QThread, Signal, QMutex, QTimer
+from PySide6.QtCore import QThread, QMutex, QTimer
 import requests
+from victoria_metrics_connection import VM_API_IMPORT_PROMETHEUS, VM_DEFAULT_URL
 from utils import *
 from config import *
 
@@ -7,7 +8,10 @@ from config import *
 class MetricsManager(QThread):
 
     def __init__(
-        self, parent=None, name: str = "MetricsManager", batch_limit: int = 50000
+        self,
+        parent=None,
+        name: str = "MetricsManager",
+        batch_limit: int = 50000,
     ):
         super().__init__(parent)
         self.setObjectName(name)
@@ -15,6 +19,7 @@ class MetricsManager(QThread):
         self.buffer = []
         self.mutex = QMutex()
         self.running = True
+        self.vm_url = VM_DEFAULT_URL  # Default URL, can be changed
         self.start()
 
     def add_metric(self, metric_line: str):
@@ -27,6 +32,14 @@ class MetricsManager(QThread):
     def set_batch_limit(self, limit: int):
         self.batch_limit = limit
 
+    def set_url(self, url: str):
+        if "api" in url:
+            url = url[: url.index("api")]
+        if url.endswith("/"):
+            url = url[:-1]
+        self.vm_url = url
+        print(f"VictoriaMetrics URL set to: {self.vm_url}")
+
     def _send_batch(self):
         # Only lock for the minimum time needed
         self.mutex.lock()
@@ -35,8 +48,14 @@ class MetricsManager(QThread):
         self.mutex.unlock()
         if batch:
             try:
-                requests.post(vm_import_url, data="".join(batch))
-                # print("".join(batch))  # For debugging purposes
+                response = requests.post(
+                    f"{self.vm_url}{VM_API_IMPORT_PROMETHEUS}", data="".join(batch)
+                )
+                if response.status_code != 200:
+                    print(
+                        f"⚠️ Error sending metrics batch to {self.vm_url}{VM_API_IMPORT_PROMETHEUS}: HTTP {response.status_code} - {response.text}"
+                    )
+                    print("".join(batch))  # For debugging purposes
             except requests.RequestException as e:
                 print(f"⚠️ Error sending metrics batch: {e}")
 
@@ -147,6 +166,7 @@ if __name__ == "__main__":
                         print_to_output("Sending batch:\n" + "\n".join(batch))
                     except Exception as e:
                         print_to_output(f"⚠️ Error sending metrics batch: {e}")
+
             self.mm._send_batch = patched_send_batch
 
             # QTimer in main thread to call check_and_send

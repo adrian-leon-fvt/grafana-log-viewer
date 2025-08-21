@@ -32,7 +32,8 @@ def make_metric_line(
     job: str = "",
 ) -> str:
     # Format the metric line for Prometheus
-    return f'{metric_name}{{job="{job}",message="{message}",unit="{unit}"}} {value} {timestamp.timestamp() if type(timestamp) is datetime else timestamp}\n'
+    job_underscored = job.replace(" ", "_")
+    return f'{metric_name}{{job="{job_underscored}",message="{message}",unit="{unit}"}} {value} {timestamp.timestamp() if type(timestamp) is datetime else timestamp}\n'
 
 
 def is_victoriametrics_online(timeout: float = 3.0) -> bool:

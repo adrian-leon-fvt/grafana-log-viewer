@@ -11,6 +11,7 @@ from PySide6.QtCore import Signal, Qt
 
 import requests
 
+VM_DEFAULT_URL = "http://localhost:8428"
 
 VM_API_DELETE = "/api/v1/admin/tsdb/delete_series"
 VM_API_EXPORT = "/api/v1/export"
@@ -32,7 +33,7 @@ class VictoriaMetricsConnectionWidget(QWidget):
     urlChanged = Signal(str)
     sendingToggled = Signal(bool)
 
-    def __init__(self, parent=None, initial_url: str = "", enabled: bool = True):
+    def __init__(self, parent=None, initial_url: str = VM_DEFAULT_URL, enabled: bool = False):
         super().__init__(parent)
         self._init_ui(initial_url, enabled)
 
@@ -79,7 +80,7 @@ class VictoriaMetricsConnectionWidget(QWidget):
 
         layout.addStretch(1)
 
-    def _test_url(self):
+    def _test_url(self) -> bool:
         url = self.get_url()
         if "/api/" in url:
             url = url[: url.index("/api/")]
@@ -87,7 +88,6 @@ class VictoriaMetricsConnectionWidget(QWidget):
             url = url[:-1]
         self.status_label.setText("Testing...")
         self.status_label.setStyleSheet("color: orange;")
-        QApplication.processEvents()
         try:
             resp = requests.get(
                 f"{url}{VM_API_QUERY}", params={"query": "up"}, timeout=0.5
@@ -95,6 +95,7 @@ class VictoriaMetricsConnectionWidget(QWidget):
             if resp.status_code == 200:
                 self.status_label.setText("Valid URL")
                 self.status_label.setStyleSheet("color: green;")
+                return True
             else:
                 full_text = f"Status: {resp.status_code} | {resp.reason}"
                 max_chars = 32
@@ -125,6 +126,7 @@ class VictoriaMetricsConnectionWidget(QWidget):
                 self.status_label.setText(full_text)
                 self.status_label.setToolTip("")
             self.status_label.setStyleSheet("color: red;")
+        return False
 
     def _emit_url_changed(self):
         url = self.url_edit.text()
@@ -132,7 +134,8 @@ class VictoriaMetricsConnectionWidget(QWidget):
             self.status_label.setText("URL must not include '/api/' portion")
             self.status_label.setStyleSheet("color: orange;")
             return
-        self.urlChanged.emit(url)
+        if self._test_url():
+            self.urlChanged.emit(url)
 
     def _emit_sending_toggled(self, checked):
         self.sendingToggled.emit(checked)

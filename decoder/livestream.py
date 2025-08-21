@@ -34,6 +34,7 @@ from signals_manager import SignalsManager
 from metrics_manager import MetricsManager
 from bus_chip import BusChip
 from utils import make_metric_line
+from victoria_metrics_connection import VictoriaMetricsConnectionWidget
 
 # # Capture stdout while detecting
 # buf = io.StringIO()
@@ -156,6 +157,9 @@ metrics_manager = MetricsManager()
 
 
 class MainWindow(QMainWindow):
+    start_mm_timer = Signal()
+    stop_mm_timer = Signal()
+
     class BusReader(QThread):
         update_signals_requested = Signal(list)
         update_status = Signal(str)
@@ -175,6 +179,8 @@ class MainWindow(QMainWindow):
             self.bus_name = bus_name
             self._running_event = Event()
             self._running_event.set()
+            self._logging_enabled = Event()
+            self._logging_enabled.clear()
             self._dbc_lock = Lock()
             self.db = cantools.database.Database()
             self.update_signals_requested.connect(self._do_update_signals)
@@ -208,8 +214,14 @@ class MainWindow(QMainWindow):
                     with self._dbc_lock:
                         db = self.db
                         decoded = None
+                        message_obj = None
                         try:
-                            decoded = db.decode_message(msg.arbitration_id, msg.data)
+                            _msgs = [m for m in db.messages if m.frame_id == msg.arbitration_id]
+
+                            if _msgs:
+                                message_obj = _msgs[0]
+                                decoded = message_obj.decode(msg.data)
+                            
                         except cantools.database.DecodeError:
                             print(
                                 f"⚠️ Decode error for message {msg.arbitration_id}: {msg.data}"
@@ -219,11 +231,9 @@ class MainWindow(QMainWindow):
                             print(
                                 f"⚠️ KeyError decoding message {msg.arbitration_id}: {msg.data}"
                             )
-                            print(db.messages)
                             decoded = None
 
-                        if decoded and isinstance(decoded, dict):
-                            message_obj = db.get_message_by_frame_id(msg.arbitration_id)
+                        if decoded and isinstance(decoded, dict) and message_obj:
                             for sig_name, value in decoded.items():
                                 if not isinstance(value, (int, float)):
                                     continue
@@ -240,7 +250,10 @@ class MainWindow(QMainWindow):
                                     timestamp=msg.timestamp,
                                     job=self.job_name,
                                 )
-                                metrics_manager.add_metric(metric_line)
+                                if self._logging_enabled.is_set():
+                                    metrics_manager.add_metric(metric_line)
+                                else:
+                                    print(metric_line)
 
                         self.msleep(1) # Avoid busy loop
 
@@ -265,7 +278,6 @@ class MainWindow(QMainWindow):
                 )
             with self._dbc_lock:
                 self.db = cantools.database.Database(messages=messages)
-                print(self.db.messages)
 
     def __init__(self):
         super().__init__()
@@ -500,6 +512,21 @@ class MainWindow(QMainWindow):
         self.mm_check_timer = QTimer(self)
         self.mm_check_timer.setInterval(1000)
         self.mm_check_timer.timeout.connect(metrics_manager.check_and_send)
+        self.start_mm_timer.connect(lambda: self.mm_check_timer.start())
+        self.stop_mm_timer.connect(lambda: self.mm_check_timer.stop())
+
+        # Add a VictoriaMetricsConnectionWidget
+        self.vm_connection_widget = VictoriaMetricsConnectionWidget(self)
+        self.vm_connection_widget.urlChanged.connect(lambda url: self.mm.set_url(url))
+        def handle_sending_toggled(sending):
+            for (_, _, reader) in list(self.connected_busses.values()):
+                reader._logging_enabled.set() if sending else reader._logging_enabled.clear()
+            if sending:
+                self.start_mm_timer.emit()
+            else:
+                self.stop_mm_timer.emit()
+        self.vm_connection_widget.sendingToggled.connect(handle_sending_toggled)
+        main_layout.addWidget(self.vm_connection_widget)
 
     def on_dbc_assignment_changed(self):
         # Called when a DBC file is assigned/unassigned to a bus
