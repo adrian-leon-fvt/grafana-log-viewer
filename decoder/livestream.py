@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QGridLayout,
     QCheckBox,
+    QStyle,
 )
 
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
