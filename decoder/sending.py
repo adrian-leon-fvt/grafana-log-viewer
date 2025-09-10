@@ -482,7 +482,10 @@ def main():
             logger.info("Starting CAN monitoring...")
             while True:
                 try:
-                    timestamp, message_data = can_reader.read_decoded_message()
+                    result = can_reader.read_decoded_message()
+                    if result is None:
+                        continue
+                    timestamp, message_data = result
                     if not message_data:
                         continue
                     message = message_data["message"]
