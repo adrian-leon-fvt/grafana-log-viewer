@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from asammdf.blocks.types import StrPath
 import requests
+import os
 from config import *
 
 
@@ -52,3 +53,15 @@ def is_victoriametrics_online(timeout: float = 3.0) -> bool:
         return False
 
     return resp_status_code == 200
+
+
+def get_windows_home_path() -> Path:
+    """
+    Try to get the windows home path on both Windows and WSL/Linux.
+    Looks for a suitable path in the PATH environment variable or defaults to a common location.
+    """
+    return Path(
+        os.environ["USERPROFILE"]
+        if os.name == "nt"
+        else f'/mnt/c/Users/{subprocess.run(["powershell.exe", "Write-Host $env:USERNAME"], capture_output=True, text=True).stdout.strip()}'
+    )
