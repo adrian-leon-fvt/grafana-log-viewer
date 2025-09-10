@@ -267,9 +267,14 @@ def decode_and_send(
             )
             & (d65_canedge_file_data.Group == job)
         ]
+        file_list = (
+            list(_df["File"])
+            if "File" in _df and hasattr(_df["File"], "__iter__")
+            else []
+        )
         files = [
             Path(file if os.name == "posix" else file.replace("/mnt/c/", "C:/"))
-            for file in _df["File"]
+            for file in file_list
         ]
 
     database_files: dict[BusType, Iterable[DbcFileType]] = {}
