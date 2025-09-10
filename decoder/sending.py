@@ -50,21 +50,9 @@ def get_onedrive_path() -> Path | None:
 
 d65_onedrive_files = get_onedrive_path()
 
-d65_dbc_files = {
-    "Lower": [
-        "D65_CH0_NV.dbc",
-        "D65_CH1_LV_PDU.dbc",
-        # "D65_CH2_RCS_J1939.dbc",
-        # "D65_CH3_RCS_Module.dbc",
-        "D65_CH4_Main.dbc",
-    ],
-    "Upper": [
-        "D65_CH5_CM.dbc",
-        "D65_CH6_EVCC.dbc",
-    ],
-}
-
-d65_canedge_file_data = None
+SIGNALS_TO_SKIP = [
+    "C2S_mux",
+]
 
 
 def get_mf4_files(
@@ -161,12 +149,16 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
 
 
 def send_signal(signal: Signal, start_time: datetime, job: str | None):
+    message, metric_name = get_channel_data(signal)
+
+    if metric_name in SIGNALS_TO_SKIP:
+        return
+
     _signal = check_signal_range(signal, start_time)
     if _signal is None or len(_signal.timestamps) < 5:
         print(f"  ☑️ No new data for {signal.name}, skipping ...", flush=True)
         return
 
-    message, metric_name = get_channel_data(_signal)
     unit = _signal.unit if _signal.unit else ""
     _sig_start_str = start_time + timedelta(seconds=_signal.timestamps[0])
     _sig_end_str = start_time + timedelta(seconds=_signal.timestamps[-1])
@@ -246,36 +238,14 @@ def decode_and_send(
     job: str | None = None,
     dbc_files: Sequence[DbcFileType] | None = None,
     dbc_directory: Path | str | None = None,
+    concat_first: bool = True,
+    datetime_after: datetime | None = None,
 ):
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
     """
-    global d65_canedge_file_data
 
-    files = list()
-    if d65_canedge_file_data is None:
-        files = get_mf4_files(
-            directory, 
-            datetime_after=datetime.now() - timedelta(hours=8)
-        )
-    else:
-        # Get a subset to process
-        _df = d65_canedge_file_data[
-            (
-                pd.to_datetime(d65_canedge_file_data["End Time"])
-                > pd.Timestamp("2025-07-31", tz="UTC")
-            )
-            & (d65_canedge_file_data.Group == job)
-        ]
-        file_list = (
-            list(_df["File"])
-            if "File" in _df and hasattr(_df["File"], "__iter__")
-            else []
-        )
-        files = [
-            Path(file if os.name == "posix" else file.replace("/mnt/c/", "C:/"))
-            for file in file_list
-        ]
+    files = get_mf4_files(directory, datetime_after=datetime_after)
 
     database_files: dict[BusType, Iterable[DbcFileType]] = {}
 
@@ -299,29 +269,56 @@ def decode_and_send(
         print(f"  🤷‍♂️ No DBC files found in {dbc_directory or directory}.")
         return
 
-    for file in files:
-        mdf = MDF(file)
-        if job is None:
-            job = file.stem
-        _file = str(file.as_posix())
-        _split = _file.split("/")
-        _dispname = "/".join(_split[_split.index(job) :])
+    if concat_first and len(files) > 1:
+        mdf = MDF()
         try:
+            print(f" ⏳ Concatenating {len(files)} files ...", end="\r", flush=True)
             start = time.time()
-            print(f" ⏳ Decoding ../{_dispname} ...", end="\r", flush=True)
-            decoded = mdf.extract_bus_logging(
-                database_files, ignore_value2text_conversion=True
-            )
-            print(
-                f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s", flush=True
-            )
-            if list(decoded.iter_channels()):
-                send_decoded(decoded, job)
-            else:
-                print(f"⚠️ No signals found in {_dispname}, skipping sending.")
+            mdf = MDF().concatenate(files)
+            print(f" ✅ Concatenated in {time.time() - start:.3f}s", flush=True)
+
+            try:
+                print(f" ⏳ Decoding concatenated files ...", end="\r", flush=True)
+                start = time.time()
+                decoded = mdf.extract_bus_logging(
+                    database_files, ignore_value2text_conversion=True
+                )
+                print(f" ✅ Decoded in {time.time() - start:.3f}s", flush=True)
+                if list(decoded.iter_channels()):
+                    send_decoded(decoded, job)
+                else:
+                    print("⚠️ No signals found, skipping sending.")
+
+            except Exception as e:
+                print(f"❌ Error decoding concatenated files: {e}")
         except Exception as e:
-            print(f"❌ Error decoding {_dispname}: {e}")
-            continue
+            print(f"❌ Error concatenating files: {e}")
+
+    else:
+        for file in files:
+            mdf = MDF(file)
+            if job is None:
+                job = file.stem
+            _file = str(file.as_posix())
+            _split = _file.split("/")
+            _dispname = "/".join(_split[_split.index(job) :])
+            try:
+                start = time.time()
+                print(f" ⏳ Decoding ../{_dispname} ...", end="\r", flush=True)
+                decoded = mdf.extract_bus_logging(
+                    database_files, ignore_value2text_conversion=True
+                )
+                print(
+                    f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s",
+                    flush=True,
+                )
+                if list(decoded.iter_channels()):
+                    send_decoded(decoded, job)
+                else:
+                    print(f"⚠️ No signals found in {_dispname}, skipping sending.")
+            except Exception as e:
+                print(f"❌ Error decoding {_dispname}: {e}")
+                continue
 
 
 def send_d65_onedrive():
@@ -339,27 +336,52 @@ def send_d65_onedrive():
                 r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
             )
 
-        upper_dbc_files = [
+        d65_dbc_files = {
+            "Lower": [
+                "D65_CH0_NV.dbc",
+                "D65_CH1_LV_PDU.dbc",
+                # "D65_CH2_RCS_J1939.dbc",
+                # "D65_CH3_RCS_Module.dbc",
+                "D65_CH4_Main.dbc",
+            ],
+            "Upper": [
+                "D65_CH5_CM.dbc",
+                "D65_CH6_EVCC.dbc",
+            ],
+        }
+
+        upper_dbc_files = []
+        upper_dbc_files += [
             (Path.joinpath(_d65_loc, "busses", dbc), 0)
             for dbc in d65_dbc_files["Upper"]
         ]
-        upper_dbc_files.append(
+        upper_dbc_files += [
             (Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0)
-        )
+        ]
+
+        lower_dbc_files: list[DbcFileType] = []
+        lower_dbc_files += [
+            (Path.joinpath(_d65_loc, "busses", dbc), 0)
+            for dbc in d65_dbc_files["Lower"]
+        ]
+        lower_dbc_files += [(Path.joinpath(_d65_loc, "D65_RCS.dbc"), 0)]
+
+        cutoff = datetime.now() - timedelta(hours=8)
+
         decode_and_send(
             d65_onedrive_files / "Upper",
             dbc_files=upper_dbc_files,
             job="Upper",
+            datetime_after=cutoff,
+            concat_first=True,
         )
         print("=> Upper 👍")
-        lower_dbc_files = [
-            (Path.joinpath(_d65_loc, "busses", dbc), 0)
-            for dbc in d65_dbc_files["Lower"]
-        ]
         decode_and_send(
             d65_onedrive_files / "Lower",
             dbc_files=lower_dbc_files,
             job="Lower",
+            datetime_after=cutoff,
+            concat_first=True,
         )
         print("=> Lower 👍")
 
