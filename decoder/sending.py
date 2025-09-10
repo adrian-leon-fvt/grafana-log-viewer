@@ -300,7 +300,7 @@ def decode_and_send(
         return
 
     for file in files:
-        mdf = MDF(file, process_bus_logging=False)
+        mdf = MDF(file)
         if job is None:
             job = file.stem
         _file = str(file.as_posix())
