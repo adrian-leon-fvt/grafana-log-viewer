@@ -39,15 +39,40 @@ class DBCDecoder:
         try:
             decoded_signals = self.db.decode_message(
                 msg.arbitration_id, msg.data)
-            # return {
-            #     'timestamp': msg.timestamp,
-            #     'message_name': self.db.get_message_by_frame_id(msg.arbitration_id).name,
-            #     'signals': decoded_signals
-            # }
-            return {
-                "message": self.db.get_message_by_frame_id(msg.arbitration_id),
-                "decoded_signals": decoded_signals
-            }
+            # Find the message object manually by arbitration_id
+            message_obj = None
+            for m in self.db.messages:
+                if m.frame_id == msg.arbitration_id:
+                    # Check for muxing
+                    if m.is_multiplexed():
+                        # Get mux value from decoded signals
+                        mux_signal = m.multiplexer_signal
+                        mux_val = decoded_signals.get(mux_signal.name)
+                        # Find the correct muxed signal group
+                        for group in m.multiplexed_signals:
+                            if group.multiplexer_value == mux_val:
+                                message_obj = m
+                                break
+                        if message_obj:
+                            break
+                    else:
+                        message_obj = m
+                        break
+            signals_with_units = {}
+            if message_obj is not None:
+                for signal_name, value in decoded_signals.items():
+                    signal_obj = next((s for s in message_obj.signals if s.name == signal_name), None)
+                    unit = signal_obj.unit if signal_obj and hasattr(signal_obj, 'unit') else ""
+                    signals_with_units[signal_name] = (value, unit)
+                return {
+                    "message": message_obj,
+                    "decoded_signals": signals_with_units
+                }
+            else:
+                self.logger.warning(
+                    f"No message object found for ID {msg.arbitration_id:04X}"
+                )
+                return None
         except KeyError:
             # No matching message ID in DBC
             return None

@@ -492,13 +492,14 @@ def main():
                     decoded_signals = message_data["decoded_signals"]
                     if message:
                         for signal in decoded_signals.keys():
+                            value, unit = decoded_signals[signal]
                             data = make_metric_line(
                                 message.name,
                                 signal,
-                                None,
-                                decoded_signals[signal],
+                                unit,
+                                value,
                                 timestamp,
-                                job="test",
+                                job="d65_livestream",
                             )
                             try:
                                 requests.post(vm_import_url, data="".join(data))

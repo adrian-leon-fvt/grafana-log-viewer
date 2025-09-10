@@ -48,7 +48,7 @@ class CANReader:
         msg = self.read_message(timeout)
         if msg and self.dbc_decoder:
             return [msg.timestamp, self.dbc_decoder.decode_message(msg)]
-        return [msg.timestamp, msg]
+        return [None, msg]
 
     def _log_message(self, msg: Message):
         if self.dbc_decoder:
