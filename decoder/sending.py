@@ -80,8 +80,10 @@ def get_mf4_files(
     files = list(directory.rglob("*.[mM][fF]4"))
     if datetime_after is not None:
         files = [
-            f for f in files
-            if datetime.fromtimestamp(f.stat().st_mtime, tz=datetime_after.tzinfo) > datetime_after
+            f
+            for f in files
+            if datetime.fromtimestamp(f.stat().st_mtime, tz=datetime_after.tzinfo)
+            > datetime_after
         ]
     return files
 
