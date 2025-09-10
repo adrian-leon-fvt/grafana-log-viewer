@@ -31,25 +31,6 @@ def setup_logging():
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 
 
-def get_onedrive_path() -> Path | None:
-    """
-    Try to find the OneDrive CANEdge path on both Windows and WSL/Linux.
-    Looks for a suitable path in the PATH environment variable or defaults to a common location.
-    """
-    rig_crew_canedge = Path.joinpath(
-        (
-            Path(os.environ["USERPROFILE"])
-            if os.name == "nt"
-            else f'/mnt/c/Users/{subprocess.run(["powershell.exe", "Write-Host $env:USERNAME"], capture_output=True, text=True).stdout.strip()}'
-        ),
-        r"Epiroc/Rig Crew - Private - General/5. Testing/CANEdge",
-    )
-    # Fallback to default path if not found
-    return rig_crew_canedge
-
-
-d65_onedrive_files = get_onedrive_path()
-
 SIGNALS_TO_SKIP = [
     "C2S_mux",
 ]
@@ -322,16 +303,23 @@ def decode_and_send(
 
 
 def send_d65_onedrive():
-    if d65_onedrive_files is None:
+    d65_onedrive_folder = Path.joinpath(
+        get_windows_home_path(),
+        r"Epiroc/Rig Crew - Private - General/5. Testing/CANEdge",
+    )
+
+    if not d65_onedrive_folder.exists():
         print(
             "⚠️ D65 OneDrive path not found. Please check your PATH environment variable."
         )
         return
     else:
+
+        # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
         _d65_loc = Path.joinpath(
             Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
         )
-        if os.name == "nt":
+        if os.name == "nt":  # Override if on windows
             _d65_loc = Path(
                 r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
             )
@@ -341,7 +329,7 @@ def send_d65_onedrive():
                 "D65_CH0_NV.dbc",
                 "D65_CH1_LV_PDU.dbc",
                 # "D65_CH2_RCS_J1939.dbc",
-                # "D65_CH3_RCS_Module.dbc",
+                "D65_CH3_RCS_Module.dbc",
                 "D65_CH4_Main.dbc",
             ],
             "Upper": [
@@ -350,7 +338,7 @@ def send_d65_onedrive():
             ],
         }
 
-        upper_dbc_files = []
+        upper_dbc_files: list[DbcFileType] = []
         upper_dbc_files += [
             (Path.joinpath(_d65_loc, "busses", dbc), 0)
             for dbc in d65_dbc_files["Upper"]
@@ -364,12 +352,12 @@ def send_d65_onedrive():
             (Path.joinpath(_d65_loc, "busses", dbc), 0)
             for dbc in d65_dbc_files["Lower"]
         ]
-        lower_dbc_files += [(Path.joinpath(_d65_loc, "D65_RCS.dbc"), 0)]
+        lower_dbc_files += []
 
         cutoff = datetime.now() - timedelta(hours=8)
 
         decode_and_send(
-            d65_onedrive_files / "Upper",
+            d65_onedrive_folder / "Upper",
             dbc_files=upper_dbc_files,
             job="Upper",
             datetime_after=cutoff,
@@ -377,7 +365,7 @@ def send_d65_onedrive():
         )
         print("=> Upper 👍")
         decode_and_send(
-            d65_onedrive_files / "Lower",
+            d65_onedrive_folder / "Lower",
             dbc_files=lower_dbc_files,
             job="Lower",
             datetime_after=cutoff,
