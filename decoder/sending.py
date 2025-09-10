@@ -244,7 +244,7 @@ def send_decoded(decoded: Path | MDF, job: str | None = None) -> None:
 def decode_and_send(
     directory: Path | str,
     job: str | None = None,
-    dbc_files: list[DbcFileType] | None = None,
+    dbc_files: Sequence[DbcFileType] | None = None,
     dbc_directory: Path | str | None = None,
 ):
     """
