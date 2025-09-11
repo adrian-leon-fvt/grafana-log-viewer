@@ -135,7 +135,13 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
     return signal
 
 
-def send_signal(signal: Signal, start_time: datetime, job: str | None):
+def send_signal(
+    signal: Signal,
+    start_time: datetime,
+    job: str | None,
+    print_metric_line: bool = False,
+    send_signal: bool = True,
+):
     message, metric_name = get_channel_data(signal)
 
     if metric_name in SIGNALS_TO_SKIP:
@@ -169,7 +175,10 @@ def send_signal(signal: Signal, start_time: datetime, job: str | None):
         batch.append(data)
         if len(batch) >= batch_size:
             try:
-                requests.post(vm_import_url, data="".join(batch))
+                if print_metric_line:
+                    print("".join(batch))
+                if send_signal:
+                    requests.post(vm_import_url, data="".join(batch))
             except Exception as e:
                 print(f"\n ‼️ Error sending batch: {e}", flush=True)
             batch = []
