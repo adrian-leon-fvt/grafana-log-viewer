@@ -33,6 +33,12 @@ def setup_logging():
 
 SIGNALS_TO_SKIP = [
     "C2S_mux",
+    "RCS_DEV1_mux",
+    "RCS_DEV2_mux",
+    "RCS_DEV3_mux",
+    "RCS_DEV4_mux",
+    "RCS_DEV5_mux",
+    "RCS_DEV6_mux",
 ]
 
 
