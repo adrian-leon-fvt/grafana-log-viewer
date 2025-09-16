@@ -1,3 +1,34 @@
+### Usage
+# This script is meant to post decoded signals to the VictoriaMetrics TSDB from 
+# the Snow Leopard TMS tests CAN logs in the Epiroc OneDrive folder. 
+#
+## Running: 
+#   1. Setup the script with the start/end or folder filters. 
+#   2. Run the script. 
+#   * Note: if the snow_leopard_paths.csv file is not found, it will make one
+#           this may take a while depending on how many of the files are downloaded
+#           from the cloud. CAN_LOGS folder must be accessible.
+#
+## The following functions are included:
+# - read_filtered_paths_file: 
+#    Reads a CSV file (separated by ; instead of comma) with preprocessed data, 
+#    it includes the path to the file, start and end timestamps
+# - save_filtered_paths_file: 
+#    Saves a CSV file (separated by ; instead of comma), will remove
+#    the home directory from the path to make it agnostic
+# - get_unique_filepaths: 
+#    Scans the base directory recursively for .mf4 files, will make an attempt
+#    to filter out duplicates and non-raw files. Will also extract the start and end
+#    timestamps from the files.
+# - filter_by_date:
+#    Filters the list of files by a given start and end datetime
+# - filter_by_folder:
+#    Filters the list of files by a given folder name
+# - process_files:
+#    Processes the list of files in batches, concatenates them, decodes them
+#    using the provided DBC file, and sends the decoded signals to the TSDB
+
+
 from pathlib import Path
 from datetime import datetime, timedelta
 from itertools import chain
@@ -12,18 +43,22 @@ from asammdf import MDF
 from zoneinfo import ZoneInfo
 
 
-def read_filtered_paths_file(filepath: Path | str) -> list:
+def read_filtered_paths_file(
+    filepath: Path | str,
+) -> list[tuple[Path, datetime, datetime]]:
     ts = time.time()
     print(f"📃 Reading filtered paths from {filepath} ... ")
+    win_home = get_windows_home_path()
     try:
         with open(filepath, "r") as f:
             filtered = []
             for line in f.readlines():
                 if line.strip():
                     path, start, end = line.strip().split(";")
+
                     filtered.append(
                         (
-                            Path(path),
+                            Path.joinpath(win_home, path),
                             datetime.fromisoformat(start),
                             datetime.fromisoformat(end),
                         )
@@ -41,7 +76,9 @@ def save_filtered_paths_file(filtered: list, filepath: Path | str):
     try:
         with open(filepath, "w") as f:
             for file, start, end in filtered:
-                f.write(f"{file};{start.isoformat()};{end.isoformat()}\n")
+                _file = re.sub(r"^/mnt/[a-zA-Z]+/Users/.+/", "", str(file.as_posix()))
+                _file = re.sub(r"[a-zA-Z]:/Users/.+/", "", _file)
+                f.write(f"{_file};{start.isoformat()};{end.isoformat()}\n")
 
         print(f"✅ Saved filtered paths in {get_time_str(ts)}")
     except Exception as e:
@@ -208,7 +245,7 @@ if __name__ == "__main__":
         "TMS Trial logs feb 25 2025",  # 10
     ]
 
-    filtered_filepath = r"D:/utils/grafana-log-viewer/decoder/filtered_paths.csv"
+    filtered_filepath = r"D:/utils/grafana-log-viewer/decoder/snow_leopard_paths.csv"
     dbc_file = can_logs.parent.joinpath(
         "dbc", "snow_leopard_gen2_windows_no_value_tables.dbc"
     )
@@ -226,9 +263,9 @@ if __name__ == "__main__":
         f" -> ℹ️ There are {len(filtered)} files to process, from {_min_ts.isoformat()} to {_max_ts.isoformat()}"
     )
 
-    month_offset = 0
+    month_offset = 3
     start_time = _min_ts + timedelta(days=month_offset * 30)
-    end_time = start_time + timedelta(days=month_offset * 30 + 30)
+    end_time = start_time + timedelta(days=30)
 
     filtered_by_date = filter_by_date(
         filtered, start_time=start_time, end_time=end_time
