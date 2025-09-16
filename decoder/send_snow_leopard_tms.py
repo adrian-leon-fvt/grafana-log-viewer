@@ -186,7 +186,7 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1):
             _files = files[i:]
 
         for file, _, _ in _files:
-            print(f'=> Processing ../{"/".join(file.parts[-3:])}')
+            print(f'=> [{i} of {len(files)}] Processing ../{"/".join(file.parts[-3:])}')
 
         try:
             ts = time.time()
