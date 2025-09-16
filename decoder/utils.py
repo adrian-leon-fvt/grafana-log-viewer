@@ -9,8 +9,21 @@ from config import *
 
 def get_time_str(start_time: float) -> str:
     elapsed = time.time() - start_time
-    mins, secs = divmod(elapsed, 60)
-    return f"{mins:.0f}m{secs:.3f}s" if mins else f"{secs:.3f}s"
+    days, rem = divmod(elapsed, 86400)
+    hours, rem = divmod(rem, 3600)
+    mins, secs = divmod(rem, 60)
+
+    parts = []
+    if days:
+        parts.append(f"{int(days)}d")
+    if hours or parts:
+        parts.append(f"{int(hours)}h")
+    if mins or parts:
+        parts.append(f"{int(mins)}m")
+    if secs or parts:
+        parts.append(f"{secs:.3f}s")
+
+    return "".join(parts)
 
 
 def get_dbc_files(directory: Path | str) -> list[StrPath]:

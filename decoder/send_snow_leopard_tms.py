@@ -1,22 +1,22 @@
 ### Usage
-# This script is meant to post decoded signals to the VictoriaMetrics TSDB from 
-# the Snow Leopard TMS tests CAN logs in the Epiroc OneDrive folder. 
+# This script is meant to post decoded signals to the VictoriaMetrics TSDB from
+# the Snow Leopard TMS tests CAN logs in the Epiroc OneDrive folder.
 #
-## Running: 
-#   1. Setup the script with the start/end or folder filters. 
-#   2. Run the script. 
+## Running:
+#   1. Setup the script with the start/end or folder filters.
+#   2. Run the script.
 #   * Note: if the snow_leopard_paths.csv file is not found, it will make one
 #           this may take a while depending on how many of the files are downloaded
 #           from the cloud. CAN_LOGS folder must be accessible.
 #
 ## The following functions are included:
-# - read_filtered_paths_file: 
-#    Reads a CSV file (separated by ; instead of comma) with preprocessed data, 
+# - read_filtered_paths_file:
+#    Reads a CSV file (separated by ; instead of comma) with preprocessed data,
 #    it includes the path to the file, start and end timestamps
-# - save_filtered_paths_file: 
+# - save_filtered_paths_file:
 #    Saves a CSV file (separated by ; instead of comma), will remove
 #    the home directory from the path to make it agnostic
-# - get_unique_filepaths: 
+# - get_unique_filepaths:
 #    Scans the base directory recursively for .mf4 files, will make an attempt
 #    to filter out duplicates and non-raw files. Will also extract the start and end
 #    timestamps from the files.
@@ -200,6 +200,7 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1):
                 decoded = cc.extract_bus_logging(database_files=database_files)  # type: ignore
                 print(f"  ☑️ Decoded in {get_time_str(ts)}")
 
+                ts = time.time()
                 for sig in decoded.iter_channels():
                     send_signal(
                         signal=sig,
@@ -209,6 +210,7 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1):
                         send_signal=True,
                         skip_signal_range_check=True,
                     )
+                print(f"  ☑️ Sent batch of signals in {get_time_str(ts)}")
             except Exception as e:
                 print(f"  ❌ Error decoding and sending signals: {e}")
                 continue
@@ -282,4 +284,6 @@ if __name__ == "__main__":
     #     print(f"Found {len(folder_files)} files in folder {selected_folder} to process")
 
     if filtered_by_date:
+        total_ts = time.time()
         process_files(filtered_by_date, dbc_file, batch_size=5)
+        print(f"🏁 All done in {get_time_str(total_ts)}")
