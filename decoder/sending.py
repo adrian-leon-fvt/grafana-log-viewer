@@ -141,14 +141,18 @@ def send_signal(
     job: str | None,
     print_metric_line: bool = False,
     send_signal: bool = True,
+    skip_signal_range_check: bool = False,
 ):
     message, metric_name = get_channel_data(signal)
 
     if metric_name in SIGNALS_TO_SKIP:
         return
 
-    _signal = check_signal_range(signal, start_time)
-    if _signal is None or len(_signal.timestamps) < 5:
+    _signal: Signal | None = signal
+    if not skip_signal_range_check:
+        _signal = check_signal_range(signal, start_time)
+
+    if _signal is None or len(_signal.timestamps) < 1:
         print(f"  ☑️ No new data for {signal.name}, skipping ...", flush=True)
         return
 
@@ -160,7 +164,7 @@ def send_signal(
     print(f"  📨 Sending {metric_name} [{_time_str}] ...", end="\r", flush=True)
     start = time.time()
     batch: list[str] = []
-    batch_size = 50000
+    batch_size = 50_000
     for sample, ts in zip(_signal.samples, _signal.timestamps):
         if not is_valid_sample(sample):  # Check if sample is not float (e.g. string)
             continue  # Skip this sample
