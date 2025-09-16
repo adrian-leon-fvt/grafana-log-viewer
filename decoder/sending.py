@@ -142,6 +142,7 @@ def send_signal(
     print_metric_line: bool = False,
     send_signal: bool = True,
     skip_signal_range_check: bool = False,
+    batch_size: int = 50_000,
 ):
     message, metric_name = get_channel_data(signal)
 
@@ -164,7 +165,6 @@ def send_signal(
     print(f"  📨 Sending {metric_name} [{_time_str}] ...", end="\r", flush=True)
     start = time.time()
     batch: list[str] = []
-    batch_size = 50_000
     for sample, ts in zip(_signal.samples, _signal.timestamps):
         if not is_valid_sample(sample):  # Check if sample is not float (e.g. string)
             continue  # Skip this sample
