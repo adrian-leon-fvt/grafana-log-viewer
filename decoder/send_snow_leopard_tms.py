@@ -190,7 +190,7 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1):
             _files = files[i:]
 
         for j, (file, _, _) in enumerate(_files):
-            print(f'=> [{i + j} of {len(files)}] Processing ../{"/".join(file.parts[-3:])}')
+            print(f'=> [{i + j + 1} of {len(files)}] Processing ../{"/".join(file.parts[-3:])}')
 
         try:
             ts = time.time()
