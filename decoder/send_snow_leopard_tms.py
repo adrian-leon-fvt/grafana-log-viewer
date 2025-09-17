@@ -172,11 +172,11 @@ def filter_by_folder(
 
 def process_files(files: list, dbc_file: Path, batch_size: int = 1):
     if not files:
-        print("☹️ No files to process")
+        print(" ☹️  No files to process")
         return
 
     if not dbc_file.exists():
-        print(f"☹️ Cannot find DBC file at {dbc_file}")
+        print(f" ☹️  Cannot find DBC file at {dbc_file}")
         return
     database_files = {"CAN": [(dbc_file, 0)]}
 
