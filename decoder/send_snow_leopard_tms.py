@@ -253,7 +253,7 @@ if __name__ == "__main__":
 
     filtered_filepath = r"D:/utils/grafana-log-viewer/decoder/snow_leopard_paths.csv"
     dbc_file = can_logs.parent.joinpath(
-        "dbc", "snow_leopard_gen2_windows_no_value_tables.dbc"
+        "dbc_for_grafana_tools", "snow_leopard_gen2_windows_no_value_tables.dbc"
     )
 
     filtered = read_filtered_paths_file(filtered_filepath)
