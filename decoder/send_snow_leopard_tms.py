@@ -102,7 +102,11 @@ def get_unique_filepaths(base_dir: Path) -> list:
         return False
 
     def name_is_decoded(file: Path) -> bool:
-        return ("decoded" in str(file).lower()) or ("deocded" in str(file).lower())
+        return (
+            ("decoded" in str(file).lower())
+            or ("deocded" in str(file).lower())
+            or ("merged" in str(file).lower())
+        )
 
     def is_raw(mdf: MDF) -> bool:
         return "CAN_DataFrame" in mdf.channels_db.keys()
