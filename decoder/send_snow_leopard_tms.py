@@ -76,8 +76,8 @@ def save_filtered_paths_file(filtered: list, filepath: Path | str):
     try:
         with open(filepath, "w") as f:
             for file, start, end in filtered:
-                _file = re.sub(r"^/mnt/[a-zA-Z]+/Users/.+/", "", str(file.as_posix()))
-                _file = re.sub(r"[a-zA-Z]:/Users/.+/", "", _file)
+                _file = re.sub(r"^/mnt/[a-zA-Z]+/Users/[a-zA-Z0-9 _-]+/", "", str(file.as_posix()))
+                _file = re.sub(r"[a-zA-Z]:/Users/[a-zA-Z0-9 _-]+/", "", _file)
                 f.write(f"{_file};{start.isoformat()};{end.isoformat()}\n")
 
         print(f"✅ Saved filtered paths in {get_time_str(ts)}")
