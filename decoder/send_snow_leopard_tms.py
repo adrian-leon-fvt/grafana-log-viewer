@@ -76,7 +76,9 @@ def save_filtered_paths_file(filtered: list, filepath: Path | str):
     try:
         with open(filepath, "w") as f:
             for file, start, end in filtered:
-                _file = re.sub(r"^/mnt/[a-zA-Z]+/Users/[a-zA-Z0-9 _-]+/", "", str(file.as_posix()))
+                _file = re.sub(
+                    r"^/mnt/[a-zA-Z]+/Users/[a-zA-Z0-9 _-]+/", "", str(file.as_posix())
+                )
                 _file = re.sub(r"[a-zA-Z]:/Users/[a-zA-Z0-9 _-]+/", "", _file)
                 f.write(f"{_file};{start.isoformat()};{end.isoformat()}\n")
 
@@ -170,14 +172,26 @@ def filter_by_folder(
     return [f for f in files if folder in str(f)]
 
 
-def process_files(files: list, dbc_file: Path, batch_size: int = 1):
+def convert_to_eng(value: int | float) -> str:
+    if value > 1e9:
+        return f"{value / 1e9:.3f}B"
+    elif value > 1e6:
+        return f"{value / 1e6:.3f}M"
+    elif value > 1e3:
+        return f"{value / 1e3:.3f}k"
+    else:
+        return str(value)
+
+
+def process_files(files: list, dbc_file: Path, batch_size: int = 1) -> int:
+    total_signals = 0
     if not files:
         print(" ☹️  No files to process")
-        return
+        return total_signals
 
     if not dbc_file.exists():
         print(f" ☹️  Cannot find DBC file at {dbc_file}")
-        return
+        return total_signals
     database_files = {"CAN": [(dbc_file, 0)]}
 
     for i in range(0, len(files), batch_size):
@@ -190,7 +204,9 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1):
             _files = files[i:]
 
         for j, (file, _, _) in enumerate(_files):
-            print(f'=> [{i + j + 1} of {len(files)}] Processing ../{"/".join(file.parts[-3:])}')
+            print(
+                f'=> [{i + j + 1} of {len(files)}] Processing ../{"/".join(file.parts[-3:])}'
+            )
 
         try:
             ts = time.time()
@@ -205,7 +221,9 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1):
                 print(f"  ☑️ Decoded in {get_time_str(ts)}")
 
                 ts = time.time()
+                num_of_samples = 0
                 for sig in decoded.iter_channels():
+                    num_of_samples += len(sig.samples)
                     send_signal(
                         signal=sig,
                         start_time=decoded.start_time,
@@ -214,13 +232,19 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1):
                         send_signal=True,
                         skip_signal_range_check=True,
                     )
-                print(f"  ☑️ Sent batch of signals in {get_time_str(ts)}")
+                print(
+                    f"  ☑️ Sent batch of {convert_to_eng(num_of_samples)} samples in {get_time_str(ts)} ({convert_to_eng(num_of_samples/(time.time() - ts))} samples/sec)"
+                )
+
+                total_signals += num_of_samples
             except Exception as e:
                 print(f"  ❌ Error decoding and sending signals: {e}")
                 continue
         except Exception as e:
             print(f"  ❌ Error concatenating files: {e}")
             continue
+
+    return total_signals
 
 
 if __name__ == "__main__":
@@ -289,5 +313,5 @@ if __name__ == "__main__":
 
     if filtered_by_date:
         total_ts = time.time()
-        process_files(filtered_by_date, dbc_file, batch_size=5)
-        print(f"🏁 All done in {get_time_str(total_ts)}")
+        total_signals = process_files(filtered_by_date, dbc_file, batch_size=10)
+        print(f"🏁 All done in {get_time_str(total_ts)}, sent {convert_to_eng(total_signals)} samples ({convert_to_eng(total_signals / (time.time() - total_ts))} samples/s)")
