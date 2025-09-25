@@ -10,7 +10,7 @@ CAN_CHANNEL = 'vcan0'
 
 # Logging Configuration
 LOG_LEVEL = 'INFO'
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+LOG_FORMAT = "[%(asctime)s] %(filename)s:%(lineno)d %(message)s"
 
 
 vm_import_url = "http://victoriametrics.tail696b12.ts.net:8428/api/v1/import/prometheus"
