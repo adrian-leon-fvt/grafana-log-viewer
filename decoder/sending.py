@@ -31,34 +31,48 @@ def setup_logging():
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 
 
-SIGNALS_TO_SKIP = [
-    "C2S_mux",
-    "RCS_DEV1_mux",
-    "RCS_DEV2_mux",
-    "RCS_DEV3_mux",
-    "RCS_DEV4_mux",
-    "RCS_DEV5_mux",
-    "RCS_DEV6_mux",
-]
+def skip_signal(name: str) -> bool:
+    SIGNALS_TO_SKIP = []
+
+    if name in SIGNALS_TO_SKIP:
+        return True
+
+    if "mux" in name.lower():
+        return True
+
+    if "crc" in name.lower():
+        return True
+
+    return False
 
 
 def get_mf4_files(
-    directory: Path | str, datetime_after: datetime | None = None
+    directory: Path | str,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
 ) -> list[Path]:
     """
     Get all MDF4 files in the specified directory.
-    If datetime_after is provided, only return files modified after that datetime.
+    If start_date is provided, only return files modified after that datetime.
+    If end_date is provided, only return files modified before that datetime.
     """
     if not isinstance(directory, Path):
         directory = Path(directory)
 
     files = list(directory.rglob("*.[mM][fF]4"))
-    if datetime_after is not None:
+    if start_date is not None:
         files = [
             f
             for f in files
-            if datetime.fromtimestamp(f.stat().st_mtime, tz=datetime_after.tzinfo)
-            > datetime_after
+            if datetime.fromtimestamp(f.stat().st_mtime, tz=start_date.tzinfo)
+            > start_date
+        ]
+
+    if end_date is not None:
+        files = [
+            f
+            for f in files
+            if datetime.fromtimestamp(f.stat().st_mtime, tz=end_date.tzinfo) < end_date
         ]
     return files
 
@@ -146,7 +160,7 @@ def send_signal(
 ):
     message, metric_name = get_channel_data(signal)
 
-    if metric_name in SIGNALS_TO_SKIP:
+    if skip_signal(signal.name):
         return
 
     _signal: Signal | None = signal
@@ -245,7 +259,7 @@ def decode_and_send(
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
     """
 
-    files = get_mf4_files(directory, datetime_after=datetime_after)
+    files = get_mf4_files(directory, start_date=datetime_after)
 
     database_files: dict[BusType, Iterable[DbcFileType]] = {}
 
