@@ -5,11 +5,8 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 import time
 from collections.abc import Iterable
-from typing import TypedDict, Any, Sequence
-from can import ThreadSafeBus, BufferedReader, Notifier
-import cantools
+from typing import Sequence, Optional
 
-import cantools.database
 import json
 import os
 import logging
@@ -22,12 +19,25 @@ from DBCDecoder import DBCDecoder
 os.environ["NO_PROXY"] = "localhost"  # Bypass proxy for VictoriaMetrics
 
 
-def setup_logging():
-    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
+def setup_simple_logger(
+    logger: logging.Logger, level: int = logging.INFO, format: str = "%(message)s"
+):
+    # Define a simple logger
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(format)
+    handler.setFormatter(formatter)
+    if not logger.hasHandlers():
+        logger.addHandler(handler)
+    logger.propagate = False
+    logger.setLevel(level)
 
 
 def skip_signal(name: str) -> bool:
-    SIGNALS_TO_SKIP = []
+    SIGNALS_TO_SKIP = [
+        "NSerial",
+        "NChecksum",
+        "NMultiplexer",
+    ]
 
     if name in SIGNALS_TO_SKIP:
         return True
@@ -102,6 +112,10 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
     """
     Checks if the signal timestamps already exist in the database, returns a Signal object only with timestamps not already there,
     """
+
+    logger = logging.getLogger("check_signal_range")
+    setup_simple_logger(logger, format=LOG_FORMAT)
+
     # Query VictoriaMetrics to check if data for this signal exists in the given time range
     message, metric_name = get_channel_data(signal)
     start_ts = (start_time + timedelta(seconds=signal.timestamps[0])).timestamp()
@@ -140,19 +154,36 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
             newsig = older_data.extend(newer_data)
             return newsig if len(newsig.timestamps) > 0 else None
     except Exception as e:
-        print(f"⚠️ Warning: Could not check Signal range for {metric_name}: {e}")
+        logger.warning(
+            f"⚠️ Warning: Could not check Signal range for {metric_name}: {e}"
+        )
     return signal
 
 
 def send_signal(
     signal: Signal,
     start_time: datetime,
-    job: str | None,
+    job: str,
     print_metric_line: bool = False,
     send_signal: bool = True,
     skip_signal_range_check: bool = False,
     batch_size: int = 50_000,
 ):
+    """
+    Send a single signal to VictoriaMetrics.
+    Options:
+    - signal: The Signal object to send.
+    - start_time: The datetime representing the start time of the MDF file.
+    - job: Label to recognize what machine this signal belongs to.
+    - print_metric_line: If True, prints the metric lines before sending (default: False).
+    - send_signal: If True, actually sends the data to VictoriaMetrics (default: True).
+    - skip_signal_range_check: If True, skips checking if the signal data already exists in the database (default: False).
+    - batch_size: Number of samples to send in each HTTP POST batch (default: 50,000).
+    """
+
+    logger = logging.getLogger("send_signal")
+    setup_simple_logger(logger)
+
     message, metric_name = get_channel_data(signal)
 
     if skip_signal(signal.name):
@@ -163,7 +194,7 @@ def send_signal(
         _signal = check_signal_range(signal, start_time)
 
     if _signal is None or len(_signal.timestamps) < 1:
-        print(f"  ☑️ No new data for {signal.name}, skipping ...", flush=True)
+        logger.info(f"  ☑️ No new data for {signal.name}, skipping ...")
         return
 
     unit = _signal.unit if _signal.unit else ""
@@ -171,7 +202,7 @@ def send_signal(
     _sig_end_str = start_time + timedelta(seconds=_signal.timestamps[-1])
     _time_str = f"{_sig_start_str.isoformat()} - {_sig_end_str.isoformat()}, {len(_signal.timestamps)} samples"
 
-    print(f"  📨 Sending {metric_name} [{_time_str}] ...", end="\r", flush=True)
+    logger.info(f"  📨 Sending {metric_name} [{_time_str}] ...")
     start = time.time()
     batch: list[str] = []
     for sample, ts in zip(_signal.samples, _signal.timestamps):
@@ -189,119 +220,129 @@ def send_signal(
         if len(batch) >= batch_size:
             try:
                 if print_metric_line:
-                    print("".join(batch))
+                    logger.info("".join(batch))
                 if send_signal:
                     requests.post(vm_import_url, data="".join(batch))
             except Exception as e:
-                print(f"\n ‼️ Error sending batch: {e}", flush=True)
+                logger.error(f"‼️ Error sending batch: {e}")
             batch = []
             time.sleep(0.01)  # Avoid overwhelming the server
     if batch:
         try:
             requests.post(vm_import_url, data="".join(batch))
         except Exception as e:
-            print(f"\n ‼️ Error sending final batch: {e}", flush=True)
+            logger.error(f"‼️ Error sending final batch: {e}")
 
     time_str = get_time_str(start)
-    print(
-        f"  📨 Sending {metric_name} [{_time_str}] ... sent in {time_str}   ",
-        flush=True,
-    )
+    logger.info(f"  📨 Sending {metric_name} [{_time_str}] ... sent in {time_str}")
 
 
-def send_file(filename: Path, job: str | None = None):
-    print(f"Sending {filename}")
+def send_file(
+    filename: Path, job: str | None = None, skip_signal_range_check: bool = True
+):
+    logger = logging.getLogger("send_file")
+    setup_simple_logger(logger, format=LOG_FORMAT)
+
+    logger.info(f"Sending {filename}")
     if not filename.exists():
-        print(f"📃 File {filename} does not exist.")
+        logger.warning(f"📃 File {filename} does not exist.")
         return
 
     if not filename.is_file():
-        print(f"📃 {filename} is not a file.")
+        logger.warning(f"📃 {filename} is not a file.")
         return
 
     if not filename.suffix.lower() == ".mf4":
-        print(f"📃 {filename} is not a valid MDF4 file.")
+        logger.warning(f"📃 {filename} is not a valid MDF4 file.")
         return
 
-    with MDF(filename) as mdf:
-        for sig in mdf.iter_channels():
-            send_signal(sig, mdf.start_time, job=job if job else filename.stem)
+    try:
+        with MDF(filename) as mdf:
+            for sig in mdf.iter_channels():
+                send_signal(
+                    sig,
+                    mdf.start_time,
+                    job=job if job else filename.stem,
+                    skip_signal_range_check=skip_signal_range_check,
+                )
+    except Exception as e:
+        logger.error(f"❌ Error processing {filename}: {e}")
 
 
-def send_decoded(decoded: Path | MDF, job: str | None = None) -> None:
+def send_decoded(
+    decoded: Path | MDF, job: str | None = None, skip_signal_range_check: bool = True
+) -> None:
     """
     Send a decoded MDF4 file to VictoriaMetrics.
     """
+    logger = logging.getLogger("send_decoded")
+    setup_simple_logger(logger, format=LOG_FORMAT)
+
     if isinstance(decoded, Path):
         send_file(decoded, job)
     elif isinstance(decoded, MDF):
         for sig in decoded.iter_channels():
             _job = job if job else "-".join(decoded.name.parts)
-            send_signal(sig, decoded.start_time, _job)
+            send_signal(
+                sig,
+                decoded.start_time,
+                _job,
+                skip_signal_range_check=skip_signal_range_check,
+            )
     else:
-        print("⚠️ Invalid decoded input type. Must be Path or MDF instance.")
+        logger.warning("⚠️ Invalid decoded input type. Must be Path or MDF instance.")
 
 
 def decode_and_send(
-    directory: Path | str,
-    job: str | None = None,
-    dbc_files: Sequence[DbcFileType] | None = None,
-    dbc_directory: Path | str | None = None,
+    files: list[Path],
+    dbc_files: Sequence[DbcFileType],
+    job: str = "test_job",
     concat_first: bool = True,
-    datetime_after: datetime | None = None,
+    concat_msg: str = "Concat",
+    skip_signal_range_check: bool = True,
 ):
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
     """
-
-    files = get_mf4_files(directory, start_date=datetime_after)
-
-    database_files: dict[BusType, Iterable[DbcFileType]] = {}
-
-    if not dbc_files and not dbc_directory:
-        database_files = get_dbc_dict(directory)
-    else:
-        database_files["CAN"] = []
-
-        if dbc_files:
-            database_files["CAN"].extend(list(dbc_files))
-
-        if dbc_directory:
-            _dbc_dict = get_dbc_dict(dbc_directory)
-            database_files["CAN"].extend(list(_dbc_dict["CAN"]))
+    logger = logging.getLogger("decode_and_send")
+    setup_simple_logger(logger, format=LOG_FORMAT)
 
     if not files:
-        print(f"  🤷‍♂️ No MDF4 files found in {directory}.")
+        logger.warning("⚠️ No directory or files specified.")
         return
 
-    if not database_files:
-        print(f"  🤷‍♂️ No DBC files found in {dbc_directory or directory}.")
+    database_files: dict[BusType, Iterable[DbcFileType]] = {"CAN": dbc_files}
+
+    if not dbc_files:
+        logger.error("⚠️ No DBC files specified.")
         return
 
     if concat_first and len(files) > 1:
         mdf = MDF()
         try:
-            print(f" ⏳ Concatenating {len(files)} files ...", end="\r", flush=True)
+            logger.info(f" ⏳ {concat_msg}: Concatenating {len(files)} files")
             start = time.time()
             mdf = MDF().concatenate(files)
-            print(f" ✅ Concatenated in {time.time() - start:.3f}s", flush=True)
+            logger.info(f" ✅ {concat_msg}: Concatenated in {time.time() - start:.3f}s")
 
             try:
-                print(f" ⏳ Decoding concatenated files ...", end="\r", flush=True)
+                logger.info(f" ⏳ {concat_msg}: Decoding concatenated files")
                 start = time.time()
                 decoded = mdf.extract_bus_logging(
                     database_files, ignore_value2text_conversion=True
                 )
-                print(f" ✅ Decoded in {time.time() - start:.3f}s", flush=True)
+                logger.info(f" ✅ {concat_msg}: Decoded in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
-                    send_decoded(decoded, job)
+                    send_decoded(
+                        decoded, job, skip_signal_range_check=skip_signal_range_check
+                    )
                 else:
-                    print("⚠️ No signals found, skipping sending.")
+                    logger.warning("⚠️ No signals found, skipping sending.")
 
             except Exception as e:
-                print(f"❌ Error decoding concatenated files: {e}")
+                logger.error(f"❌ Error decoding concatenated files: {e}")
         except Exception as e:
-            print(f"❌ Error concatenating files: {e}")
+            logger.error(f"❌ Error concatenating files: {e}")
 
     else:
         for file in files:
@@ -313,244 +354,81 @@ def decode_and_send(
             _dispname = "/".join(_split[_split.index(job) :])
             try:
                 start = time.time()
-                print(f" ⏳ Decoding ../{_dispname} ...", end="\r", flush=True)
+                logger.info(f" ⏳ Decoding ../{_dispname} ...")
                 decoded = mdf.extract_bus_logging(
                     database_files, ignore_value2text_conversion=True
                 )
-                print(
-                    f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s",
-                    flush=True,
-                )
+                logger.info(f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
-                    send_decoded(decoded, job)
+                    send_decoded(
+                        decoded, job, skip_signal_range_check=skip_signal_range_check
+                    )
                 else:
-                    print(f"⚠️ No signals found in {_dispname}, skipping sending.")
+                    logger.warning(
+                        f"⚠️ No signals found in {_dispname}, skipping sending."
+                    )
             except Exception as e:
-                print(f"❌ Error decoding {_dispname}: {e}")
+                logger.error(f"❌ Error decoding {_dispname}: {e}")
                 continue
 
 
-def send_d65_onedrive():
-    d65_onedrive_folder = Path.joinpath(
-        get_windows_home_path(),
-        r"Epiroc/Rig Crew - Private - General/5. Testing/CANEdge",
-    )
+def livestream():
+    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
+    logger = logging.getLogger("livestream")
 
-    if not d65_onedrive_folder.exists():
-        print(
-            "⚠️ D65 OneDrive path not found. Please check your PATH environment variable."
+    if is_victoriametrics_online():
+        dbc_decoder = None
+        if DBC_FILE_PATHS:
+            logger.info("Initializing DBC decoder...")
+            dbc_decoder = DBCDecoder(DBC_FILE_PATHS)
+
+        # Initialize CAN reader
+        logger.info("Initializing CAN reader...")
+        can_reader = CANReader(
+            interface=CAN_INTERFACE, channel=CAN_CHANNEL, dbc_decoder=dbc_decoder
         )
-        return
-    else:
 
-        # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
-        _d65_loc = Path.joinpath(
-            Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
-        )
-        if os.name == "nt":  # Override if on windows
-            _d65_loc = Path(
-                r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
-            )
+        if not can_reader.connect():
+            logger.error("Failed to initialize CAN interface")
+            return
 
-        d65_dbc_files = {
-            "Lower": [
-                "D65_CH0_NV.dbc",
-                "D65_CH1_LV_PDU.dbc",
-                # "D65_CH2_RCS_J1939.dbc",
-                "D65_CH3_RCS_Module.dbc",
-                "D65_CH4_Main.dbc",
-            ],
-            "Upper": [
-                "D65_CH5_CM.dbc",
-                "D65_CH6_EVCC.dbc",
-            ],
-        }
+        logger.info("Starting CAN monitoring...")
+        while True:
+            try:
+                result = can_reader.read_decoded_message()
+                if result is None:
+                    continue
+                timestamp, message_data = result
+                if not message_data:
+                    continue
+                message = message_data["message"]
+                decoded_signals = message_data["decoded_signals"]
+                if message:
+                    for signal in decoded_signals.keys():
+                        value, unit = decoded_signals[signal]
+                        data = make_metric_line(
+                            message.name,
+                            signal,
+                            unit,
+                            value,
+                            timestamp,
+                            job="d65_livestream",
+                        )
+                        try:
+                            requests.post(vm_import_url, data="".join(data))
+                        except Exception as e:
+                            logging.error(f"\n ‼️ Error sending data: {e}")
 
-        upper_dbc_files: list[DbcFileType] = []
-        upper_dbc_files += [
-            (Path.joinpath(_d65_loc, "busses", dbc), 0)
-            for dbc in d65_dbc_files["Upper"]
-        ]
-        upper_dbc_files += [
-            (Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0)
-        ]
+            except KeyboardInterrupt:  # Shutting down properly
+                break
 
-        lower_dbc_files: list[DbcFileType] = []
-        lower_dbc_files += [
-            (Path.joinpath(_d65_loc, "busses", dbc), 0)
-            for dbc in d65_dbc_files["Lower"]
-        ]
-        lower_dbc_files += []
-
-        cutoff = datetime.now() - timedelta(hours=8)
-
-        decode_and_send(
-            d65_onedrive_folder / "Upper",
-            dbc_files=upper_dbc_files,
-            job="Upper",
-            datetime_after=cutoff,
-            concat_first=True,
-        )
-        print("=> Upper 👍")
-        decode_and_send(
-            d65_onedrive_folder / "Lower",
-            dbc_files=lower_dbc_files,
-            job="Lower",
-            datetime_after=cutoff,
-            concat_first=True,
-        )
-        print("=> Lower 👍")
-
-
-class PortConfig(TypedDict):
-    """
-    Configuration for a CAN port to livestream data.
-    Each port should have a dictionary with the following keys:
-      - 'bus': dict of ThreadSafeBus arguments
-      - 'database': list of paths to DBC files
-    """
-
-    bus: dict[
-        str, Any
-    ]  # Arguments for ThreadSafeBus, e.g. {"channel": "can0", "bustype": "socketcan"}
-    database: str | Path | list[str | Path]  # Path to DBC file
-    job: str | None  # Job name for the metrics coming from this port
-
-
-def get_cantools_databases(
-    files: str | Path | list[str | Path],
-) -> list[cantools.database.Database]:
-    """
-    Load and return a list of DBC databases from the configured paths.
-    """
-    db_paths: list[Path] = []
-    if isinstance(files, str | Path):
-        if Path(files).is_dir():
-            db_paths.extend(list(Path(files).rglob("*.[dD][bB][cC]")))
-        elif Path(files).is_file() and Path(files).suffix.lower() == ".dbc":
-            db_paths.append(Path(files))
-    elif isinstance(files, list):
-        for db in files:
-            if Path(db).is_dir():
-                db_paths.extend(list(Path(db).rglob("*.[dD][bB][cC]")))
-            else:
-                db_paths.append(Path(db))
-
-    databases: list[cantools.database.Database] = []
-    for db in db_paths:
-        if not db.exists():
-            print(f"⚠️ DBC file {db} does not exist, skipping.")
-            continue
-        try:
-            _db = cantools.database.load_file(db)
-            if isinstance(_db, cantools.database.Database):
-                databases.append(_db)
-        except Exception as e:
-            print(f"⚠️ Error loading DBC file {db}: {e}")
-    return databases
-
-
-def livestream(ports: PortConfig):
-    """
-    Livestream data from CAN ports and send to VictoriaMetrics.
-
-    Each port config should be a dict with:
-      - 'bus': dict of ThreadSafeBus arguments
-      - 'database': path to DBC file
-    """
-    bus = ThreadSafeBus(**ports["bus"])
-    _reader = BufferedReader()
-    notifier = Notifier(bus, [_reader])
-
-    # Load the DBC file(s) for this port
-    db_paths: list[Path] = []
-    if isinstance(ports["database"], str | Path):
-        db_paths.extend([Path(ports["database"])])
-    elif isinstance(ports["database"], list):
-        for db in ports["database"]:
-            if Path(db).is_dir():
-                db_paths.extend(list(Path(db).rglob("*.[dD][bB][cC]")))
-            else:
-                db_paths.append(Path(db))
-
-    databases: list[cantools.database.Database] = []
-
-    for db in db_paths:
-        if not db.exists():
-            print(f"⚠️ DBC file {db} does not exist, skipping.")
-            continue
-        try:
-            _db = cantools.database.load_file(db)
-            if isinstance(_db, cantools.database.Database):
-                databases.append(_db)
-        except Exception as e:
-            print(f"⚠️ Error loading DBC file {db}: {e}")
-
-    while True:
-        try:
-            time.sleep(1)  # Keep the bus alive
-        except KeyboardInterrupt:
-            print("\n ‼️ Livestream interrupted by user.")
-            notifier.stop()
-            bus.shutdown()
-            break
+        logger.info("Shutting down...")
+        can_reader.shutdown()
 
 
 def main():
-    setup_logging()
-    logger = logging.getLogger("main")
-
-    if is_victoriametrics_online():
-        if LIVE_STREAMING:  # Streaming live CAN data
-            dbc_decoder = None
-            if DBC_FILE_PATHS:
-                logger.info("Initializing DBC decoder...")
-                dbc_decoder = DBCDecoder(DBC_FILE_PATHS)
-
-            # Initialize CAN reader
-            logger.info("Initializing CAN reader...")
-            can_reader = CANReader(
-                interface=CAN_INTERFACE, channel=CAN_CHANNEL, dbc_decoder=dbc_decoder
-            )
-
-            if not can_reader.connect():
-                logger.error("Failed to initialize CAN interface")
-                return
-
-            logger.info("Starting CAN monitoring...")
-            while True:
-                try:
-                    result = can_reader.read_decoded_message()
-                    if result is None:
-                        continue
-                    timestamp, message_data = result
-                    if not message_data:
-                        continue
-                    message = message_data["message"]
-                    decoded_signals = message_data["decoded_signals"]
-                    if message:
-                        for signal in decoded_signals.keys():
-                            value, unit = decoded_signals[signal]
-                            data = make_metric_line(
-                                message.name,
-                                signal,
-                                unit,
-                                value,
-                                timestamp,
-                                job="d65_livestream",
-                            )
-                            try:
-                                requests.post(vm_import_url, data="".join(data))
-                            except Exception as e:
-                                logging.error(f"\n ‼️ Error sending data: {e}")
-
-                except KeyboardInterrupt:  # Shutting down properly
-                    break
-
-            logger.info("Shutting down...")
-            can_reader.shutdown()
-        else:  # Sending MF4 files
-            send_d65_onedrive()
+    if LIVE_STREAMING:  # Streaming live CAN data
+        livestream()
 
 
 if __name__ == "__main__":
