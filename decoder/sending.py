@@ -1,22 +1,17 @@
 from asammdf import MDF, Signal
-from asammdf.blocks.types import DbcFileType, BusType, StrPath
+from asammdf.blocks.types import DbcFileType, BusType
 import requests
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 import time
 from collections.abc import Iterable
-from typing import Literal, TypedDict, Any, Sequence
-from can import ThreadSafeBus, Message, BufferedReader, Notifier, Printer
+from typing import TypedDict, Any, Sequence
+from can import ThreadSafeBus, BufferedReader, Notifier
 import cantools
 
 import cantools.database
 import json
-import argparse
-from multiprocessing.pool import ThreadPool
 import os
-import subprocess
-import pickle
-import pandas as pd
 import logging
 
 from config import *
