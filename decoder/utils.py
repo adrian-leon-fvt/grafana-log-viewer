@@ -7,8 +7,9 @@ import os
 from config import *
 
 
-def get_time_str(start_time: float) -> str:
-    elapsed = time.time() - start_time
+def get_time_str(start_time: float, end_ts: float | None = None) -> str:
+    _end_ts = time.time() if end_ts is None else end_ts
+    elapsed = _end_ts - start_time
     days, rem = divmod(elapsed, 86400)
     hours, rem = divmod(rem, 3600)
     mins, secs = divmod(rem, 60)
