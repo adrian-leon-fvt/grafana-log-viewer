@@ -1,11 +1,12 @@
 import logging
-from utils import get_windows_home_path, get_time_str
+from utils import get_windows_home_path, get_time_str, convert_to_eng
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from asammdf import MDF
 from asammdf.blocks.types import DbcFileType, BusType, StrPath
 from itertools import chain
 from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from typing import Optional, Literal
 from time import time
 from can import LogReader
@@ -226,6 +227,8 @@ def send_files_to_victoriametrics(
         for i in range(0, len(lst), n):
             yield i, lst[i : i + n]
 
+    total_counts: dict[str, int] = {}
+
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = []
 
@@ -263,9 +266,15 @@ def send_files_to_victoriametrics(
 
         for future in futures:
             try:
-                future.result()
+                result = future.result()
+                if isinstance(result, dict):
+                    with Lock():
+                        for k, v in result.items():
+                            total_counts[k] = total_counts.get(k, 0) + v
             except Exception as e:
                 logging.error(f"❌ Error processing batch: {e}")
+
+    return total_counts
 
 
 def main():
@@ -298,13 +307,18 @@ def main():
             f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}."
         )
 
-        send_files_to_victoriametrics(_files)
+        total_counts = send_files_to_victoriametrics(_files)
+        end_ts = time()
+        total_signals_sent = len(total_counts.keys())
+        total_samples_sent = sum(total_counts.values())
 
-        logging.info(f" ✔️  All done in {get_time_str(start_ts)}.")
+        logging.info(
+            f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
+        )
     else:
         ans = (
             input(
-                " No preprocessed files found. Do you want to preprocess now? (y/n): "
+                " ❓ No preprocessed files found. Do you want to preprocess now? (y/n): "
             )
             .strip()
             .lower()
@@ -312,7 +326,7 @@ def main():
 
         start_ts = time()
         if ans[0] != "y":
-            logging.info(" Exiting.")
+            logging.info(" 👋  OK Bye.")
             exit(0)
 
         files = preprocess_files()

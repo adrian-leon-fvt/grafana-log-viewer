@@ -168,7 +168,7 @@ def send_signal(
     send_signal: bool = True,
     skip_signal_range_check: bool = False,
     batch_size: int = 50_000,
-):
+) -> int:
     """
     Send a single signal to VictoriaMetrics.
     Options:
@@ -186,8 +186,10 @@ def send_signal(
 
     message, metric_name = get_channel_data(signal)
 
+    num_of_samples_sent = 0
+
     if skip_signal(signal.name):
-        return
+        return num_of_samples_sent
 
     _signal: Signal | None = signal
     if not skip_signal_range_check:
@@ -195,7 +197,7 @@ def send_signal(
 
     if _signal is None or len(_signal.timestamps) < 1:
         logger.info(f"  ☑️ No new data for {signal.name}, skipping ...")
-        return
+        return num_of_samples_sent
 
     unit = _signal.unit if _signal.unit else ""
     _sig_start_str = start_time + timedelta(seconds=_signal.timestamps[0])
@@ -217,6 +219,7 @@ def send_signal(
             job=job if job else "",
         )
         batch.append(data)
+        num_of_samples_sent += 1
         if len(batch) >= batch_size:
             try:
                 if print_metric_line:
@@ -234,63 +237,82 @@ def send_signal(
             logger.error(f"‼️ Error sending final batch: {e}")
 
     time_str = get_time_str(start)
-    logger.info(f"  📨 Sending {metric_name} [{_time_str}] ... sent in {time_str}")
+    end_ts = time.time()
+    logger.info(
+        f"  📨 Sent {metric_name} in {time_str} ({convert_to_eng(num_of_samples_sent)} samples | {convert_to_eng(num_of_samples_sent / (end_ts - start))} samples/s)"
+    )
+    return num_of_samples_sent
 
 
 def send_file(
     filename: Path, job: str | None = None, skip_signal_range_check: bool = True
-):
+) -> dict[str, int]:
     logger = logging.getLogger("send_file")
     setup_simple_logger(logger, format=LOG_FORMAT)
 
     logger.info(f"Sending {filename}")
+    signals_sample_count: dict[str, int] = {}
     if not filename.exists():
         logger.warning(f"📃 File {filename} does not exist.")
-        return
+        return signals_sample_count
 
     if not filename.is_file():
         logger.warning(f"📃 {filename} is not a file.")
-        return
+        return signals_sample_count
 
     if not filename.suffix.lower() == ".mf4":
         logger.warning(f"📃 {filename} is not a valid MDF4 file.")
-        return
+        return signals_sample_count
 
     try:
         with MDF(filename) as mdf:
             for sig in mdf.iter_channels():
-                send_signal(
+                samples_sent = send_signal(
                     sig,
                     mdf.start_time,
                     job=job if job else filename.stem,
                     skip_signal_range_check=skip_signal_range_check,
                 )
+
+                if samples_sent > 0:
+                    signals_sample_count[sig.name] = samples_sent
+
     except Exception as e:
         logger.error(f"❌ Error processing {filename}: {e}")
+
+    return signals_sample_count
 
 
 def send_decoded(
     decoded: Path | MDF, job: str | None = None, skip_signal_range_check: bool = True
-) -> None:
+) -> dict[str, int]:
     """
     Send a decoded MDF4 file to VictoriaMetrics.
     """
     logger = logging.getLogger("send_decoded")
     setup_simple_logger(logger, format=LOG_FORMAT)
 
+    signals_sample_count: dict[str, int] = {}
+
     if isinstance(decoded, Path):
         send_file(decoded, job)
     elif isinstance(decoded, MDF):
         for sig in decoded.iter_channels():
             _job = job if job else "-".join(decoded.name.parts)
-            send_signal(
+            signals_sent = send_signal(
                 sig,
                 decoded.start_time,
                 _job,
                 skip_signal_range_check=skip_signal_range_check,
             )
+
+            if signals_sent > 0:
+                signals_sample_count[sig.name] = signals_sent
+
     else:
         logger.warning("⚠️ Invalid decoded input type. Must be Path or MDF instance.")
+
+    return signals_sample_count
 
 
 def decode_and_send(
@@ -300,22 +322,24 @@ def decode_and_send(
     concat_first: bool = True,
     concat_msg: str = "Concat",
     skip_signal_range_check: bool = True,
-):
+) -> dict[str, int]:
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
     """
     logger = logging.getLogger("decode_and_send")
     setup_simple_logger(logger, format=LOG_FORMAT)
 
+    signals_sample_count: dict[str, int] = {}
+
     if not files:
         logger.warning("⚠️ No directory or files specified.")
-        return
+        return signals_sample_count
 
     database_files: dict[BusType, Iterable[DbcFileType]] = {"CAN": dbc_files}
 
     if not dbc_files:
         logger.error("⚠️ No DBC files specified.")
-        return
+        return signals_sample_count
 
     if concat_first and len(files) > 1:
         mdf = MDF()
@@ -333,9 +357,11 @@ def decode_and_send(
                 )
                 logger.info(f" ✅ {concat_msg}: Decoded in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
-                    send_decoded(
+                    result = send_decoded(
                         decoded, job, skip_signal_range_check=skip_signal_range_check
                     )
+                    for k, v in result.items():
+                        signals_sample_count[k] = signals_sample_count.get(k, 0) + v
                 else:
                     logger.warning("⚠️ No signals found, skipping sending.")
 
@@ -360,9 +386,12 @@ def decode_and_send(
                 )
                 logger.info(f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
-                    send_decoded(
+                    result = send_decoded(
                         decoded, job, skip_signal_range_check=skip_signal_range_check
                     )
+
+                    for k, v in result.items():
+                        signals_sample_count[k] = signals_sample_count.get(k, 0) + v
                 else:
                     logger.warning(
                         f"⚠️ No signals found in {_dispname}, skipping sending."
@@ -370,6 +399,8 @@ def decode_and_send(
             except Exception as e:
                 logger.error(f"❌ Error decoding {_dispname}: {e}")
                 continue
+
+    return signals_sample_count
 
 
 def livestream():
