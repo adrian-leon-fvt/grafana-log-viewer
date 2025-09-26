@@ -229,6 +229,24 @@ def send_files_to_victoriametrics(
 
     total_counts: dict[str, int] = {}
 
+    def skip_signal(name: str) -> bool:
+        SIGNALS_TO_SKIP = [
+            "NSerial",
+            "NChecksum",
+            "NMultiplexer",
+        ]
+
+        if name in SIGNALS_TO_SKIP:
+            return True
+
+        if "mux" in name.lower():
+            return True
+
+        if "crc" in name.lower():
+            return True
+
+        return False
+
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = []
 
@@ -244,6 +262,7 @@ def send_files_to_victoriametrics(
                     job="Upper",
                     concat_first=True,
                     concat_msg=concat_msg,
+                    skip_signal_fn=skip_signal,
                     skip_signal_range_check=True,
                 )
             )
@@ -260,6 +279,7 @@ def send_files_to_victoriametrics(
                     job="Lower",
                     concat_first=True,
                     concat_msg=concat_msg,
+                    skip_signal_fn=skip_signal,
                     skip_signal_range_check=True,
                 )
             )

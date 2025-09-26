@@ -209,9 +209,30 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1) -> int:
                 decoded = cc.extract_bus_logging(database_files=database_files)  # type: ignore
                 print(f"  ☑️ Decoded in {get_time_str(ts)}")
 
+                def skip_signal(name: str) -> bool:
+                    SIGNALS_TO_SKIP = [
+                        "NSerial",
+                        "NChecksum",
+                        "NMultiplexer",
+                    ]
+
+                    if name in SIGNALS_TO_SKIP:
+                        return True
+
+                    if "mux" in name.lower():
+                        return True
+
+                    if "crc" in name.lower():
+                        return True
+
+                    return False
+
                 ts = time.time()
                 num_of_samples = 0
                 for sig in decoded.iter_channels():
+                    if skip_signal(sig.name):
+                        continue
+                    
                     num_of_samples += len(sig.samples)
                     send_signal(
                         signal=sig,

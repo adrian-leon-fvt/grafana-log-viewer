@@ -2,10 +2,10 @@ from asammdf import MDF, Signal
 from asammdf.blocks.types import DbcFileType, BusType
 import requests
 from pathlib import Path
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import time
 from collections.abc import Iterable
-from typing import Sequence, Optional
+from typing import Sequence, Callable, Optional
 
 import json
 import os
@@ -30,25 +30,6 @@ def setup_simple_logger(
         logger.addHandler(handler)
     logger.propagate = False
     logger.setLevel(level)
-
-
-def skip_signal(name: str) -> bool:
-    SIGNALS_TO_SKIP = [
-        "NSerial",
-        "NChecksum",
-        "NMultiplexer",
-    ]
-
-    if name in SIGNALS_TO_SKIP:
-        return True
-
-    if "mux" in name.lower():
-        return True
-
-    if "crc" in name.lower():
-        return True
-
-    return False
 
 
 def get_mf4_files(
@@ -188,9 +169,6 @@ def send_signal(
 
     num_of_samples_sent = 0
 
-    if skip_signal(signal.name):
-        return num_of_samples_sent
-
     _signal: Signal | None = signal
     if not skip_signal_range_check:
         _signal = check_signal_range(signal, start_time)
@@ -245,7 +223,10 @@ def send_signal(
 
 
 def send_file(
-    filename: Path, job: str | None = None, skip_signal_range_check: bool = True
+    filename: Path,
+    job: str | None = None,
+    skip_signal_range_check: bool = True,
+    skip_signal_fn: Optional[Callable[[str], bool]] = None,
 ) -> dict[str, int]:
     logger = logging.getLogger("send_file")
     setup_simple_logger(logger, format=LOG_FORMAT)
@@ -267,6 +248,9 @@ def send_file(
     try:
         with MDF(filename) as mdf:
             for sig in mdf.iter_channels():
+                if skip_signal_fn is not None and skip_signal_fn(sig.name):
+                    continue
+
                 samples_sent = send_signal(
                     sig,
                     mdf.start_time,
@@ -284,7 +268,10 @@ def send_file(
 
 
 def send_decoded(
-    decoded: Path | MDF, job: str | None = None, skip_signal_range_check: bool = True
+    decoded: Path | MDF,
+    job: str | None = None,
+    skip_signal_range_check: bool = True,
+    skip_signal_fn: Optional[Callable[[str], bool]] = None,
 ) -> dict[str, int]:
     """
     Send a decoded MDF4 file to VictoriaMetrics.
@@ -299,6 +286,9 @@ def send_decoded(
     elif isinstance(decoded, MDF):
         for sig in decoded.iter_channels():
             _job = job if job else "-".join(decoded.name.parts)
+            if skip_signal_fn is not None and skip_signal_fn(sig.name):
+                continue
+
             signals_sent = send_signal(
                 sig,
                 decoded.start_time,
@@ -322,6 +312,7 @@ def decode_and_send(
     concat_first: bool = True,
     concat_msg: str = "Concat",
     skip_signal_range_check: bool = True,
+    skip_signal_fn: Optional[Callable[[str], bool]] = None,
 ) -> dict[str, int]:
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
@@ -358,7 +349,10 @@ def decode_and_send(
                 logger.info(f" ✅ {concat_msg}: Decoded in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
                     result = send_decoded(
-                        decoded, job, skip_signal_range_check=skip_signal_range_check
+                        decoded,
+                        job,
+                        skip_signal_fn=skip_signal_fn,
+                        skip_signal_range_check=skip_signal_range_check,
                     )
                     for k, v in result.items():
                         signals_sample_count[k] = signals_sample_count.get(k, 0) + v
@@ -387,7 +381,10 @@ def decode_and_send(
                 logger.info(f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
                     result = send_decoded(
-                        decoded, job, skip_signal_range_check=skip_signal_range_check
+                        decoded,
+                        job,
+                        skip_signal_fn=skip_signal_fn,
+                        skip_signal_range_check=skip_signal_range_check,
                     )
 
                     for k, v in result.items():
