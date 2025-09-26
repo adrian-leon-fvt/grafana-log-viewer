@@ -79,3 +79,14 @@ def get_windows_home_path() -> Path:
         if os.name == "nt"
         else f'/mnt/c/Users/{subprocess.run(["powershell.exe", "Write-Host $env:USERNAME"], capture_output=True, text=True).stdout.strip()}'
     )
+
+
+def convert_to_eng(value: int | float) -> str:
+    if value > 1e9:
+        return f"{value / 1e9:.3f}B"
+    elif value > 1e6:
+        return f"{value / 1e6:.3f}M"
+    elif value > 1e3:
+        return f"{value / 1e3:.3f}k"
+    else:
+        return str(value)

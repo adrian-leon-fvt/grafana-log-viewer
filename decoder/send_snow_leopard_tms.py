@@ -172,17 +172,6 @@ def filter_by_folder(
     return [f for f in files if folder in str(f)]
 
 
-def convert_to_eng(value: int | float) -> str:
-    if value > 1e9:
-        return f"{value / 1e9:.3f}B"
-    elif value > 1e6:
-        return f"{value / 1e6:.3f}M"
-    elif value > 1e3:
-        return f"{value / 1e3:.3f}k"
-    else:
-        return str(value)
-
-
 def process_files(files: list, dbc_file: Path, batch_size: int = 1) -> int:
     total_signals = 0
     if not files:
