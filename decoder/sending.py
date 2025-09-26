@@ -227,6 +227,7 @@ def send_file(
     job: str | None = None,
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
+    batch_size: int = 50_000,
 ) -> dict[str, int]:
     logger = logging.getLogger("send_file")
     setup_simple_logger(logger, format=LOG_FORMAT)
@@ -252,10 +253,11 @@ def send_file(
                     continue
 
                 samples_sent = send_signal(
-                    sig,
-                    mdf.start_time,
+                    signal=sig,
+                    start_time=mdf.start_time,
                     job=job if job else filename.stem,
                     skip_signal_range_check=skip_signal_range_check,
+                    batch_size=batch_size,
                 )
 
                 if samples_sent > 0:
@@ -272,6 +274,7 @@ def send_decoded(
     job: str | None = None,
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
+    batch_size: int = 50_000,
 ) -> dict[str, int]:
     """
     Send a decoded MDF4 file to VictoriaMetrics.
@@ -290,10 +293,11 @@ def send_decoded(
                 continue
 
             signals_sent = send_signal(
-                sig,
-                decoded.start_time,
-                _job,
+                signal=sig,
+                start_time=decoded.start_time,
+                job=_job,
                 skip_signal_range_check=skip_signal_range_check,
+                batch_size=batch_size,
             )
 
             if signals_sent > 0:
@@ -313,6 +317,7 @@ def decode_and_send(
     concat_msg: str = "Concat",
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
+    batch_size=50_000,
 ) -> dict[str, int]:
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
@@ -349,10 +354,11 @@ def decode_and_send(
                 logger.info(f" ✅ {concat_msg}: Decoded in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
                     result = send_decoded(
-                        decoded,
-                        job,
+                        decoded=decoded,
+                        job=job,
                         skip_signal_fn=skip_signal_fn,
                         skip_signal_range_check=skip_signal_range_check,
+                        batch_size=batch_size,
                     )
                     for k, v in result.items():
                         signals_sample_count[k] = signals_sample_count.get(k, 0) + v
@@ -381,10 +387,11 @@ def decode_and_send(
                 logger.info(f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
                     result = send_decoded(
-                        decoded,
-                        job,
+                        decoded=decoded,
+                        job=job,
                         skip_signal_fn=skip_signal_fn,
                         skip_signal_range_check=skip_signal_range_check,
+                        batch_size=batch_size,
                     )
 
                     for k, v in result.items():
