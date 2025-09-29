@@ -1,5 +1,5 @@
 import logging
-from utils import get_windows_home_path, get_time_str, convert_to_eng
+from utils import get_windows_home_path, get_time_str, convert_to_eng, make_metric_line
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from asammdf import MDF
@@ -10,9 +10,12 @@ from threading import Lock
 from typing import Optional, Literal
 from time import time
 from can import LogReader
+from cantools.database.can import Message, Signal, Database
+from cantools.typechecking import DecodeResultType, SignalDictType
 from sending import decode_and_send
 from zoneinfo import ZoneInfo
-from config import LOG_FORMAT
+from config import LOG_FORMAT, vm_import_url
+import requests
 import re
 import os
 
@@ -175,9 +178,29 @@ def preprocess_files() -> list[CSVContent]:
     return files
 
 
-def send_files_to_victoriametrics(
-    files: list[CSVContent],
-):
+def skip_signal(name: str) -> bool:
+    SIGNALS_TO_SKIP = [
+        "NSerial",
+        "NChecksum",
+        "NMultiplexer",
+    ]
+
+    if name in SIGNALS_TO_SKIP:
+        return True
+
+    if "mux" in name.lower():
+        return True
+
+    if "nmultiplexer" in name.lower():
+        return True
+
+    if "crc" in name.lower():
+        return True
+
+    return False
+
+
+def send_files_to_victoriametrics(files: list[CSVContent]):
     # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
     _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
     if os.name == "nt":  # Override if on windows
@@ -229,25 +252,7 @@ def send_files_to_victoriametrics(
 
     total_counts: dict[str, int] = {}
 
-    def skip_signal(name: str) -> bool:
-        SIGNALS_TO_SKIP = [
-            "NSerial",
-            "NChecksum",
-            "NMultiplexer",
-        ]
-
-        if name in SIGNALS_TO_SKIP:
-            return True
-
-        if "mux" in name.lower():
-            return True
-
-        if "crc" in name.lower():
-            return True
-
-        return False
-
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor() as executor:
         futures = []
 
         for idx, batch_files in batch(upper_files, MAX_BATCH_COUNT):
@@ -297,6 +302,97 @@ def send_files_to_victoriametrics(
     return total_counts
 
 
+def send_trace(file: Path, job: str, batch_size: int = 50_000):
+    if file.suffix.lower() != ".trc":
+        logging.error(f"❌ File is not a .trc file: {file}")
+        return
+
+    # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
+    _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
+    if os.name == "nt":  # Override if on windows
+        _d65_loc = Path(
+            r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
+        )
+
+    upper_dbc_files: list[Path] = []
+    upper_dbc_files += [
+        # Path.joinpath(_d65_loc, "busses", "D65_CH5_CM.dbc"),
+        Path.joinpath(_d65_loc, "busses", "D65_CH6_EVCC.dbc"),
+        Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"),
+    ]
+
+    lower_dbc_files: list[Path] = []
+    lower_dbc_files += [
+        Path.joinpath(_d65_loc, "busses", "D65_CH0_NV.dbc"),
+        Path.joinpath(_d65_loc, "busses", "D65_CH1_LV_PDU.dbc"),
+        Path.joinpath(_d65_loc, "busses", "D65_CH2_RCS_J1939.dbc"),
+        Path.joinpath(_d65_loc, "busses", "D65_CH3_RCS_Module.dbc"),
+        Path.joinpath(_d65_loc, "busses", "D65_CH4_Main.dbc"),
+    ]
+
+    db = Database()
+
+    if job == "Upper":
+        for dbc in upper_dbc_files:
+            db.add_dbc_file(dbc)
+    elif job == "Lower":
+        for dbc in lower_dbc_files:
+            db.add_dbc_file(dbc)
+
+    log = LogReader(file)
+    metrics: list[str] = []
+    for msg in log:
+        try:
+            message: Message = db.get_message_by_frame_id(msg.arbitration_id)
+            if message is None:
+                continue
+
+            signals: DecodeResultType = message.decode(msg.data)
+            timestamp = datetime.fromtimestamp(msg.timestamp, tz=timezone.utc)
+
+            if not isinstance(signals, dict):
+                continue
+
+            for signal_name, value in signals.items():
+                if skip_signal(signal_name):
+                    continue
+
+                if not isinstance(value, (int, float)):
+                    continue
+
+                signal: Signal = message.get_signal_by_name(signal_name)
+                if signal is None:
+                    continue
+
+                unit = signal.unit if signal.unit else ""
+                metric_line = make_metric_line(
+                    metric_name=signal_name,
+                    message=message.name,
+                    unit=unit,
+                    value=value,
+                    timestamp=timestamp,
+                    job=job,
+                )
+
+                metrics.append(metric_line)
+
+                if len(metrics) >= batch_size:
+                    batch_data = "\n".join(metrics)
+                    metrics = []
+                    try:
+                        requests.post(
+                            vm_import_url,
+                            data=batch_data,
+                            headers={"Content-Type": "text/plain"},
+                            timeout=5,
+                        )
+                    except Exception as e:
+                        logging.error(f"❌ Exception sending batch: {e}")
+
+        except Exception as e:
+            logging.error(f"❌ Error processing message ID {msg.arbitration_id}: {e}")
+
+
 def main():
     preprocessed_path = r"D:/utils/grafana-log-viewer/decoder/d65_files.csv"
     files = read_filtered_paths_file(preprocessed_path)
@@ -318,10 +414,18 @@ def main():
                 if (start <= end_time) and (start >= start_time)
             ]
 
+        def filter_by_job(
+            files: list[CSVContent], job: Literal["Upper", "Lower"]
+        ) -> list[CSVContent]:
+            return [
+                (f, k_seg, start, end) for f, k_seg, start, end in files if k_seg == job
+            ]
+
         start_date = datetime(2025, 1, 1, tzinfo=ZoneInfo("America/Vancouver"))
         end_date = datetime(2025, 8, 1, tzinfo=ZoneInfo("America/Vancouver"))
 
         _files = filter_by_date(files, start_date, end_date)
+        _files = filter_by_job(_files, "Lower")
 
         logging.info(
             f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}."
