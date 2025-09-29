@@ -200,7 +200,7 @@ def skip_signal(name: str) -> bool:
     return False
 
 
-def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[DbcFileType]]:
+def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[StrPath]]:
     # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
     _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
     if os.name == "nt":  # Override if on windows
@@ -222,17 +222,15 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[DbcFileType]]:
         ],
     }
 
-    upper_dbc_files: list[DbcFileType] = []
+    upper_dbc_files: list[StrPath] = []
     upper_dbc_files += [
-        (Path.joinpath(_d65_loc, "busses", dbc), 0) for dbc in d65_dbc_files["Upper"]
+        Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Upper"]
     ]
-    upper_dbc_files += [
-        (Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"), 0)
-    ]
+    upper_dbc_files += [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
 
-    lower_dbc_files: list[DbcFileType] = []
+    lower_dbc_files: list[StrPath] = []
     lower_dbc_files += [
-        (Path.joinpath(_d65_loc, "busses", dbc), 0) for dbc in d65_dbc_files["Lower"]
+        Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Lower"]
     ]
     lower_dbc_files += []
 
@@ -257,8 +255,8 @@ def send_files_to_victoriametrics(
         return {}
 
     dbc_files = get_d65_dbc_files()
-    upper_dbc_files = dbc_files["Upper"]
-    lower_dbc_files = dbc_files["Lower"]
+    upper_dbc_files: list[DbcFileType] = [(dbc, 0) for dbc in dbc_files["Upper"]]
+    lower_dbc_files: list[DbcFileType] = [(dbc, 0) for dbc in dbc_files["Lower"]]
 
     upper_tuples = [item for item in files if item[1] == "Upper"]
     upper_tuples.sort(key=lambda x: x[2])  # Sort by start time
@@ -329,28 +327,9 @@ def send_trace(file: Path, job: str, batch_size: int = 50_000):
         logging.error(f"❌ File is not a .trc file: {file}")
         return
 
-    # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
-    _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
-    if os.name == "nt":  # Override if on windows
-        _d65_loc = Path(
-            r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
-        )
-
-    upper_dbc_files: list[Path] = []
-    upper_dbc_files += [
-        # Path.joinpath(_d65_loc, "busses", "D65_CH5_CM.dbc"),
-        Path.joinpath(_d65_loc, "busses", "D65_CH6_EVCC.dbc"),
-        Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc"),
-    ]
-
-    lower_dbc_files: list[Path] = []
-    lower_dbc_files += [
-        Path.joinpath(_d65_loc, "busses", "D65_CH0_NV.dbc"),
-        Path.joinpath(_d65_loc, "busses", "D65_CH1_LV_PDU.dbc"),
-        Path.joinpath(_d65_loc, "busses", "D65_CH2_RCS_J1939.dbc"),
-        Path.joinpath(_d65_loc, "busses", "D65_CH3_RCS_Module.dbc"),
-        Path.joinpath(_d65_loc, "busses", "D65_CH4_Main.dbc"),
-    ]
+    dbc_files = get_d65_dbc_files()
+    upper_dbc_files = dbc_files["Upper"]
+    lower_dbc_files = dbc_files["Lower"]
 
     db = Database()
 
