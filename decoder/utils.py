@@ -4,6 +4,7 @@ from pathlib import Path
 from asammdf.blocks.types import StrPath
 import requests
 import os
+from itertools import chain
 from config import *
 
 
@@ -27,6 +28,26 @@ def get_time_str(start_time: float, end_ts: float | None = None) -> str:
     return "".join(parts)
 
 
+def get_files(directory: Path | str, extension: str | list[str]) -> list[StrPath]:
+    """
+    Get all files with the specified extensions in the specified directory.
+    """
+
+    if not isinstance(directory, Path):
+        directory = Path(directory)
+
+    patterns: list[str] = []
+
+    if isinstance(extension, str):
+        patterns = [f"*{extension}"] if extension.startswith(".") else [f"*.{extension}"]
+    elif isinstance(extension, list) and all(isinstance(ext, str) for ext in extension):
+        patterns = [f"*{ext}" if ext.startswith(".") else f"*.{ext}" for ext in extension]
+    else:
+        raise ValueError("Extension must be a string or a list of strings.")
+
+    return list(chain.from_iterable(directory.rglob(pattern) for pattern in patterns))
+
+
 def get_dbc_files(directory: Path | str) -> list[StrPath]:
     """
     Get all DBC files in the specified directory.
@@ -35,7 +56,7 @@ def get_dbc_files(directory: Path | str) -> list[StrPath]:
     if not isinstance(directory, Path):
         directory = Path(directory)
 
-    return list(directory.rglob("*.[dD][bB][cC]"))
+    return get_files(directory, [".dbc", ".DBC"])
 
 
 def make_metric_line(
