@@ -200,7 +200,7 @@ def skip_signal(name: str) -> bool:
     return False
 
 
-def send_files_to_victoriametrics(files: list[CSVContent]):
+def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[DbcFileType]]:
     # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
     _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
     if os.name == "nt":  # Override if on windows
@@ -236,7 +236,29 @@ def send_files_to_victoriametrics(files: list[CSVContent]):
     ]
     lower_dbc_files += []
 
-    MAX_BATCH_COUNT = 10
+    return {
+        "Upper": upper_dbc_files,
+        "Lower": lower_dbc_files,
+    }
+
+
+def send_files_to_victoriametrics(
+    files: list[CSVContent], max_batch_count: int = 10
+) -> dict[str, int]:
+    """
+    Sends the provided list of files to VictoriaMetrics in batches.
+    Each file is a tuple of (Path, "Upper"|"Lower", start_time, end_time).
+    Returns a  with the total counts of signals sent.
+    Uses ThreadPoolExecutor to send batches in parallel.
+    """
+
+    if not files:
+        logging.warning("⚠️ No files to send.")
+        return {}
+
+    dbc_files = get_d65_dbc_files()
+    upper_dbc_files = dbc_files["Upper"]
+    lower_dbc_files = dbc_files["Lower"]
 
     upper_tuples = [item for item in files if item[1] == "Upper"]
     upper_tuples.sort(key=lambda x: x[2])  # Sort by start time
@@ -255,7 +277,7 @@ def send_files_to_victoriametrics(files: list[CSVContent]):
     with ThreadPoolExecutor() as executor:
         futures = []
 
-        for idx, batch_files in batch(upper_files, MAX_BATCH_COUNT):
+        for idx, batch_files in batch(upper_files, max_batch_count):
             start_idx = idx + 1
             end_idx = idx + len(batch_files)
             concat_msg = f"[{start_idx}-{end_idx}]"
@@ -272,7 +294,7 @@ def send_files_to_victoriametrics(files: list[CSVContent]):
                 )
             )
 
-        for idx, batch_files in batch(lower_files, MAX_BATCH_COUNT):
+        for idx, batch_files in batch(lower_files, max_batch_count):
             start_idx = idx + 1
             end_idx = idx + len(batch_files)
             concat_msg = f"[{start_idx}-{end_idx}]"
@@ -425,7 +447,8 @@ def main():
         end_date = datetime(2025, 8, 1, tzinfo=ZoneInfo("America/Vancouver"))
 
         _files = filter_by_date(files, start_date, end_date)
-        _files = filter_by_job(_files, "Lower")
+        # _files = filter_by_job(_files, "Lower")
+        # _files = filter_by_job(_files, "Upper")
 
         logging.info(
             f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}."
