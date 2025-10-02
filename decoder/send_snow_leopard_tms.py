@@ -41,6 +41,7 @@ from sending import (
 from utils import *
 from asammdf import MDF
 from zoneinfo import ZoneInfo
+from concurrent.futures import ThreadPoolExecutor
 
 
 def read_filtered_paths_file(
@@ -229,19 +230,26 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1) -> int:
 
                 ts = time.time()
                 num_of_samples = 0
-                for sig in decoded.iter_channels():
+
+                def process_signal(sig):
                     if skip_signal(sig.name):
-                        continue
-                    
-                    num_of_samples += len(sig.samples)
-                    send_signal(
+                        return 0
+                    _n = send_signal(
                         signal=sig,
                         start_time=decoded.start_time,
                         job="SnowLeopardTMS",
                         print_metric_line=False,
                         send_signal=True,
                         skip_signal_range_check=True,
+                        batch_size=250_000,
                     )
+                    return _n
+
+                with ThreadPoolExecutor() as executor:
+                    results = list(
+                        executor.map(process_signal, decoded.iter_channels())
+                    )
+                    num_of_samples += sum(results)
                 print(
                     f"  ☑️ Sent batch of {convert_to_eng(num_of_samples)} samples in {get_time_str(ts)} ({convert_to_eng(num_of_samples/(time.time() - ts))} samples/sec)"
                 )
@@ -303,25 +311,27 @@ if __name__ == "__main__":
         f" -> ℹ️ There are {len(filtered)} files to process, from {_min_ts.isoformat()} to {_max_ts.isoformat()}"
     )
 
-    month_offset = 3
-    start_time = _min_ts + timedelta(days=month_offset * 30)
-    end_time = start_time + timedelta(days=30)
+    for month_offset in range(1, 7):
+        start_time = _min_ts + timedelta(days=month_offset * 30)
+        end_time = start_time + timedelta(days=30)
 
-    filtered_by_date = filter_by_date(
-        filtered, start_time=start_time, end_time=end_time
-    )
+        filtered_by_date = filter_by_date(
+            filtered, start_time=start_time, end_time=end_time
+        )
 
-    print(
-        f" -> ℹ️ Processing {len(filtered_by_date)} files from {start_time.isoformat()} to {end_time.isoformat()}"
-    )
+        print(
+            f" -> ℹ️ Processing {len(filtered_by_date)} files from {start_time.isoformat()} to {end_time.isoformat()}"
+        )
 
-    # for folder in [7, 10, 4]:
-    #     # for folder in [7, 8, 6, 5, 4, 9, 10]:
-    #     selected_folder = FOLDERS[folder]
-    #     folder_files = [f for f in filtered if selected_folder in str(f)]
-    #     print(f"Found {len(folder_files)} files in folder {selected_folder} to process")
+        # for folder in [7, 10, 4]:
+        #     # for folder in [7, 8, 6, 5, 4, 9, 10]:
+        #     selected_folder = FOLDERS[folder]
+        #     folder_files = [f for f in filtered if selected_folder in str(f)]
+        #     print(f"Found {len(folder_files)} files in folder {selected_folder} to process")
 
-    if filtered_by_date:
-        total_ts = time.time()
-        total_signals = process_files(filtered_by_date, dbc_file, batch_size=10)
-        print(f"🏁 All done in {get_time_str(total_ts)}, sent {convert_to_eng(total_signals)} samples ({convert_to_eng(total_signals / (time.time() - total_ts))} samples/s)")
+        if filtered_by_date:
+            total_ts = time.time()
+            total_signals = process_files(filtered_by_date, dbc_file, batch_size=10)
+            print(
+                f"🏁 All done in {get_time_str(total_ts)}, sent {convert_to_eng(total_signals)} samples ({convert_to_eng(total_signals / (time.time() - total_ts))} samples/s)"
+            )
