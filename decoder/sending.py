@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import time
 from collections.abc import Iterable
 from typing import Sequence, Callable, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import json
 import os
@@ -148,7 +149,7 @@ def send_signal(
     print_metric_line: bool = False,
     send_signal: bool = True,
     skip_signal_range_check: bool = False,
-    batch_size: int = 50_000,
+    batch_size: int = 250_000,
 ) -> int:
     """
     Send a single signal to VictoriaMetrics.
@@ -227,7 +228,7 @@ def send_file(
     job: str | None = None,
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
-    batch_size: int = 50_000,
+    batch_size: int = 250_000,
 ) -> dict[str, int]:
     logger = logging.getLogger("send_file")
     setup_simple_logger(logger, format=LOG_FORMAT)
@@ -274,7 +275,7 @@ def send_decoded(
     job: str | None = None,
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
-    batch_size: int = 50_000,
+    batch_size: int = 250_000,
 ) -> dict[str, int]:
     """
     Send a decoded MDF4 file to VictoriaMetrics.
@@ -309,6 +310,52 @@ def send_decoded(
     return signals_sample_count
 
 
+def send_decoded_threded(
+    decoded: MDF,
+    job: str | None = None,
+    skip_signal_range_check: bool = True,
+    skip_signal_fn: Optional[Callable[[str], bool]] = None,
+    batch_size: int = 250_000,
+) -> dict[str, int]:
+    """
+    Send a decoded MDF4 file to VictoriaMetrics using threading.
+    """
+
+    logger = logging.getLogger("send_decoded_threaded")
+    setup_simple_logger(logger, format=LOG_FORMAT)
+
+    signals_sample_count: dict[str, int] = {}
+
+    if not isinstance(decoded, MDF):
+        logger.warning("⚠️ Invalid decoded input type. Must be MDF instance.")
+        return signals_sample_count
+
+    with ThreadPoolExecutor() as executor:
+        future_to_signal = {
+            executor.submit(
+                send_signal,
+                signal=sig,
+                start_time=decoded.start_time,
+                job=job if job else "-".join(decoded.name.parts),
+                skip_signal_range_check=skip_signal_range_check,
+                batch_size=batch_size,
+            ): sig
+            for sig in decoded.iter_channels()
+            if skip_signal_fn is None or not skip_signal_fn(sig.name)
+        }
+
+        for future in as_completed(future_to_signal):
+            sig = future_to_signal[future]
+            try:
+                samples_sent = future.result()
+                if samples_sent > 0:
+                    signals_sample_count[sig.name] = samples_sent
+            except Exception as e:
+                logger.error(f"❌ Error sending signal {sig.name}: {e}")
+
+    return signals_sample_count
+
+
 def decode_and_send(
     files: list[Path],
     dbc_files: Sequence[DbcFileType],
@@ -317,7 +364,7 @@ def decode_and_send(
     concat_msg: str = "Concat",
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
-    batch_size=50_000,
+    batch_size=250_000,
 ) -> dict[str, int]:
     """
     Decode all MDF4 files in the specified directory and send their data to VictoriaMetrics.
