@@ -173,7 +173,7 @@ def filter_by_folder(
     return [f for f in files if folder in str(f)]
 
 
-def process_files(files: list, dbc_file: Path, batch_size: int = 1) -> int:
+def process_files(server: str, files: list, dbc_file: Path, batch_size: int = 1) -> int:
     total_signals = 0
     if not files:
         print(" ☹️  No files to process")
@@ -242,6 +242,7 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1) -> int:
                         send_signal=True,
                         skip_signal_range_check=True,
                         batch_size=250_000,
+                        server=server,
                     )
                     return _n
 
@@ -266,6 +267,8 @@ def process_files(files: list, dbc_file: Path, batch_size: int = 1) -> int:
 
 
 if __name__ == "__main__":
+    logger = logging.getLogger("main")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
     win_home = get_windows_home_path()
     can_logs = Path.joinpath(
         win_home,
@@ -303,13 +306,16 @@ if __name__ == "__main__":
         filtered = get_unique_filepaths(can_logs)
         save_filtered_paths_file(filtered, filtered_filepath)
     else:
-        print("ℹ️ Using previously filtered paths")
+        logger.info("ℹ️ Using previously filtered paths")
 
     _min_ts = min([start for _, start, _ in filtered])
     _max_ts = max([end for _, _, end in filtered])
-    print(
+    logger.info(
         f" -> ℹ️ There are {len(filtered)} files to process, from {_min_ts.isoformat()} to {_max_ts.isoformat()}"
     )
+
+    server = server_vm_sltms
+    logger.info(f" -> 🛜 Sending to {server}")
 
     for month_offset in range(1, 7):
         start_time = _min_ts + timedelta(days=month_offset * 30)
@@ -319,7 +325,7 @@ if __name__ == "__main__":
             filtered, start_time=start_time, end_time=end_time
         )
 
-        print(
+        logger.info(
             f" -> ℹ️ Processing {len(filtered_by_date)} files from {start_time.isoformat()} to {end_time.isoformat()}"
         )
 
@@ -331,7 +337,12 @@ if __name__ == "__main__":
 
         if filtered_by_date:
             total_ts = time.time()
-            total_signals = process_files(filtered_by_date, dbc_file, batch_size=10)
-            print(
+            total_signals = process_files(
+                server=server,
+                files=filtered_by_date,
+                dbc_file=dbc_file,
+                batch_size=10,
+            )
+            logger.info(
                 f"🏁 All done in {get_time_str(total_ts)}, sent {convert_to_eng(total_signals)} samples ({convert_to_eng(total_signals / (time.time() - total_ts))} samples/s)"
             )
