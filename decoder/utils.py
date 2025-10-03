@@ -147,6 +147,64 @@ def is_victoriametrics_online(timeout: float = 3.0) -> bool:
     return resp_status_code == 200
 
 
+def get_metrics_from_vm(
+    match: str, start_date: datetime, end_date: datetime, timeout: float = 10.0
+) -> dict:
+    if "job" not in match:
+        raise ValueError("Job name must be provided.")
+
+    ret: dict = {}
+
+    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
+
+    def query_vm(single_hour: int):
+        day_start = start_date + timedelta(hours=single_hour)
+        day_end = min(day_start + timedelta(hours=1), end_date)
+
+        logging.info(
+            f"🔍 Querying from VictoriaMetrics for {match} from {day_start.isoformat()} to {day_end.isoformat()}..."
+        )
+
+        try:
+            resp = requests.get(
+                vm_query_range_url,
+                params={
+                    "query": f"{{{match}}}",
+                    "start": day_start.timestamp(),
+                    "end": day_end.timestamp(),
+                    "step": "1s",
+                },
+                timeout=timeout,
+            )
+
+            if resp.status_code == 400:
+                logging.warning(
+                    f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}"
+                )
+                return day_start.isoformat(), None
+
+            elif resp.status_code == 422:
+                logging.warning(
+                    f"⚠️ Query error from VictoriaMetrics server. Status code: {resp.status_code}. Message: {resp.text}"
+                )
+                return day_start.isoformat(), None
+
+            return day_start.isoformat(), resp.json()
+        except Exception as e:
+            logging.error(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
+            return day_start.isoformat(), None
+
+    total_hours = (end_date - start_date).days * 24 + 1
+    ret_lock = Lock()
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(query_vm, h) for h in range(total_hours)]
+        for future in as_completed(futures):
+            key, value = future.result()
+            if value is not None:
+                with ret_lock:
+                    ret[key] = value
+    return ret
+
 def get_windows_home_path() -> Path:
     """
     Try to get the windows home path on both Windows and WSL/Linux.
