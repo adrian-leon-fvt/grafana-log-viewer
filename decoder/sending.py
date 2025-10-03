@@ -20,19 +20,6 @@ from DBCDecoder import DBCDecoder
 os.environ["NO_PROXY"] = "localhost"  # Bypass proxy for VictoriaMetrics
 
 
-def setup_simple_logger(
-    logger: logging.Logger, level: int = logging.INFO, format: str = "%(message)s"
-):
-    # Define a simple logger
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter(format)
-    handler.setFormatter(formatter)
-    if not logger.hasHandlers():
-        logger.addHandler(handler)
-    logger.propagate = False
-    logger.setLevel(level)
-
-
 def get_mf4_files(
     directory: Path | str,
     start_date: datetime | None = None,

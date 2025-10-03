@@ -14,6 +14,19 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 
 
+def setup_simple_logger(
+    logger: logging.Logger, level: int = logging.INFO, format: str = "%(message)s"
+):
+    # Define a simple logger
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(format)
+    handler.setFormatter(formatter)
+    if not logger.hasHandlers():
+        logger.addHandler(handler)
+    logger.propagate = False
+    logger.setLevel(level)
+
+
 def get_time_str(start_time: float, end_ts: float | None = None) -> str:
     _end_ts = time.time() if end_ts is None else end_ts
     elapsed = _end_ts - start_time
