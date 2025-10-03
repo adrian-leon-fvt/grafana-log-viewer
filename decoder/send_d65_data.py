@@ -18,6 +18,7 @@ from config import LOG_FORMAT, vm_import_url
 import requests
 import re
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
@@ -229,10 +230,10 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[StrPath]]:
     upper_dbc_files += [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
 
     lower_dbc_files: list[StrPath] = []
-    lower_dbc_files += [
-        Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Lower"]
-    ]
-    lower_dbc_files += []
+    # lower_dbc_files += [
+    #     Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Lower"]
+    # ]
+    lower_dbc_files += [Path.joinpath(_d65_loc, "one_shot_updates.dbc")]
 
     return {
         "Upper": upper_dbc_files,
@@ -241,7 +242,9 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[StrPath]]:
 
 
 def send_files_to_victoriametrics(
-    files: list[CSVContent], max_batch_count: int = 10
+    files: list[CSVContent],
+    max_batch_count: int = 10,
+    threaded: bool = True,
 ) -> dict[str, int]:
     """
     Sends the provided list of files to VictoriaMetrics in batches.
@@ -272,52 +275,94 @@ def send_files_to_victoriametrics(
 
     total_counts: dict[str, int] = {}
 
-    with ThreadPoolExecutor() as executor:
-        futures = []
-
+    if not threaded:
         for idx, batch_files in batch(upper_files, max_batch_count):
             start_idx = idx + 1
             end_idx = idx + len(batch_files)
             concat_msg = f"[{start_idx}-{end_idx}]"
-            futures.append(
-                executor.submit(
-                    decode_and_send,
-                    files=batch_files,
-                    dbc_files=upper_dbc_files,
-                    job="Upper",
-                    concat_first=True,
-                    concat_msg=concat_msg,
-                    skip_signal_fn=skip_signal,
-                    skip_signal_range_check=True,
-                )
+            result = decode_and_send(
+                files=batch_files,
+                dbc_files=upper_dbc_files,
+                job="Upper",
+                concat_first=True,
+                concat_msg=concat_msg,
+                skip_signal_fn=skip_signal,
+                skip_signal_range_check=True,
+                batch_size=100_000,
             )
+            if isinstance(result, dict):
+                for k, v in result.items():
+                    total_counts[k] = total_counts.get(k, 0) + v
 
         for idx, batch_files in batch(lower_files, max_batch_count):
             start_idx = idx + 1
             end_idx = idx + len(batch_files)
             concat_msg = f"[{start_idx}-{end_idx}]"
-            futures.append(
-                executor.submit(
-                    decode_and_send,
-                    files=batch_files,
-                    dbc_files=lower_dbc_files,
-                    job="Lower",
-                    concat_first=True,
-                    concat_msg=concat_msg,
-                    skip_signal_fn=skip_signal,
-                    skip_signal_range_check=True,
-                )
+            result = decode_and_send(
+                files=batch_files,
+                dbc_files=lower_dbc_files,
+                job="Lower",
+                concat_first=True,
+                concat_msg=concat_msg,
+                skip_signal_fn=skip_signal,
+                skip_signal_range_check=True,
+                batch_size=100_000,
             )
+            if isinstance(result, dict):
+                for k, v in result.items():
+                    total_counts[k] = total_counts.get(k, 0) + v
 
-        for future in futures:
-            try:
-                result = future.result()
-                if isinstance(result, dict):
-                    with Lock():
-                        for k, v in result.items():
-                            total_counts[k] = total_counts.get(k, 0) + v
-            except Exception as e:
-                logging.error(f"❌ Error processing batch: {e}")
+        return total_counts
+
+    else:
+        with ThreadPoolExecutor() as executor:
+            futures = []
+
+            for idx, batch_files in batch(upper_files, max_batch_count):
+                start_idx = idx + 1
+                end_idx = idx + len(batch_files)
+                concat_msg = f"[{start_idx}-{end_idx}]"
+                futures.append(
+                    executor.submit(
+                        decode_and_send,
+                        files=batch_files,
+                        dbc_files=upper_dbc_files,
+                        job="Upper",
+                        concat_first=True,
+                        concat_msg=concat_msg,
+                        skip_signal_fn=skip_signal,
+                        skip_signal_range_check=True,
+                        batch_size=100_000,
+                    )
+                )
+
+            for idx, batch_files in batch(lower_files, max_batch_count):
+                start_idx = idx + 1
+                end_idx = idx + len(batch_files)
+                concat_msg = f"[{start_idx}-{end_idx}]"
+                futures.append(
+                    executor.submit(
+                        decode_and_send,
+                        files=batch_files,
+                        dbc_files=lower_dbc_files,
+                        job="Lower",
+                        concat_first=True,
+                        concat_msg=concat_msg,
+                        skip_signal_fn=skip_signal,
+                        skip_signal_range_check=True,
+                        batch_size=100_000,
+                    )
+                )
+
+            for future in futures:
+                try:
+                    result = future.result()
+                    if isinstance(result, dict):
+                        with Lock():
+                            for k, v in result.items():
+                                total_counts[k] = total_counts.get(k, 0) + v
+                except Exception as e:
+                    logging.error(f"❌ Error processing batch: {e}")
 
     return total_counts
 
@@ -342,18 +387,22 @@ def send_trace(file: Path, job: str, batch_size: int = 50_000):
 
     log = LogReader(file)
     metrics: list[str] = []
-    for msg in log:
+    metrics_lock = Lock()
+    metrics: list[str] = []
+
+    def process_msg(msg):
         try:
             message: Message = db.get_message_by_frame_id(msg.arbitration_id)
             if message is None:
-                continue
+                return []
 
             signals: DecodeResultType = message.decode(msg.data)
             timestamp = datetime.fromtimestamp(msg.timestamp, tz=timezone.utc)
 
             if not isinstance(signals, dict):
-                continue
+                return []
 
+            local_metrics = []
             for signal_name, value in signals.items():
                 if skip_signal(signal_name):
                     continue
@@ -374,24 +423,37 @@ def send_trace(file: Path, job: str, batch_size: int = 50_000):
                     timestamp=timestamp,
                     job=job,
                 )
-
-                metrics.append(metric_line)
-
-                if len(metrics) >= batch_size:
-                    batch_data = "\n".join(metrics)
-                    metrics = []
-                    try:
-                        requests.post(
-                            vm_import_url,
-                            data=batch_data,
-                            headers={"Content-Type": "text/plain"},
-                            timeout=5,
-                        )
-                    except Exception as e:
-                        logging.error(f"❌ Exception sending batch: {e}")
-
+                local_metrics.append(metric_line)
+            return local_metrics
         except Exception as e:
-            logging.error(f"❌ Error processing message ID {msg.arbitration_id}: {e}")
+            logging.error(
+                f"❌ Error processing message ID {getattr(msg, 'arbitration_id', 'unknown')}: {e}"
+            )
+            return []
+
+    with ThreadPoolExecutor() as executor:
+        futures = [executor.submit(process_msg, msg) for msg in log]
+
+        for future in as_completed(futures):
+            local_metrics = future.result()
+            if local_metrics:
+                with metrics_lock:
+                    metrics.extend(local_metrics)
+                    if len(metrics) >= batch_size:
+                        batch_data = "".join(metrics)
+                        try:
+                            requests.post(vm_import_url, data=batch_data)
+                            metrics.clear()
+                        except Exception as e:
+                            logging.error(f"❌ Exception sending batch: {e}")
+
+    # Send any remaining metrics
+    if metrics:
+        batch_data = "".join(metrics)
+        try:
+            requests.post(vm_import_url, data=batch_data)
+        except Exception as e:
+            logging.error(f"❌ Exception sending final batch: {e}")
 
 
 def main():
@@ -422,18 +484,32 @@ def main():
                 (f, k_seg, start, end) for f, k_seg, start, end in files if k_seg == job
             ]
 
-        start_date = datetime(2025, 1, 1, tzinfo=ZoneInfo("America/Vancouver"))
-        end_date = datetime(2025, 8, 1, tzinfo=ZoneInfo("America/Vancouver"))
+        start_date = datetime(
+            year=2025,
+            month=7,
+            day=15,
+            tzinfo=ZoneInfo("America/Vancouver"),
+        )
+        end_date = datetime(
+            2025,
+            7,
+            15,
+            hour=23,
+            minute=59,
+            second=59,
+            tzinfo=ZoneInfo("America/Vancouver"),
+        )
 
-        _files = filter_by_date(files, start_date, end_date)
-        # _files = filter_by_job(_files, "Lower")
+        _files = files
+        # _files = filter_by_date(files, start_date, end_date)
+        _files = filter_by_job(_files, "Lower")
         # _files = filter_by_job(_files, "Upper")
 
         logging.info(
             f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}."
         )
 
-        total_counts = send_files_to_victoriametrics(_files)
+        total_counts = send_files_to_victoriametrics(_files, max_batch_count=10)
         end_ts = time()
         total_signals_sent = len(total_counts.keys())
         total_samples_sent = sum(total_counts.values())
