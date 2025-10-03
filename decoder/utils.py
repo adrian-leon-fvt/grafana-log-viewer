@@ -1,11 +1,17 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
+from asammdf import MDF
 from asammdf.blocks.types import StrPath
 import requests
 import os
+import json
 from itertools import chain
+from can import LogReader, Logger
 from config import *
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Lock
 
 
 def get_time_str(start_time: float, end_ts: float | None = None) -> str:
@@ -39,9 +45,13 @@ def get_files(directory: Path | str, extension: str | list[str]) -> list[StrPath
     patterns: list[str] = []
 
     if isinstance(extension, str):
-        patterns = [f"*{extension}"] if extension.startswith(".") else [f"*.{extension}"]
+        patterns = (
+            [f"*{extension}"] if extension.startswith(".") else [f"*.{extension}"]
+        )
     elif isinstance(extension, list) and all(isinstance(ext, str) for ext in extension):
-        patterns = [f"*{ext}" if ext.startswith(".") else f"*.{ext}" for ext in extension]
+        patterns = [
+            f"*{ext}" if ext.startswith(".") else f"*.{ext}" for ext in extension
+        ]
     else:
         raise ValueError("Extension must be a string or a list of strings.")
 
@@ -204,6 +214,39 @@ def get_metrics_from_vm(
                 with ret_lock:
                     ret[key] = value
     return ret
+
+
+def convert_mf4_to_trc(paths: list[Path | str], output_name: str | Path) -> None:
+    if not isinstance(paths, list):
+        paths = [paths]
+
+    if len(paths) == 0:
+        raise ValueError("At least one input path must be provided.")
+
+    if output_name == "":
+        raise ValueError("Output name must be provided.")
+
+    try:
+        if len(paths) > 1:
+            print(f"🔄 Concatenating {len(paths)} MF4 files...")
+        mdf = MDF().concatenate(paths)
+        saved_path = mdf.save("temp.mf4", overwrite=True)
+        print(f"🔄 Converting to TRC...")
+        log = LogReader(saved_path)
+        logger = Logger(filename=Path(output_name).with_suffix(".trc"))
+        for msg in log:
+            logger(msg)
+
+        print(f"✅ Saved at {Path(output_name).with_suffix('.trc')}")
+
+        # Delete the temp file
+        os.remove(saved_path)
+    except KeyboardInterrupt:
+        print("❌ Conversion cancelled by user.")
+        return
+    except Exception as e:
+        print(f"❌ Error during conversion: {e}")
+
 
 def get_windows_home_path() -> Path:
     """
