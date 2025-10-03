@@ -315,6 +315,9 @@ if __name__ == "__main__":
     )
 
     server = server_vm_sltms
+    if not is_victoriametrics_online(server):
+        logger.error(f" -> ❌ {server} not available. Exiting...")
+        exit(1)
     logger.info(f" -> 🛜 Sending to {server}")
 
     for month_offset in range(1, 7):
