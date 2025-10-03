@@ -59,6 +59,63 @@ def get_dbc_files(directory: Path | str) -> list[StrPath]:
     return get_files(directory, [".dbc", ".DBC"])
 
 
+def make_list_of_vm_json_line_format(
+    metric_name: str,
+    message: str,
+    unit: str,
+    values: list[float],
+    timestamps: list[float | datetime],
+    job: str,
+    batch_size: int = 250_000,
+) -> list[str]:
+    """
+    Create a list of JSON lines in the VictoriaMetrics format for batch uploading.
+    The JSON format is as follows:
+    {
+        "metric": {
+            "__name__": "metric_name",
+            "job": "job_name",
+            "message": "message",
+            "unit": "unit"
+        },
+        "values": [value1, value2, ...],
+        "timestamps": [timestamp1, timestamp2, ...]
+    }
+
+    The total samples in each JSON line should not exceed the batch_size.
+    """
+
+    if len(values) != len(timestamps):
+        raise ValueError("Values and timestamps must have the same length.")
+    if batch_size <= 0:
+        raise ValueError("Batch size must be a positive integer.")
+
+    if len(values) == 0:
+        return []
+
+    def make_line(start_idx: int, end_idx: int) -> str:
+        json_line = {
+            "metric": {
+                "__name__": metric_name,
+                "job": job.replace(" ", "_"),
+                "message": message,
+                "unit": unit,
+            },
+            "values": values[start_idx:end_idx],
+            "timestamps": [
+                ts.timestamp() if isinstance(ts, datetime) else ts
+                for ts in timestamps[start_idx:end_idx]
+            ],
+        }
+        return json.dumps(json_line)
+
+    lines: list[str] = []
+    for i in range(0, len(values), batch_size):
+        lines.append(make_line(i, min(i + batch_size, len(values))))
+
+    return lines
+
+
 def make_metric_line(
     metric_name: str,
     message: str,
