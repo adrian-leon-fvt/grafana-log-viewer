@@ -1,5 +1,11 @@
 import logging
-from utils import get_windows_home_path, get_time_str, convert_to_eng, make_metric_line
+from utils import (
+    get_windows_home_path,
+    get_time_str,
+    convert_to_eng,
+    make_metric_line,
+    is_victoriametrics_online,
+)
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from asammdf import MDF
@@ -14,7 +20,12 @@ from cantools.database.can import Message, Signal, Database
 from cantools.typechecking import DecodeResultType, SignalDictType
 from sending import decode_and_send
 from zoneinfo import ZoneInfo
-from config import LOG_FORMAT, server_vm_d65, server_vm_localhost, vmapi_import_prometheus
+from config import (
+    LOG_FORMAT,
+    server_vm_d65,
+    server_vm_localhost,
+    vmapi_import_prometheus,
+)
 import requests
 import re
 import os
@@ -242,6 +253,7 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[StrPath]]:
 
 
 def send_files_to_victoriametrics(
+    server: str,
     files: list[CSVContent],
     max_batch_count: int = 10,
     threaded: bool = True,
@@ -274,8 +286,6 @@ def send_files_to_victoriametrics(
             yield i, lst[i : i + n]
 
     total_counts: dict[str, int] = {}
-
-    server = server_vm_d65
 
     if not threaded:
         for idx, batch_files in batch(upper_files, max_batch_count):
@@ -373,7 +383,7 @@ def send_files_to_victoriametrics(
     return total_counts
 
 
-def send_trace(file: Path, job: str, server: str, batch_size: int = 50_000):
+def send_trace(server: str, file: Path, job: str, batch_size: int = 50_000):
     if file.suffix.lower() != ".trc":
         logging.error(f"❌ File is not a .trc file: {file}")
         return
@@ -448,7 +458,9 @@ def send_trace(file: Path, job: str, server: str, batch_size: int = 50_000):
                     if len(metrics) >= batch_size:
                         batch_data = "".join(metrics)
                         try:
-                            requests.post(server + vmapi_import_prometheus, data=batch_data)
+                            requests.post(
+                                server + vmapi_import_prometheus, data=batch_data
+                            )
                             metrics.clear()
                         except Exception as e:
                             logging.error(f"❌ Exception sending batch: {e}")
@@ -496,15 +508,7 @@ def main():
             day=15,
             tzinfo=ZoneInfo("America/Vancouver"),
         )
-        end_date = datetime(
-            2025,
-            7,
-            15,
-            hour=23,
-            minute=59,
-            second=59,
-            tzinfo=ZoneInfo("America/Vancouver"),
-        )
+        end_date = start_date + timedelta(days=1)
 
         _files = files
         # _files = filter_by_date(files, start_date, end_date)
@@ -515,7 +519,16 @@ def main():
             f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}."
         )
 
-        total_counts = send_files_to_victoriametrics(_files, max_batch_count=10)
+        server = server_vm_localhost
+        if not is_victoriametrics_online(server):
+            logging.error(f" -> ❌ {server} not available. Exiting...")
+            exit(1)
+
+        total_counts = send_files_to_victoriametrics(
+            server=server,
+            files=_files,
+            max_batch_count=10,
+        )
         end_ts = time()
         total_signals_sent = len(total_counts.keys())
         total_samples_sent = sum(total_counts.values())
