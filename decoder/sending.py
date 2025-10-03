@@ -77,7 +77,9 @@ def is_valid_sample(sample):
         return False
 
 
-def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
+def check_signal_range(
+    signal: Signal, start_time: datetime, server: str
+) -> Signal | None:
     """
     Checks if the signal timestamps already exist in the database, returns a Signal object only with timestamps not already there,
     """
@@ -97,7 +99,7 @@ def check_signal_range(signal: Signal, start_time: datetime) -> Signal | None:
         "step": "1s",
     }
     try:
-        resp = requests.get(vm_export_url, params=params, timeout=10)
+        resp = requests.get(server + vmapi_export, params=params, timeout=10)
         if resp.status_code != 200:
             return signal
         elif resp.text == "":
@@ -133,6 +135,7 @@ def send_signal(
     signal: Signal,
     start_time: datetime,
     job: str,
+    server: str,
     print_metric_line: bool = False,
     send_signal: bool = True,
     skip_signal_range_check: bool = False,
@@ -147,7 +150,7 @@ def send_signal(
     - print_metric_line: If True, prints the metric lines before sending (default: False).
     - send_signal: If True, actually sends the data to VictoriaMetrics (default: True).
     - skip_signal_range_check: If True, skips checking if the signal data already exists in the database (default: False).
-    - batch_size: Number of samples to send in each HTTP POST batch (default: 50,000).
+    - batch_size: Number of samples to send in each HTTP POST batch (default: 250,000).
     """
 
     logger = logging.getLogger("send_signal")
@@ -159,7 +162,11 @@ def send_signal(
 
     _signal: Signal | None = signal
     if not skip_signal_range_check:
-        _signal = check_signal_range(signal, start_time)
+        _signal = check_signal_range(
+            signal=signal,
+            start_time=start_time,
+            server=server,
+        )
 
     if _signal is None or len(_signal.timestamps) < 1:
         logger.info(f"  ☑️ No new data for {signal.name}, skipping ...")
@@ -191,14 +198,14 @@ def send_signal(
                 if print_metric_line:
                     logger.info("".join(batch))
                 if send_signal:
-                    requests.post(vm_import_url, data="".join(batch))
+                    requests.post(server + vmapi_import_prometheus, data="".join(batch))
             except Exception as e:
                 logger.error(f"‼️ Error sending batch: {e}")
             batch = []
             time.sleep(0.01)  # Avoid overwhelming the server
     if batch:
         try:
-            requests.post(vm_import_url, data="".join(batch))
+            requests.post(server + vmapi_import_prometheus, data="".join(batch))
         except Exception as e:
             logger.error(f"‼️ Error sending final batch: {e}")
 
@@ -210,8 +217,97 @@ def send_signal(
     return num_of_samples_sent
 
 
+def send_signal_using_json_lines(
+    signal: Signal,
+    start_time: datetime,
+    job: str,
+    server: str,
+    print_metric_line: bool = False,
+    send_signal: bool = True,
+    skip_signal_range_check: bool = False,
+    batch_size: int = 250_000,
+) -> int:
+    """
+    Send a single signal to VictoriaMetrics using JSON lines.
+    Options:
+    - signal: The Signal object to send.
+    - start_time: The datetime representing the start time of the MDF file.
+    - job: Label to recognize what machine this signal belongs to.
+    - print_metric_line: If True, prints the metric lines before sending (default: False).
+    - send_signal: If True, actually sends the data to VictoriaMetrics (default: True).
+    - skip_signal_range_check: If True, skips checking if the signal data already exists in the database (default: False).
+    - batch_size: Number of samples to send in each HTTP POST batch (default: 250,000).
+    """
+
+    logger = logging.getLogger("send_signal_using_json_lines")
+    setup_simple_logger(logger)
+
+    message, metric_name = get_channel_data(signal)
+
+    num_of_samples_sent = 0
+
+    _signal: Signal | None = signal
+    if not skip_signal_range_check:
+        _signal = check_signal_range(
+            signal=signal,
+            start_time=start_time,
+            server=server,
+        )
+
+    if _signal is None or len(_signal.timestamps) < 1:
+        logger.info(f"  ☑️ No new data for {metric_name}, skipping ...")
+        return num_of_samples_sent
+
+    unit = _signal.unit if _signal.unit else ""
+    _sig_start_str = start_time + timedelta(seconds=_signal.timestamps[0])
+    _sig_end_str = start_time + timedelta(seconds=_signal.timestamps[-1])
+    values: list[float] = []
+    timestamps: list[float | datetime] = []
+    for sample, ts in zip(_signal.samples, _signal.timestamps):
+        if not is_valid_sample(sample):  # Check if sample is not float (e.g. string)
+            continue  # Skip this sample
+        values.append(float(sample))
+        timestamps.append((start_time + timedelta(seconds=ts)).timestamp())
+    _time_str = f"{_sig_start_str.isoformat()} - {_sig_end_str.isoformat()}, {len(timestamps)} samples"
+
+    if len(values) < 1 or len(timestamps) < 1:
+        logger.info(f"  ℹ️ No valid numeric data for {metric_name}, skipping ...")
+        return num_of_samples_sent
+
+    logger.info(f"  📨 Sending {metric_name} [{_time_str}] ...")
+    lines = make_list_of_vm_json_line_format(
+        metric_name=metric_name,
+        message=message,
+        unit=unit,
+        values=values,
+        timestamps=timestamps,
+        job=job if job else "",
+        batch_size=batch_size,
+    )
+
+    start = time.time()
+    for line in lines:
+        try:
+            if print_metric_line:
+                logger.info(line)
+            if send_signal:
+                requests.post(server + vmapi_import_prometheus, data=line)
+            num_of_samples_sent += line.count("values")
+            time.sleep(0.01)  # Avoid overwhelming the server
+        except Exception as e:
+            logger.error(f"‼️ Error sending batch: {e}")
+
+    time_str = get_time_str(start)
+    end_ts = time.time()
+    logger.info(
+        f"  📨 Sent {metric_name} in {time_str} ({convert_to_eng(num_of_samples_sent)} samples | {convert_to_eng(num_of_samples_sent / (end_ts - start))} samples/s)"
+    )
+    return num_of_samples_sent
+
+
 def send_file(
     filename: Path,
+    server: str,
     job: str | None = None,
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
@@ -246,6 +342,7 @@ def send_file(
                     job=job if job else filename.stem,
                     skip_signal_range_check=skip_signal_range_check,
                     batch_size=batch_size,
+                    server=server,
                 )
 
                 if samples_sent > 0:
@@ -259,6 +356,7 @@ def send_file(
 
 def send_decoded(
     decoded: Path | MDF,
+    server: str,
     job: str | None = None,
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
@@ -273,7 +371,11 @@ def send_decoded(
     signals_sample_count: dict[str, int] = {}
 
     if isinstance(decoded, Path):
-        send_file(decoded, job)
+        send_file(
+            filename=decoded,
+            job=job,
+            server=server,
+        )
     elif isinstance(decoded, MDF):
         for sig in decoded.iter_channels():
             _job = job if job else "-".join(decoded.name.parts)
@@ -286,6 +388,7 @@ def send_decoded(
                 job=_job,
                 skip_signal_range_check=skip_signal_range_check,
                 batch_size=batch_size,
+                server=server,
             )
 
             if signals_sent > 0:
@@ -299,6 +402,7 @@ def send_decoded(
 
 def send_decoded_threded(
     decoded: MDF,
+    server: str,
     job: str | None = None,
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
@@ -326,6 +430,7 @@ def send_decoded_threded(
                 job=job if job else "-".join(decoded.name.parts),
                 skip_signal_range_check=skip_signal_range_check,
                 batch_size=batch_size,
+                server=server,
             ): sig
             for sig in decoded.iter_channels()
             if skip_signal_fn is None or not skip_signal_fn(sig.name)
@@ -346,6 +451,7 @@ def send_decoded_threded(
 def decode_and_send(
     files: list[Path],
     dbc_files: Sequence[DbcFileType],
+    server: str,
     job: str = "test_job",
     concat_first: bool = True,
     concat_msg: str = "Concat",
@@ -393,6 +499,7 @@ def decode_and_send(
                         skip_signal_fn=skip_signal_fn,
                         skip_signal_range_check=skip_signal_range_check,
                         batch_size=batch_size,
+                        server=server,
                     )
                     for k, v in result.items():
                         signals_sample_count[k] = signals_sample_count.get(k, 0) + v
@@ -426,6 +533,7 @@ def decode_and_send(
                         skip_signal_fn=skip_signal_fn,
                         skip_signal_range_check=skip_signal_range_check,
                         batch_size=batch_size,
+                        server=server,
                     )
 
                     for k, v in result.items():
@@ -441,11 +549,11 @@ def decode_and_send(
     return signals_sample_count
 
 
-def livestream():
-    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
+def livestream(server:str):
     logger = logging.getLogger("livestream")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
-    if is_victoriametrics_online():
+    if is_victoriametrics_online(server):
         dbc_decoder = None
         if DBC_FILE_PATHS:
             logger.info("Initializing DBC decoder...")
@@ -484,7 +592,7 @@ def livestream():
                             job="d65_livestream",
                         )
                         try:
-                            requests.post(vm_import_url, data="".join(data))
+                            requests.post(server + vmapi_import_prometheus, data="".join(data))
                         except Exception as e:
                             logging.error(f"\n ‼️ Error sending data: {e}")
 
@@ -497,7 +605,7 @@ def livestream():
 
 def main():
     if LIVE_STREAMING:  # Streaming live CAN data
-        livestream()
+        livestream(LIVE_STREAMING_SERVER)
 
 
 if __name__ == "__main__":

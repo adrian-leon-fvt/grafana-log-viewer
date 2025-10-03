@@ -14,7 +14,7 @@ from cantools.database.can import Message, Signal, Database
 from cantools.typechecking import DecodeResultType, SignalDictType
 from sending import decode_and_send
 from zoneinfo import ZoneInfo
-from config import LOG_FORMAT, vm_import_url
+from config import LOG_FORMAT, server_vm_d65, server_vm_localhost, vmapi_import_prometheus
 import requests
 import re
 import os
@@ -275,6 +275,8 @@ def send_files_to_victoriametrics(
 
     total_counts: dict[str, int] = {}
 
+    server = server_vm_d65
+
     if not threaded:
         for idx, batch_files in batch(upper_files, max_batch_count):
             start_idx = idx + 1
@@ -289,6 +291,7 @@ def send_files_to_victoriametrics(
                 skip_signal_fn=skip_signal,
                 skip_signal_range_check=True,
                 batch_size=100_000,
+                server=server,
             )
             if isinstance(result, dict):
                 for k, v in result.items():
@@ -307,6 +310,7 @@ def send_files_to_victoriametrics(
                 skip_signal_fn=skip_signal,
                 skip_signal_range_check=True,
                 batch_size=100_000,
+                server=server,
             )
             if isinstance(result, dict):
                 for k, v in result.items():
@@ -333,6 +337,7 @@ def send_files_to_victoriametrics(
                         skip_signal_fn=skip_signal,
                         skip_signal_range_check=True,
                         batch_size=100_000,
+                        server=server,
                     )
                 )
 
@@ -351,6 +356,7 @@ def send_files_to_victoriametrics(
                         skip_signal_fn=skip_signal,
                         skip_signal_range_check=True,
                         batch_size=100_000,
+                        server=server,
                     )
                 )
 
@@ -367,7 +373,7 @@ def send_files_to_victoriametrics(
     return total_counts
 
 
-def send_trace(file: Path, job: str, batch_size: int = 50_000):
+def send_trace(file: Path, job: str, server: str, batch_size: int = 50_000):
     if file.suffix.lower() != ".trc":
         logging.error(f"❌ File is not a .trc file: {file}")
         return
@@ -442,7 +448,7 @@ def send_trace(file: Path, job: str, batch_size: int = 50_000):
                     if len(metrics) >= batch_size:
                         batch_data = "".join(metrics)
                         try:
-                            requests.post(vm_import_url, data=batch_data)
+                            requests.post(server + vmapi_import_prometheus, data=batch_data)
                             metrics.clear()
                         except Exception as e:
                             logging.error(f"❌ Exception sending batch: {e}")
@@ -451,7 +457,7 @@ def send_trace(file: Path, job: str, batch_size: int = 50_000):
     if metrics:
         batch_data = "".join(metrics)
         try:
-            requests.post(vm_import_url, data=batch_data)
+            requests.post(server + vmapi_import_prometheus, data=batch_data)
         except Exception as e:
             logging.error(f"❌ Exception sending final batch: {e}")
 
