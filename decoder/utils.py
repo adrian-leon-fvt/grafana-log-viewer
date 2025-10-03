@@ -152,26 +152,35 @@ def make_metric_line(
     return f'{metric_name}{{job="{job_underscored}",message="{message}",unit="{unit}"}} {value} {timestamp.timestamp() if type(timestamp) is datetime else timestamp}\n'
 
 
-def is_victoriametrics_online(timeout: float = 3.0) -> bool:
+def is_victoriametrics_online(server: str, timeout: float = 3.0) -> bool:
+    logger = logging.getLogger("vm_check")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
+
     resp_status_code = 404
 
     try:
-        resp = requests.get(vm_query_url, params={"query": "up"}, timeout=timeout)
+        resp = requests.get(
+            server + vmapi_query, params={"query": "up"}, timeout=timeout
+        )
         resp_status_code = resp.status_code
         if resp.status_code != 200:
-            print(
+            logger.warning(
                 f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}"
             )
             return False
     except Exception as e:
-        print(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
+        logger.warning(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
         return False
 
     return resp_status_code == 200
 
 
 def get_metrics_from_vm(
-    match: str, start_date: datetime, end_date: datetime, timeout: float = 10.0
+    server: str,
+    match: str,
+    start_date: datetime,
+    end_date: datetime,
+    timeout: float = 10.0,
 ) -> dict:
     if "job" not in match:
         raise ValueError("Job name must be provided.")
@@ -190,7 +199,7 @@ def get_metrics_from_vm(
 
         try:
             resp = requests.get(
-                vm_query_range_url,
+                server + vmapi_query_range,
                 params={
                     "query": f"{{{match}}}",
                     "start": day_start.timestamp(),
@@ -230,6 +239,9 @@ def get_metrics_from_vm(
 
 
 def convert_mf4_to_trc(paths: list[Path | str], output_name: str | Path) -> None:
+    logger = logging.getLogger("mf4_to_trc_converter")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
+
     if not isinstance(paths, list):
         paths = [paths]
 
@@ -240,25 +252,30 @@ def convert_mf4_to_trc(paths: list[Path | str], output_name: str | Path) -> None
         raise ValueError("Output name must be provided.")
 
     try:
+        start_ts = time.time()
         if len(paths) > 1:
-            print(f"🔄 Concatenating {len(paths)} MF4 files...")
+            logger.info(f"🔄 Concatenating {len(paths)} MF4 files...")
         mdf = MDF().concatenate(paths)
+        logger.info(f"✅ Concatenation done in {get_time_str(start_ts)}")
         saved_path = mdf.save("temp.mf4", overwrite=True)
-        print(f"🔄 Converting to TRC...")
+        start_ts = time.time()
+        logger.info(f"🔄 Converting to TRC...")
         log = LogReader(saved_path)
-        logger = Logger(filename=Path(output_name).with_suffix(".trc"))
+        trc_logger = Logger(filename=Path(output_name).with_suffix(".trc"))
         for msg in log:
-            logger(msg)
+            trc_logger(msg)
 
-        print(f"✅ Saved at {Path(output_name).with_suffix('.trc')}")
+        logger.info(
+            f"✅ Saved at {Path(output_name).with_suffix('.trc')} (took {get_time_str(start_ts)})"
+        )
 
         # Delete the temp file
         os.remove(saved_path)
     except KeyboardInterrupt:
-        print("❌ Conversion cancelled by user.")
+        logger.warning("❌ Conversion cancelled by user.")
         return
     except Exception as e:
-        print(f"❌ Error during conversion: {e}")
+        logger.warning(f"❌ Error during conversion: {e}")
 
 
 def get_windows_home_path() -> Path:
