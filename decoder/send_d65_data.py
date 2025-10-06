@@ -257,6 +257,7 @@ def send_files_to_victoriametrics(
     files: list[CSVContent],
     max_batch_count: int = 10,
     threaded: bool = True,
+    max_batch_size: int = 250_000,
 ) -> dict[str, int]:
     """
     Sends the provided list of files to VictoriaMetrics in batches.
@@ -300,7 +301,7 @@ def send_files_to_victoriametrics(
                 concat_msg=concat_msg,
                 skip_signal_fn=skip_signal,
                 skip_signal_range_check=True,
-                batch_size=100_000,
+                batch_size=max_batch_size,
                 server=server,
             )
             if isinstance(result, dict):
@@ -319,7 +320,7 @@ def send_files_to_victoriametrics(
                 concat_msg=concat_msg,
                 skip_signal_fn=skip_signal,
                 skip_signal_range_check=True,
-                batch_size=100_000,
+                batch_size=max_batch_size,
                 server=server,
             )
             if isinstance(result, dict):
@@ -346,7 +347,7 @@ def send_files_to_victoriametrics(
                         concat_msg=concat_msg,
                         skip_signal_fn=skip_signal,
                         skip_signal_range_check=True,
-                        batch_size=100_000,
+                        batch_size=max_batch_size,
                         server=server,
                     )
                 )
@@ -365,7 +366,7 @@ def send_files_to_victoriametrics(
                         concat_msg=concat_msg,
                         skip_signal_fn=skip_signal,
                         skip_signal_range_check=True,
-                        batch_size=100_000,
+                        batch_size=max_batch_size,
                         server=server,
                     )
                 )
