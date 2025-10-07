@@ -14,7 +14,7 @@ from itertools import chain
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from typing import Optional, Literal
-from time import time
+import time
 from can import LogReader
 from cantools.database.can import Message, Signal, Database
 from cantools.typechecking import DecodeResultType, SignalDictType
@@ -44,7 +44,7 @@ def shortpath(p: Path) -> str:
 def read_filtered_paths_file(
     filepath: Path | str,
 ) -> list[CSVContent]:
-    ts = time()
+    ts = time.time()
     logging.info(f"📃 Reading filtered paths from {filepath} ... ")
     win_home = get_windows_home_path()
     try:
@@ -76,7 +76,7 @@ def save_preprocessed_paths_file(
     filtered: list[CSVContent],
     filepath: Path | str,
 ):
-    ts = time()
+    ts = time.time()
     logging.info(f"💾 Saving {len(filtered)} filtered paths to {filepath} ... ")
     try:
         path = Path(filepath)
@@ -563,7 +563,7 @@ def main():
     files = read_filtered_paths_file(preprocessed_path)
 
     if files:
-        start_ts = time()
+        start_ts = time.time()
         logging.info(
             f" ✔️  Using {len(files)} preprocessed files from {preprocessed_path}."
         )
@@ -613,7 +613,7 @@ def main():
             files=_files,
             max_batch_count=10,
         )
-        end_ts = time()
+        end_ts = time.time()
         total_signals_sent = len(total_counts.keys())
         total_samples_sent = sum(total_counts.values())
 
@@ -629,7 +629,7 @@ def main():
             .lower()
         )
 
-        start_ts = time()
+        start_ts = time.time()
         if ans[0] != "y":
             logging.info(" 👋  OK Bye.")
             exit(0)
