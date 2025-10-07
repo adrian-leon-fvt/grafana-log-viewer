@@ -292,7 +292,7 @@ def get_windows_home_path() -> Path:
 
 def convert_to_eng(value: int | float) -> str:
     if value > 1e9:
-        return f"{value / 1e9:.3f}B"
+        return f"{value / 1e9:.3f}G"
     elif value > 1e6:
         return f"{value / 1e6:.3f}M"
     elif value > 1e3:
