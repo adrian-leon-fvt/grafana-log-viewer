@@ -30,6 +30,7 @@ import requests
 import re
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from s3_helper import *
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
@@ -473,6 +474,88 @@ def send_trace(server: str, file: Path, job: str, batch_size: int = 50_000):
             requests.post(server + vmapi_import_prometheus, data=batch_data)
         except Exception as e:
             logging.error(f"❌ Exception sending final batch: {e}")
+
+
+def read_s3_file(
+    file_path: Path | str,
+    start: datetime | str = "",
+    end: datetime | str = "",
+) -> list[dict]:
+    logger = logging.getLogger("read_s3_file")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
+
+    if isinstance(file_path, str):
+        file_path = Path(file_path)
+
+    if not file_path.exists():
+        logger.error(f"❌ File does not exist: {file_path}")
+        return []
+
+    with open(file_path, "r") as f:
+        lines = f.readlines()
+        files = []
+        with ThreadPoolExecutor() as executor:
+            futures = []
+            for line in lines[1:]:  # Skip header
+                parts = line.strip().split(",")
+                if len(parts) != 4:
+                    continue
+                key, last_modified, size, timestamp = parts
+                _ts = datetime.fromisoformat(timestamp.strip())
+                if isinstance(start, str) and start:
+                    start = datetime.fromisoformat(start).astimezone(timezone.utc)
+                if isinstance(end, str) and end:
+                    end = datetime.fromisoformat(end).astimezone(timezone.utc)
+
+                if start and _ts < start:
+                    continue
+                if end and _ts > end:
+                    continue
+                
+                futures.append(
+                    executor.submit(
+                        lambda k, lm, s, ts: {
+                            "Key": k,
+                            "LastModified": lm,
+                            "Size": int(s),
+                            "Timestamp": datetime.fromisoformat(ts).astimezone(
+                                timezone.utc
+                            ),
+                        },
+                        key,
+                        last_modified,
+                        size,
+                        timestamp,
+                    )
+                )
+
+            for future in as_completed(futures):
+                result = future.result()
+                if result:
+                    files.append(result)
+
+        return files
+
+    return []
+
+
+def get_d65_file_list_from_s3(
+    start: datetime | str = "",
+    end: datetime | str = "",
+):
+    logger = logging.getLogger("get_d65_file_list_from_s3,")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
+
+    files = get_mf4_files_from_s3(
+        bucket_name=EESBuckets.S3_BUCKET_D65,
+        start_time=start,
+        end_time=end,
+        max_workers=20,
+    )
+
+    logger.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket.")
+
+    save_csv(files, Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv"))
 
 
 def main():
