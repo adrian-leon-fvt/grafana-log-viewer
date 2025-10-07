@@ -162,21 +162,6 @@ def get_mf4_files_from_s3(
     return []
 
 
-def save_csv(files: list[dict], output_file: Path | str):
-    logger = logging.getLogger("save_csv")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
-
-    if isinstance(output_file, Path):
-        output_file = output_file.as_posix()
-
-    with open(output_file, "w") as f:
-        f.write("Key,LastModified,Size,Timestamp\n")
-        for file in files:
-            f.write(
-                f"{file['Key']},{file['LastModified'].astimezone(timezone.utc).isoformat()},{file['Size']},{file['Timestamp'].astimezone(timezone.utc).isoformat()}\n"
-            )
-
-
 def main():
     logger = logging.getLogger("main")
     setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)

@@ -511,7 +511,7 @@ def read_s3_file(
                     continue
                 if end and _ts > end:
                     continue
-                
+
                 futures.append(
                     executor.submit(
                         lambda k, lm, s, ts: {
@@ -542,20 +542,39 @@ def read_s3_file(
 def get_d65_file_list_from_s3(
     start: datetime | str = "",
     end: datetime | str = "",
+    max_workers: int = 10,
 ):
-    logger = logging.getLogger("get_d65_file_list_from_s3,")
+    logger = logging.getLogger("get_d65_file_list_from_s3")
     setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
     files = get_mf4_files_from_s3(
         bucket_name=EESBuckets.S3_BUCKET_D65,
         start_time=start,
         end_time=end,
-        max_workers=20,
+        max_workers=max_workers,
     )
 
     logger.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket.")
 
-    save_csv(files, Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv"))
+    output_file = Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
+
+    with open(output_file, "w") as f:
+        f.write("Key,LastModified,Size,Timestamp\n")
+        for file in files:
+            key: str = file["Key"]
+            k_seg: str = ""
+            if key.startswith("6C1D6B77"):
+                k_seg = "Upper"
+            elif key.startswith("5A72CE4C"):
+                k_seg = "Lower"
+
+            if k_seg == "Upper" or k_seg == "Lower":
+                last_modified: datetime = (
+                    file["LastModified"].astimezone(timezone.utc).isoformat()
+                )
+                size: int = file["Size"]
+                timestamp: datetime = file["Timestamp"].astimezone(timezone.utc).isoformat()
+                f.write(f"{key},{k_seg},{last_modified},{size},{timestamp}\n")
 
 
 def main():
