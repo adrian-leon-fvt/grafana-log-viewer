@@ -35,7 +35,7 @@ def get_bucket_names() -> list[str]:
         return []
 
 
-def get_mf4_files_from_s3(
+def get_mf4_files_list_from_s3(
     bucket_name: EESBuckets | str,
     start_time: datetime | str = "",
     end_time: datetime | str = "",

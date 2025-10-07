@@ -547,7 +547,7 @@ def get_d65_file_list_from_s3(
     logger = logging.getLogger("get_d65_file_list_from_s3")
     setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
-    files = get_mf4_files_from_s3(
+    files = get_mf4_files_list_from_s3(
         bucket_name=EESBuckets.S3_BUCKET_D65,
         start_time=start,
         end_time=end,
@@ -573,8 +573,27 @@ def get_d65_file_list_from_s3(
                     file["LastModified"].astimezone(timezone.utc).isoformat()
                 )
                 size: int = file["Size"]
-                timestamp: datetime = file["Timestamp"].astimezone(timezone.utc).isoformat()
+                timestamp: datetime = (
+                    file["Timestamp"].astimezone(timezone.utc).isoformat()
+                )
                 f.write(f"{key},{k_seg},{last_modified},{size},{timestamp}\n")
+
+
+def download_d65_files_from_s3(
+    start: datetime,
+    end: datetime,
+    download_path: Path,
+) -> None:
+    """
+    Downloads D65 .mf4 files from S3 within the specified date range to the given download path.
+    The download_path should be a Path object pointing to the directory where files will be saved.
+    This function creates the directory if it does not exist.
+
+    :param start: Start datetime for filtering files.
+    :param end: End datetime for filtering files.
+    :param download_path: Path object for the download directory.
+    """
+    
 
 
 def main():
