@@ -84,7 +84,7 @@ def get_dbc_files(directory: Path | str) -> list[StrPath]:
     return get_files(directory, [".dbc", ".DBC"])
 
 
-def get_mdf_start_time(mdf: Path) -> datetime:
+def get_mdf_start_time(mdf: Path) -> datetime | None:
     """
     Get the start time from the MDF file header.
     """
@@ -93,27 +93,34 @@ def get_mdf_start_time(mdf: Path) -> datetime:
         mdf = Path(mdf)
 
     if not mdf.exists():
-        raise FileNotFoundError(f"File not found: {mdf}")
+        logging.info(f" ☹️ File not found: {mdf}")
+        return None
 
     if mdf.suffix.lower() != ".mf4":
-        raise ValueError(f"Not a valid MDF4 file: {mdf}")
+        logging.info(f" ☹️ Not a valid MDF file: {mdf}")
+        return None
 
     with open(mdf, "rb") as stream:
         # Read the header block to quickly retrieve the start-time without loading the whole file
         stream.seek(0, 2)  # Seek to end of file
         file_limit = stream.tell()
         stream.seek(0)  # Seek back to start of file
-        header: HeaderBlock = HeaderBlock(
-            address=0x40,
-            stream=stream,
-            mapped=False,
-            file_limit=file_limit,
-        )
-        if not isinstance(header, HeaderBlock):
-            raise ValueError(f"Invalid MDF file: {mdf}")
-        if header.start_time is None:
-            raise ValueError(f"No start time found in MDF file: {mdf}")
-        return header.start_time
+        try:
+            header: HeaderBlock = HeaderBlock(
+                address=0x40,
+                stream=stream,
+                mapped=False,
+                file_limit=file_limit,
+            )
+            if header.start_time is None:
+                logging.error(f"❌ No start time found in MDF header of {mdf}")
+                return None
+            return header.start_time
+        except Exception as e:
+            logging.error(f"❌ Error reading MDF header from {mdf}: {e}")
+            return None
+    
+    return None
 
 
 def get_trc_start_time(trc: Path, use_iso_line: bool = False) -> datetime | None:
