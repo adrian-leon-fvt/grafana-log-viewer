@@ -1,6 +1,6 @@
 from PySide6.QtCore import QThread, QMutex, QTimer
 import requests
-from victoria_metrics_connection import VM_API_IMPORT_PROMETHEUS, VM_DEFAULT_URL
+from decoder.GUI.victoria_metrics_connection import VM_API_IMPORT_PROMETHEUS, VM_DEFAULT_URL
 from utils import *
 from config import *
 

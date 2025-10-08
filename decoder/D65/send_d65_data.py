@@ -37,63 +37,14 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 CSVContent = tuple[Path, Literal["Upper", "Lower"], datetime]
 
+MAC_UPPER = "6C1D6B77"
+MAC_LOWER = "5A72CE4C"
+
 
 def shortpath(p: Path) -> str:
+    if len(p.parts) < 4:
+        return p.as_posix()
     return "../" + "/".join(p.parts[-3:])
-
-
-def read_filtered_paths_file(
-    filepath: Path | str,
-) -> list[CSVContent]:
-    ts = time.time()
-    logging.info(f"📃 Reading filtered paths from {filepath} ... ")
-    win_home = get_windows_home_path()
-    try:
-        with open(filepath, "r") as f:
-            filtered = []
-            for line in f.readlines():
-                if line.strip():
-                    path, seg_k, start = line.strip().split(";")[:3]
-
-                    if seg_k in ["Upper", "Lower"]:
-                        filtered.append(
-                            (
-                                Path.joinpath(win_home, path),
-                                seg_k,
-                                datetime.fromisoformat(start).astimezone(timezone.utc),
-                            )
-                        )
-            logging.info(
-                f"✅ Recovered {len(filtered)} filtered paths in {get_time_str(ts)}"
-            )
-            return filtered
-    except Exception as e:
-        logging.error(f"❌ Error reading filtered_paths.txt: {e}")
-        return []
-
-
-def save_preprocessed_paths_file(
-    filtered: list[CSVContent],
-    filepath: Path | str,
-):
-    ts = time.time()
-    logging.info(f"💾 Saving {len(filtered)} filtered paths to {filepath} ... ")
-    try:
-        path = Path(filepath)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w") as f:
-            for file, seg_k, start in filtered:
-                _file = re.sub(
-                    r"^/mnt/[a-zA-Z]+/Users/[a-zA-Z0-9 _-]+/", "", str(file.as_posix())
-                )
-                _file = re.sub(r"[a-zA-Z]:/Users/[a-zA-Z0-9 _-]+/", "", _file)
-                f.write(
-                    f"{_file};{seg_k};{start.astimezone(timezone.utc).isoformat()}\n"
-                )
-
-        logging.info(f"✅ Saved filtered paths in {get_time_str(ts)}")
-    except Exception as e:
-        logging.error(f"☹️ Error writing {filepath}: {e}")
 
 
 def get_range(mdf: MDF) -> tuple[datetime, datetime] | None:
@@ -108,87 +59,14 @@ def get_range(mdf: MDF) -> tuple[datetime, datetime] | None:
     )
 
 
-def upper_or_lower(p: Path) -> Literal["Upper", "Lower", "None"]:
+def upper_or_lower(p: Path) -> Literal["Upper", "Lower"] | None:
     parts = [part.lower() for part in p.parts]
-    if "upper" in parts:
+    if "upper" in parts or MAC_UPPER in str(p):
         return "Upper"
-    elif "lower" in parts:
+    elif "lower" in parts or MAC_LOWER in str(p):
         return "Lower"
     else:
-        return "None"
-
-
-def preprocess_files() -> list[CSVContent]:
-    """
-    Will read the entire OneDrive directory and send all new files to VictoriaMetrics.
-    """
-
-    files: list[CSVContent] = []
-
-    whp = get_windows_home_path()
-
-    canedge_folder = Path.joinpath(
-        whp, "Epiroc", "Rig Crew - Private - General", "5. Testing", "CANEdge"
-    )
-
-    if not canedge_folder.exists():
-        logging.error(
-            f" ❌ CANEdge folder NOT found: {canedge_folder} exists {canedge_folder.exists()}"
-        )
-        return files
-
-    logging.info(f" ✅ CANEdge folder found: {canedge_folder}")
-
-    def get_data(file: Path) -> Optional[CSVContent]:
-        logging.info(f" 📃  Reading {shortpath(file)} ")
-        if file.suffix.lower() == ".mf4":
-            try:
-                with open(file, "rb") as stream:
-                    header = HeaderBlock(address=0x40, stream=stream)
-                    # mdf = MDF(file)
-                    # _range = get_range(mdf)
-                    k_seg = upper_or_lower(file)
-                    if k_seg != "None":
-                        return (file, k_seg, header.start_time)
-                    else:
-                        return None
-            except Exception as e:
-                logging.warning(f" ⚠️  Error reading {shortpath(file)}: {e}")
-                return None
-
-        elif file.suffix.lower() == ".trc":
-            try:
-                log = LogReader(file)
-                timestamps = [msg.timestamp for msg in log]
-                k_seg = upper_or_lower(file)
-                if timestamps and k_seg != "None":
-                    start_time = datetime.fromtimestamp(min(timestamps))
-                    return (file, k_seg, start_time)
-                else:
-                    return None
-            except Exception as e:
-                logging.warning(f" ⚠️  Error reading {shortpath(file)}: {e}")
-                return None
-
-    files_to_process = list(
-        chain(
-            canedge_folder.rglob("**/*.MF4"),
-            canedge_folder.rglob("**/*.mf4"),
-            # canedge_folder.rglob("**/*.trc"),
-        )
-    )
-
-    with ThreadPoolExecutor() as executor:
-        results = executor.map(get_data, files_to_process)
-        for result in results:
-            if result:
-                f, seg_k, start_time = result
-                logging.info(
-                    f" ✅  [{seg_k}] {shortpath(f)}: {start_time}"
-                )
-                files.append((f, seg_k, start_time))
-
-    return files
+        return None
 
 
 def skip_signal(name: str) -> bool:
@@ -385,97 +263,6 @@ def send_files_to_victoriametrics(
     return total_counts
 
 
-def send_trace(server: str, file: Path, job: str, batch_size: int = 50_000):
-    if file.suffix.lower() != ".trc":
-        logging.error(f"❌ File is not a .trc file: {file}")
-        return
-
-    dbc_files = get_d65_dbc_files()
-    upper_dbc_files = dbc_files["Upper"]
-    lower_dbc_files = dbc_files["Lower"]
-
-    db = Database()
-
-    if job == "Upper":
-        for dbc in upper_dbc_files:
-            db.add_dbc_file(dbc)
-    elif job == "Lower":
-        for dbc in lower_dbc_files:
-            db.add_dbc_file(dbc)
-
-    log = LogReader(file)
-    metrics: list[str] = []
-    metrics_lock = Lock()
-    metrics: list[str] = []
-
-    def process_msg(msg):
-        try:
-            message: Message = db.get_message_by_frame_id(msg.arbitration_id)
-            if message is None:
-                return []
-
-            signals: DecodeResultType = message.decode(msg.data)
-            timestamp = datetime.fromtimestamp(msg.timestamp, tz=timezone.utc)
-
-            if not isinstance(signals, dict):
-                return []
-
-            local_metrics = []
-            for signal_name, value in signals.items():
-                if skip_signal(signal_name):
-                    continue
-
-                if not isinstance(value, (int, float)):
-                    continue
-
-                signal: Signal = message.get_signal_by_name(signal_name)
-                if signal is None:
-                    continue
-
-                unit = signal.unit if signal.unit else ""
-                metric_line = make_metric_line(
-                    metric_name=signal_name,
-                    message=message.name,
-                    unit=unit,
-                    value=value,
-                    timestamp=timestamp,
-                    job=job,
-                )
-                local_metrics.append(metric_line)
-            return local_metrics
-        except Exception as e:
-            logging.error(
-                f"❌ Error processing message ID {getattr(msg, 'arbitration_id', 'unknown')}: {e}"
-            )
-            return []
-
-    with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(process_msg, msg) for msg in log]
-
-        for future in as_completed(futures):
-            local_metrics = future.result()
-            if local_metrics:
-                with metrics_lock:
-                    metrics.extend(local_metrics)
-                    if len(metrics) >= batch_size:
-                        batch_data = "".join(metrics)
-                        try:
-                            requests.post(
-                                server + vmapi_import_prometheus, data=batch_data
-                            )
-                            metrics.clear()
-                        except Exception as e:
-                            logging.error(f"❌ Exception sending batch: {e}")
-
-    # Send any remaining metrics
-    if metrics:
-        batch_data = "".join(metrics)
-        try:
-            requests.post(server + vmapi_import_prometheus, data=batch_data)
-        except Exception as e:
-            logging.error(f"❌ Exception sending final batch: {e}")
-
-
 def read_s3_file(
     file_path: Path | str,
     start: datetime | str = "",
@@ -542,7 +329,9 @@ def get_d65_file_list_from_s3(
     start: datetime | str = "",
     end: datetime | str = "",
     max_workers: int = 10,
-):
+    save_to_csv: bool = True,
+    output_file: Path | str = "",
+) -> list[dict]:
     files = get_mf4_files_list_from_s3(
         bucket_name=EESBuckets.S3_BUCKET_D65,
         start_time=start,
@@ -552,27 +341,31 @@ def get_d65_file_list_from_s3(
 
     logging.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket.")
 
-    output_file = Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
+    if save_to_csv:
+        if not output_file:
+            output_file = Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
 
-    with open(output_file, "w") as f:
-        f.write("Key,LastModified,Size,Timestamp\n")
-        for file in files:
-            key: str = file["Key"]
-            k_seg: str = ""
-            if key.startswith("6C1D6B77"):
-                k_seg = "Upper"
-            elif key.startswith("5A72CE4C"):
-                k_seg = "Lower"
+        with open(output_file, "w") as f:
+            f.write("Key,LastModified,Size,Timestamp\n")
+            for file in files:
+                key: str = file["Key"]
+                k_seg: str = ""
+                if key.startswith(MAC_UPPER):
+                    k_seg = "Upper"
+                elif key.startswith(MAC_LOWER):
+                    k_seg = "Lower"
 
-            if k_seg == "Upper" or k_seg == "Lower":
-                last_modified: datetime = (
-                    file["LastModified"].astimezone(timezone.utc).isoformat()
-                )
-                size: int = file["Size"]
-                timestamp: datetime = (
-                    file["Timestamp"].astimezone(timezone.utc).isoformat()
-                )
-                f.write(f"{key},{k_seg},{last_modified},{size},{timestamp}\n")
+                if k_seg == "Upper" or k_seg == "Lower":
+                    last_modified: datetime = (
+                        file["LastModified"].astimezone(timezone.utc).isoformat()
+                    )
+                    size: int = file["Size"]
+                    timestamp: datetime = (
+                        file["Timestamp"].astimezone(timezone.utc).isoformat()
+                    )
+                    f.write(f"{key},{k_seg},{last_modified},{size},{timestamp}\n")
+
+    return files
 
 
 def download_d65_files_from_s3(
@@ -669,88 +462,128 @@ def main_download_files():
     )
 
 
-def main_post_to_victoriametrics():
-    preprocessed_path = r"D:/utils/grafana-log-viewer/decoder/d65_files.csv"
-    files = read_filtered_paths_file(preprocessed_path)
+def get_files_in_range(
+    dir_path: Path, start: datetime, end: datetime
+) -> list[CSVContent]:
+    if not dir_path.exists() and not dir_path.is_dir():
+        logging.error(f"❌ {dir_path} does not exist or is not a directory.")
+        return []
 
-    if files:
-        start_ts = time.time()
-        logging.info(
-            f" ✔️  Using {len(files)} preprocessed files from {preprocessed_path}."
-        )
+    files: list[CSVContent] = []
 
-        def filter_by_date(
-            files: list[CSVContent],
-            start_time: datetime,
-            end_time: datetime,
-        ) -> list[CSVContent]:
-            return [
-                (f, k_seg, start)
-                for f, k_seg, start in files
-                if (start <= end_time) and (start >= start_time)
-            ]
+    globit = chain(dir_path.rglob("*.mf4"), dir_path.rglob("*.MF4"))
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for p in globit:
+            k_seg = upper_or_lower(p)
+            if not k_seg:
+                continue
+            futures.append(
+                executor.submit(
+                    lambda path, k: (path, k, get_mdf_start_time(path)),
+                    p,
+                    k_seg,
+                )
+            )
 
-        def filter_by_job(
-            files: list[CSVContent], job: Literal["Upper", "Lower"]
-        ) -> list[CSVContent]:
-            return [
-                (f, k_seg, start) for f, k_seg, start in files if k_seg == job
-            ]
+        for future in as_completed(futures):
+            try:
+                result = future.result()
+                if result:
+                    p, k_seg, start_time = result
+                    if start_time.tzinfo is None:
+                        start_time = start_time.replace(tzinfo=timezone.utc)
+                    if start_time and (start_time >= start and start_time <= end):
+                        files.append((p, k_seg, start_time))
 
-        start_date = datetime(
+            except Exception as e:
+                logging.error(f"❌ Error processing file: {e}")
+
+    return files
+
+
+def filter_by_date(
+    files: list[CSVContent],
+    start_time: datetime,
+    end_time: datetime,
+) -> list[CSVContent]:
+    return [
+        (f, k_seg, start)
+        for f, k_seg, start in files
+        if (start <= end_time) and (start >= start_time)
+    ]
+
+
+def filter_by_job(
+    files: list[CSVContent], job: Literal["Upper", "Lower"]
+) -> list[CSVContent]:
+    return [(f, k_seg, start) for f, k_seg, start in files if k_seg == job]
+
+
+def main_read_files():
+    start_ts = time.time()
+    whp = get_windows_home_path()
+    canedge_folder = Path.joinpath(
+        whp, "Epiroc", "Rig Crew - Private - General", "5. Testing", "CANEdge"
+    )
+    files = get_files_in_range(
+        dir_path=canedge_folder,
+        start=datetime(
             year=2025,
             month=7,
             day=15,
             tzinfo=ZoneInfo("America/Vancouver"),
-        )
-        end_date = start_date + timedelta(days=1)
+        ),
+        end=datetime.now().astimezone(),
+    )
 
-        _files = files
-        # _files = filter_by_date(files, start_date, end_date)
-        _files = filter_by_job(_files, "Lower")
-        # _files = filter_by_job(_files, "Upper")
+    logging.info(f" ✔️  Found {len(files)} files in {get_time_str(start_ts)}")
 
-        logging.info(
-            f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}."
-        )
 
-        server = server_vm_localhost
-        if not is_victoriametrics_online(server):
-            logging.error(f" -> ❌ {server} not available. Exiting...")
-            exit(1)
+def main_post_to_victoriametrics():
+    start_ts = time.time()
 
-        total_counts = send_files_to_victoriametrics(
-            server=server,
-            files=_files,
-            max_batch_count=10,
-        )
-        end_ts = time.time()
-        total_signals_sent = len(total_counts.keys())
-        total_samples_sent = sum(total_counts.values())
+    start_date = datetime(
+        year=2025,
+        month=7,
+        day=15,
+        tzinfo=ZoneInfo("America/Vancouver"),
+    )
 
-        logging.info(
-            f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
-        )
-    else:
-        ans = (
-            input(
-                " ❓ No preprocessed files found. Do you want to preprocess now? (y/n): "
-            )
-            .strip()
-            .lower()
-        )
+    end_date = start_date + timedelta(days=1)
 
-        start_ts = time.time()
-        if ans[0] != "y":
-            logging.info(" 👋  OK Bye.")
-            exit(0)
+    whp = get_windows_home_path()
+    canedge_folder = Path.joinpath(
+        whp, "Epiroc", "Rig Crew - Private - General", "5. Testing", "CANEdge"
+    )
 
-        files = preprocess_files()
-        save_preprocessed_paths_file(files, Path())
+    _files = get_files_in_range(canedge_folder, start_date, end_date)
+    # _files = filter_by_date(files, start_date, end_date)
+    _files = filter_by_job(_files, "Lower")
+    # _files = filter_by_job(_files, "Upper")
 
-        logging.info(f" ✔️  Processed {len(files)} files in {get_time_str(start_ts)}.")
+    logging.info(f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}.")
+
+    server = server_vm_localhost
+    if not is_victoriametrics_online(server):
+        logging.error(f" -> ❌ {server} not available. Exiting...")
+        exit(1)
+
+    total_counts = send_files_to_victoriametrics(
+        server=server,
+        files=_files,
+        max_batch_count=10,
+    )
+    end_ts = time.time()
+    total_signals_sent = len(total_counts.keys())
+    total_samples_sent = sum(total_counts.values())
+
+    logging.info(
+        f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
+    )
 
 
 if __name__ == "__main__":
-    main_download_files()
+    main_read_files()
+    # main_download_files()
     # main_post_to_victoriametrics()

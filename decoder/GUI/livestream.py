@@ -29,12 +29,12 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
 from PySide6.QtGui import QColor, QPalette, QIcon
 
-from dbc_table import DbcTable as DbcTableBase
-from signals_manager import SignalsManager
-from metrics_manager import MetricsManager
-from bus_chip import BusChip
+from decoder.GUI.dbc_table import DbcTable as DbcTableBase
+from decoder.GUI.signals_manager import SignalsManager
+from decoder.GUI.metrics_manager import MetricsManager
+from decoder.GUI.bus_chip import BusChip
 from utils import make_metric_line
-from victoria_metrics_connection import VictoriaMetricsConnectionWidget
+from decoder.GUI.victoria_metrics_connection import VictoriaMetricsConnectionWidget
 
 # # Capture stdout while detecting
 # buf = io.StringIO()

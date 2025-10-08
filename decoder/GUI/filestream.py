@@ -30,8 +30,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
 from PySide6.QtGui import QColor, QPalette, QIcon
 
-from signals_manager import SignalsManager
-from metrics_manager import MetricsManager
+from decoder.GUI.signals_manager import SignalsManager
+from decoder.GUI.metrics_manager import MetricsManager
 from utils import make_metric_line
 
 

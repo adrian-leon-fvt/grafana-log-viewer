@@ -14,8 +14,8 @@ import logging
 
 from config import *
 from utils import *
-from CANReader import CANReader
-from DBCDecoder import DBCDecoder
+from decoder.livelogger.CANReader import CANReader
+from decoder.GUI.DBCDecoder import DBCDecoder
 
 os.environ["NO_PROXY"] = "localhost"  # Bypass proxy for VictoriaMetrics
 

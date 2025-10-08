@@ -2,7 +2,7 @@ import can
 import logging
 from typing import Optional, Dict
 from can import Message
-from DBCDecoder import DBCDecoder
+from decoder.GUI.DBCDecoder import DBCDecoder
 
 
 class CANReader:
