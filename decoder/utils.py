@@ -1,11 +1,13 @@
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from asammdf import MDF
+from asammdf.blocks.v4_blocks import HeaderBlock
 from asammdf.blocks.types import StrPath
 import requests
 import os
 import json
+import re
 from itertools import chain
 from can import LogReader, Logger
 from config import *
@@ -80,6 +82,81 @@ def get_dbc_files(directory: Path | str) -> list[StrPath]:
         directory = Path(directory)
 
     return get_files(directory, [".dbc", ".DBC"])
+
+
+def get_mdf_start_time(mdf: Path) -> datetime:
+    """
+    Get the start time from the MDF file header.
+    """
+
+    if not isinstance(mdf, Path):
+        mdf = Path(mdf)
+
+    if not mdf.exists():
+        raise FileNotFoundError(f"File not found: {mdf}")
+
+    if mdf.suffix.lower() != ".mf4":
+        raise ValueError(f"Not a valid MDF4 file: {mdf}")
+
+    with open(mdf, "rb") as stream:
+        # Read the header block to quickly retrieve the start-time without loading the whole file
+        stream.seek(0, 2)  # Seek to end of file
+        file_limit = stream.tell()
+        stream.seek(0)  # Seek back to start of file
+        header: HeaderBlock = HeaderBlock(
+            address=0x40,
+            stream=stream,
+            mapped=False,
+            file_limit=file_limit,
+        )
+        if not isinstance(header, HeaderBlock):
+            raise ValueError(f"Invalid MDF file: {mdf}")
+        if header.start_time is None:
+            raise ValueError(f"No start time found in MDF file: {mdf}")
+        return header.start_time
+
+
+def get_trc_start_time(trc: Path, use_iso_line: bool = False) -> datetime | None:
+    """
+    Get the start time from the TRC file without having to read the whole file
+    """
+
+    if not isinstance(trc, Path):
+        trc = Path(trc)
+
+    if not trc.exists():
+        logging.info(f" ☹️ File not found: {trc}")
+
+    if trc.suffix.lower() != ".trc":
+        logging.info(f" ☹️ Not a valid TRC file: {trc}")
+
+    with open(trc, "r") as stream:
+        # Find the comment that starts with ";$STARTTIME="
+        for line in stream:
+            _line = line.strip()
+            logging.debug(f"🔍 Reading line: {_line}")
+
+            if use_iso_line:
+                if not line.startswith(";"):
+                    break
+                match = re.match(r";.+start time: (.+)",_line.lower())
+                if not match:
+                    continue
+                else:
+                    try:
+                        return datetime.strptime(match.group(1), "%d.%m.%Y %H:%M:%S.%f")
+                    except ValueError as ve:
+                        logging.error(f"❌ Invalid start_time format: {match.group(1)}")
+                        return None
+            else:
+                if not line.startswith(";$"):
+                    break
+                if line.startswith(";$STARTTIME="):
+                    # Get the offset
+                    offset = float(_line.split("=")[1])
+                    return datetime(1899, 12, 30) + timedelta(days=offset)
+            
+    return None
 
 
 def make_list_of_vm_json_line_format(
