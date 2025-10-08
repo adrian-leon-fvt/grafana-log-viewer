@@ -23,8 +23,6 @@ def get_bucket_names() -> list[str]:
     """
     Get a list of S3 buckets using the provided AWS credentials.
     """
-    logger = logging.getLogger("get_buckets")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
     try:
         s3 = client("s3")
@@ -32,7 +30,7 @@ def get_bucket_names() -> list[str]:
         buckets = [bucket["Name"] for bucket in response.get("Buckets", [])]
         return buckets
     except ClientError as e:
-        logger.error(f"Error fetching buckets: {e}")
+        logging.error(f"Error fetching buckets: {e}")
         return []
 
 
@@ -52,8 +50,6 @@ def download_files_from_s3(
     :param download_path: Local directory path to save the downloaded files.
     :param max_retries: Number of times to retry a failed download.
     """
-    logger = logging.getLogger("download_files")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
     count = 0
 
@@ -64,7 +60,7 @@ def download_files_from_s3(
     ]:
         bucket_name = bucket_name
     else:
-        logger.error(f"❌ Invalid bucket name: {bucket_name}")
+        logging.error(f"❌ Invalid bucket name: {bucket_name}")
         return count
 
     s3c = client("s3", config=Config(max_pool_connections=max_workers))
@@ -79,18 +75,18 @@ def download_files_from_s3(
             try:
                 start_ts = time.time()
                 s3c.download_file(bucket_name, key, str(local_path))
-                logger.info(
+                logging.info(
                     f"✅ Downloaded {key} successfully in {get_time_str(start_ts)}."
                 )
                 return True
             except ClientError as e:
-                logger.error(
+                logging.error(
                     f"❌ Error downloading {key} from bucket '{bucket_name}' (attempt {attempt}): {e}"
                 )
             except Exception as e:
-                logger.error(f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}")
+                logging.error(f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}")
             if attempt <= max_retries:
-                logger.info(f"🔄 Retrying download for {key} (attempt {attempt + 1})...")
+                logging.info(f"🔄 Retrying download for {key} (attempt {attempt + 1})...")
                 time.sleep(1)
         return False
 
@@ -109,9 +105,9 @@ def download_files_from_s3(
                         if progress_callable and callable(progress_callable):
                             progress_callable(count, total_keys)
                 except Exception as e:
-                    logger.error(f"❌ Unexpected error in future for {key}: {e}")
+                    logging.error(f"❌ Unexpected error in future for {key}: {e}")
         except KeyboardInterrupt:
-            logger.warning("⚠️ Download interrupted by user.")
+            logging.warning("⚠️ Download interrupted by user.")
             executor.shutdown(wait=False)
             raise
 
@@ -137,8 +133,6 @@ def get_mf4_files_list_from_s3(
     """
 
     # Validate the bucket name
-    logger = logging.getLogger("get_mf4_files")
-    setup_simple_logger(logger, level=logging.DEBUG, format=LOG_FORMAT)
 
     if isinstance(bucket_name, EESBuckets):
         bucket_name = bucket_name.value[0]
@@ -147,7 +141,7 @@ def get_mf4_files_list_from_s3(
     ]:
         bucket_name = bucket_name
     else:
-        logger.error(f"❌ Invalid bucket name: {bucket_name}")
+        logging.error(f"❌ Invalid bucket name: {bucket_name}")
         return []
 
     # Convert start_time and end_time to datetime objects if they are strings
@@ -155,20 +149,20 @@ def get_mf4_files_list_from_s3(
         try:
             start_time = datetime.fromisoformat(start_time)
         except ValueError:
-            logger.error(f"❌ Invalid start_time format: {start_time}")
+            logging.error(f"❌ Invalid start_time format: {start_time}")
             return []
     if isinstance(end_time, str) and end_time != "":
         try:
             end_time = datetime.fromisoformat(end_time)
         except ValueError:
-            logger.error(f"❌ Invalid end_time format: {end_time}")
+            logging.error(f"❌ Invalid end_time format: {end_time}")
             return []
 
     def get_timestamp(key: str) -> datetime | None:
         resp = s3c.head_object(Bucket=bucket_name, Key=key)
         try:
             if "timestamp" not in resp["Metadata"]:
-                logger.warning(f"⚠️ No timestamp metadata for {key}")
+                logging.warning(f"⚠️ No timestamp metadata for {key}")
                 return None
 
             timestamp = resp["Metadata"]["timestamp"]
@@ -179,7 +173,7 @@ def get_mf4_files_list_from_s3(
             )
             return timestamp
         except KeyError:
-            logger.warning(f"⚠️ No metadata for {key}")
+            logging.warning(f"⚠️ No metadata for {key}")
             return None
 
     try:
@@ -188,7 +182,7 @@ def get_mf4_files_list_from_s3(
         page_iterator = paginator.paginate(Bucket=bucket_name)
 
         def process_object(obj, idx: int, total: int) -> dict:
-            logger.info(f"🔍 [{idx:4d}/{total:4d}]: {obj['Key']}")
+            logging.info(f"🔍 [{idx:4d}/{total:4d}]: {obj['Key']}")
             key = obj["Key"]
             if key.lower().endswith(".mf4"):
                 timestamp: datetime | None = get_timestamp(key)
@@ -213,7 +207,7 @@ def get_mf4_files_list_from_s3(
         for page in page_iterator:
             count = 0
             start_ts = time.time()
-            logger.info(
+            logging.info(
                 f"➡️ Processing page with {len(page.get('Contents', []))} items..."
             )
 
@@ -231,26 +225,24 @@ def get_mf4_files_list_from_s3(
                         mf4_files.append(result)
                         count += 1
 
-            logger.info(
+            logging.info(
                 f"✅ Processed {count} items in {get_time_str(start_ts)} seconds."
             )
-        logger.info(
+        logging.info(
             f"🏁 Total time to process all pages: {get_time_str(total_ts)} seconds."
         )
 
         return mf4_files
     except ClientError as e:
-        logger.error(f"❌ Error fetching files from bucket '{bucket_name}': {e}")
+        logging.error(f"❌ Error fetching files from bucket '{bucket_name}': {e}")
 
     return []
 
 
 def main():
-    logger = logging.getLogger("main")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
     buckets = get_bucket_names()
     for bucket in buckets:
-        logger.info(f" 🪣 {bucket}")
+        logging.info(f" 🪣 {bucket}")
 
 
 if __name__ == "__main__":
