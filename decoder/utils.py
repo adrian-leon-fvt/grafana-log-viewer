@@ -138,12 +138,12 @@ def get_trc_start_time(trc: Path, use_iso_line: bool = False) -> datetime | None
         logging.info(f" ☹️ Not a valid TRC file: {trc}")
 
     with open(trc, "r") as stream:
-        # Find the comment that starts with ";$STARTTIME="
         for line in stream:
             _line = line.strip()
             logging.debug(f"🔍 Reading line: {_line}")
 
             if use_iso_line:
+                # Find the comment that starts with "; Start time:"
                 if not line.startswith(";"):
                     break
                 match = re.match(r";.+start time: (.+)",_line.lower())
@@ -156,6 +156,7 @@ def get_trc_start_time(trc: Path, use_iso_line: bool = False) -> datetime | None
                         logging.error(f"❌ Invalid start_time format: {match.group(1)}")
                         return None
             else:
+                # Find the comment that starts with ";$STARTTIME="
                 if not line.startswith(";$"):
                     break
                 if line.startswith(";$STARTTIME="):
