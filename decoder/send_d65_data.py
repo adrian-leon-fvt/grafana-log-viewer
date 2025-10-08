@@ -9,6 +9,7 @@ from utils import (
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from asammdf import MDF
+from asammdf.blocks.v4_blocks import HeaderBlock
 from asammdf.blocks.types import DbcFileType, BusType, StrPath
 from itertools import chain
 from concurrent.futures import ThreadPoolExecutor
@@ -34,7 +35,7 @@ from s3_helper import *
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
-CSVContent = tuple[Path, Literal["Upper", "Lower"], datetime, datetime]
+CSVContent = tuple[Path, Literal["Upper", "Lower"], datetime]
 
 
 def shortpath(p: Path) -> str:
@@ -52,7 +53,7 @@ def read_filtered_paths_file(
             filtered = []
             for line in f.readlines():
                 if line.strip():
-                    path, seg_k, start, end = line.strip().split(";")
+                    path, seg_k, start = line.strip().split(";")[:3]
 
                     if seg_k in ["Upper", "Lower"]:
                         filtered.append(
@@ -60,7 +61,6 @@ def read_filtered_paths_file(
                                 Path.joinpath(win_home, path),
                                 seg_k,
                                 datetime.fromisoformat(start).astimezone(timezone.utc),
-                                datetime.fromisoformat(end).astimezone(timezone.utc),
                             )
                         )
             logging.info(
@@ -82,13 +82,13 @@ def save_preprocessed_paths_file(
         path = Path(filepath)
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w") as f:
-            for file, seg_k, start, end in filtered:
+            for file, seg_k, start in filtered:
                 _file = re.sub(
                     r"^/mnt/[a-zA-Z]+/Users/[a-zA-Z0-9 _-]+/", "", str(file.as_posix())
                 )
                 _file = re.sub(r"[a-zA-Z]:/Users/[a-zA-Z0-9 _-]+/", "", _file)
                 f.write(
-                    f"{_file};{seg_k};{start.astimezone(timezone.utc).isoformat()};{end.astimezone(timezone.utc).isoformat()}\n"
+                    f"{_file};{seg_k};{start.astimezone(timezone.utc).isoformat()}\n"
                 )
 
         logging.info(f"✅ Saved filtered paths in {get_time_str(ts)}")
@@ -143,14 +143,15 @@ def preprocess_files() -> list[CSVContent]:
         logging.info(f" 📃  Reading {shortpath(file)} ")
         if file.suffix.lower() == ".mf4":
             try:
-                mdf = MDF(file)
-                _range = get_range(mdf)
-                k_seg = upper_or_lower(file)
-                if _range is not None and k_seg != "None":
-                    start_time, stop_time = _range
-                    return (file, k_seg, start_time, stop_time)
-                else:
-                    return None
+                with open(file, "rb") as stream:
+                    header = HeaderBlock(address=0x40, stream=stream)
+                    # mdf = MDF(file)
+                    # _range = get_range(mdf)
+                    k_seg = upper_or_lower(file)
+                    if k_seg != "None":
+                        return (file, k_seg, header.start_time)
+                    else:
+                        return None
             except Exception as e:
                 logging.warning(f" ⚠️  Error reading {shortpath(file)}: {e}")
                 return None
@@ -162,8 +163,7 @@ def preprocess_files() -> list[CSVContent]:
                 k_seg = upper_or_lower(file)
                 if timestamps and k_seg != "None":
                     start_time = datetime.fromtimestamp(min(timestamps))
-                    stop_time = datetime.fromtimestamp(max(timestamps))
-                    return (file, k_seg, start_time, stop_time)
+                    return (file, k_seg, start_time)
                 else:
                     return None
             except Exception as e:
@@ -182,11 +182,11 @@ def preprocess_files() -> list[CSVContent]:
         results = executor.map(get_data, files_to_process)
         for result in results:
             if result:
-                f, seg_k, start_time, stop_time = result
+                f, seg_k, start_time = result
                 logging.info(
-                    f" ✅  [{seg_k}] {shortpath(f)}: {start_time} - {stop_time}"
+                    f" ✅  [{seg_k}] {shortpath(f)}: {start_time}"
                 )
-                files.append((f, seg_k, start_time, stop_time))
+                files.append((f, seg_k, start_time))
 
     return files
 
@@ -277,11 +277,11 @@ def send_files_to_victoriametrics(
 
     upper_tuples = [item for item in files if item[1] == "Upper"]
     upper_tuples.sort(key=lambda x: x[2])  # Sort by start time
-    upper_files = [file for file, _, _, _ in upper_tuples]
+    upper_files = [file for file, _, _ in upper_tuples]
 
     lower_tuples = [item for item in files if item[1] == "Lower"]
     lower_tuples.sort(key=lambda x: x[2])  # Sort by start time
-    lower_files = [file for file, _, _, _ in lower_tuples]
+    lower_files = [file for file, _, _ in lower_tuples]
 
     def batch(lst, n):
         for i in range(0, len(lst), n):
@@ -655,7 +655,7 @@ def main_download_files():
     download_path = Path(r"D:/d65files")
     start_date = datetime(
         year=2025,
-        month=10,
+        month=6,
         day=1,
         tzinfo=ZoneInfo("America/Vancouver"),
     )
@@ -685,8 +685,8 @@ def main_post_to_victoriametrics():
             end_time: datetime,
         ) -> list[CSVContent]:
             return [
-                (f, k_seg, start, end)
-                for f, k_seg, start, end in files
+                (f, k_seg, start)
+                for f, k_seg, start in files
                 if (start <= end_time) and (start >= start_time)
             ]
 
@@ -694,7 +694,7 @@ def main_post_to_victoriametrics():
             files: list[CSVContent], job: Literal["Upper", "Lower"]
         ) -> list[CSVContent]:
             return [
-                (f, k_seg, start, end) for f, k_seg, start, end in files if k_seg == job
+                (f, k_seg, start) for f, k_seg, start in files if k_seg == job
             ]
 
         start_date = datetime(
