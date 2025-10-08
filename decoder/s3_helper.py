@@ -1,4 +1,5 @@
 from boto3 import client
+from botocore.config import Config
 from botocore.exceptions import ClientError
 import logging
 from utils import *
@@ -41,6 +42,7 @@ def download_files_from_s3(
     download_path: Path,
     max_workers: int = 10,
     progress_callable=None,
+    max_retries: int = 2,
 ) -> int:
     """
     Download specified files from the given S3 bucket to the local download path.
@@ -48,6 +50,7 @@ def download_files_from_s3(
     :param bucket_name: Name of the S3 bucket or an EESBuckets enum member.
     :param keys: List of S3 object keys to download.
     :param download_path: Local directory path to save the downloaded files.
+    :param max_retries: Number of times to retry a failed download.
     """
     logger = logging.getLogger("download_files")
     setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
@@ -64,37 +67,49 @@ def download_files_from_s3(
         logger.error(f"❌ Invalid bucket name: {bucket_name}")
         return count
 
-    s3c = client("s3")
+    s3c = client("s3", config=Config(max_pool_connections=max_workers))
     total_keys = len(keys)
+
+    def processed_path(key: str) -> Path:
+        return download_path / Path(key.replace("/", "_"))
+
+    def download_with_retry(key: str) -> bool:
+        local_path = processed_path(key)
+        for attempt in range(1, max_retries + 2):
+            try:
+                start_ts = time.time()
+                s3c.download_file(bucket_name, key, str(local_path))
+                logger.info(
+                    f"✅ Downloaded {key} successfully in {get_time_str(start_ts)}."
+                )
+                return True
+            except ClientError as e:
+                logger.error(
+                    f"❌ Error downloading {key} from bucket '{bucket_name}' (attempt {attempt}): {e}"
+                )
+            except Exception as e:
+                logger.error(f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}")
+            if attempt <= max_retries:
+                logger.info(f"🔄 Retrying download for {key} (attempt {attempt + 1})...")
+                time.sleep(1)
+        return False
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         try:
             future_to_key = {
-                executor.submit(
-                    s3c.download_file,
-                    bucket_name,
-                    key,
-                    str(download_path / Path(key.replace("/", "_"))),
-                ): key
-                for key in keys if not download_path.joinpath(key.replace("/", "_")).exists()
+                executor.submit(download_with_retry, key): key
+                for key in keys if not processed_path(key).exists()
             }
             for future in as_completed(future_to_key):
                 key = future_to_key[future]
                 try:
-                    start_ts = time.time()
-                    future.result()
-                    count += 1
-                    logger.info(
-                        f"✅ Downloaded {key} successfully in {get_time_str(start_ts)}."
-                    )
-                    if progress_callable and callable(progress_callable):
-                        progress_callable(count, total_keys)
-                except ClientError as e:
-                    logger.error(
-                        f"❌ Error downloading {key} from bucket '{bucket_name}': {e}"
-                    )
+                    success = future.result()
+                    if success:
+                        count += 1
+                        if progress_callable and callable(progress_callable):
+                            progress_callable(count, total_keys)
                 except Exception as e:
-                    logger.error(f"❌ Unexpected error downloading {key}: {e}")
+                    logger.error(f"❌ Unexpected error in future for {key}: {e}")
         except KeyboardInterrupt:
             logger.warning("⚠️ Download interrupted by user.")
             executor.shutdown(wait=False)

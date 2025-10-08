@@ -481,14 +481,12 @@ def read_s3_file(
     start: datetime | str = "",
     end: datetime | str = "",
 ) -> list[dict]:
-    logger = logging.getLogger("read_s3_file")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
     if isinstance(file_path, str):
         file_path = Path(file_path)
 
     if not file_path.exists():
-        logger.error(f"❌ File does not exist: {file_path}")
+        logging.error(f"❌ File does not exist: {file_path}")
         return []
 
     with open(file_path, "r") as f:
@@ -545,9 +543,6 @@ def get_d65_file_list_from_s3(
     end: datetime | str = "",
     max_workers: int = 10,
 ):
-    logger = logging.getLogger("get_d65_file_list_from_s3")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
-
     files = get_mf4_files_list_from_s3(
         bucket_name=EESBuckets.S3_BUCKET_D65,
         start_time=start,
@@ -555,7 +550,7 @@ def get_d65_file_list_from_s3(
         max_workers=max_workers,
     )
 
-    logger.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket.")
+    logging.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket.")
 
     output_file = Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
 
@@ -601,18 +596,15 @@ def download_d65_files_from_s3(
     :param s3_info_list: Optional list of dictionaries with S3 file info.
     """
 
-    logger = logging.getLogger("download_d65_files_from_s3")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
-
     keys: list[str] = []
 
     if s3_csv_file and Path(s3_csv_file).exists():
         s3_csv_file = Path(s3_csv_file)
         if s3_csv_file.suffix.lower() == ".csv":
-            logger.info(f"📃 Reading S3 file list from {s3_csv_file} ...")
+            logging.info(f"📃 Reading S3 file list from {s3_csv_file} ...")
             start_ts = time.time()
             s3_files = read_s3_file(s3_csv_file, start=start, end=end)
-            logger.info(
+            logging.info(
                 f"✅ Read {len(s3_files)} files from {s3_csv_file} in {get_time_str(start_ts)}"
             )
             keys.extend(
@@ -623,7 +615,7 @@ def download_d65_files_from_s3(
                 ]
             )
         else:
-            logger.error(f"❌ Unsupported file format: {s3_csv_file.suffix}")
+            logging.error(f"❌ Unsupported file format: {s3_csv_file.suffix}")
             return
 
     if s3_keys:
@@ -639,35 +631,35 @@ def download_d65_files_from_s3(
         )
 
     if not keys:
-        logger.info("⚠️ No D65 files found in the provided list.")
+        logging.info("⚠️ No D65 files found in the provided list.")
         return
 
     if not download_path.exists():
-        logger.info(f"📁 Creating download directory: {download_path}")
+        logging.info(f"📁 Creating download directory: {download_path}")
         download_path.mkdir(parents=True, exist_ok=True)
 
     start_ts = time.time()
-    logger.info(f"⬇️ Downloading {len(keys)} files to {download_path} ...")
+    logging.info(f"⬇️ Downloading {len(keys)} files to {download_path} ...")
     count = download_files_from_s3(
         bucket_name=EESBuckets.S3_BUCKET_D65,
         keys=keys,
         download_path=download_path,
         max_workers=9,
     )
-    logger.info(
+    logging.info(
         f"🏁 [D65] Downloaded {count}/{len(keys)} files in {get_time_str(start_ts)}."
     )
 
 
-def download_files():
+def main_download_files():
     download_path = Path(r"D:/d65files")
     start_date = datetime(
         year=2025,
         month=10,
-        day=6,
+        day=1,
         tzinfo=ZoneInfo("America/Vancouver"),
     )
-    end_date = start_date + timedelta(days=1)
+    end_date = datetime.now().astimezone(start_date.tzinfo)
 
     download_d65_files_from_s3(
         download_path=download_path,
@@ -677,7 +669,7 @@ def download_files():
     )
 
 
-def post_to_victoriametrics():
+def main_post_to_victoriametrics():
     preprocessed_path = r"D:/utils/grafana-log-viewer/decoder/d65_files.csv"
     files = read_filtered_paths_file(preprocessed_path)
 
@@ -760,4 +752,5 @@ def post_to_victoriametrics():
 
 
 if __name__ == "__main__":
-    download_files()
+    main_download_files()
+    # main_post_to_victoriametrics()
