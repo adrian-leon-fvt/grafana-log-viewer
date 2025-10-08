@@ -35,6 +35,74 @@ def get_bucket_names() -> list[str]:
         return []
 
 
+def download_files_from_s3(
+    bucket_name: EESBuckets | str,
+    keys: list[str],
+    download_path: Path,
+    max_workers: int = 10,
+    progress_callable=None,
+) -> int:
+    """
+    Download specified files from the given S3 bucket to the local download path.
+
+    :param bucket_name: Name of the S3 bucket or an EESBuckets enum member.
+    :param keys: List of S3 object keys to download.
+    :param download_path: Local directory path to save the downloaded files.
+    """
+    logger = logging.getLogger("download_files")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
+
+    count = 0
+
+    if isinstance(bucket_name, EESBuckets):
+        bucket_name = bucket_name.value[0]
+    elif isinstance(bucket_name, str) and bucket_name in [
+        b.value[0] for b in EESBuckets
+    ]:
+        bucket_name = bucket_name
+    else:
+        logger.error(f"❌ Invalid bucket name: {bucket_name}")
+        return count
+
+    s3c = client("s3")
+    total_keys = len(keys)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        try:
+            future_to_key = {
+                executor.submit(
+                    s3c.download_file,
+                    bucket_name,
+                    key,
+                    str(download_path / Path(key.replace("/", "_"))),
+                ): key
+                for key in keys if not download_path.joinpath(key.replace("/", "_")).exists()
+            }
+            for future in as_completed(future_to_key):
+                key = future_to_key[future]
+                try:
+                    start_ts = time.time()
+                    future.result()
+                    count += 1
+                    logger.info(
+                        f"✅ Downloaded {key} successfully in {get_time_str(start_ts)}."
+                    )
+                    if progress_callable and callable(progress_callable):
+                        progress_callable(count, total_keys)
+                except ClientError as e:
+                    logger.error(
+                        f"❌ Error downloading {key} from bucket '{bucket_name}': {e}"
+                    )
+                except Exception as e:
+                    logger.error(f"❌ Unexpected error downloading {key}: {e}")
+        except KeyboardInterrupt:
+            logger.warning("⚠️ Download interrupted by user.")
+            executor.shutdown(wait=False)
+            raise
+
+    return count
+
+
 def get_mf4_files_list_from_s3(
     bucket_name: EESBuckets | str,
     start_time: datetime | str = "",

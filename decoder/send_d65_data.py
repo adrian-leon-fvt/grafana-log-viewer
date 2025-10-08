@@ -498,9 +498,9 @@ def read_s3_file(
             futures = []
             for line in lines[1:]:  # Skip header
                 parts = line.strip().split(",")
-                if len(parts) != 4:
+                if len(parts) != 5:
                     continue
-                key, last_modified, size, timestamp = parts
+                key, _, last_modified, size, timestamp = parts
                 _ts = datetime.fromisoformat(timestamp.strip())
                 if isinstance(start, str) and start:
                     start = datetime.fromisoformat(start).astimezone(timezone.utc)
@@ -532,7 +532,8 @@ def read_s3_file(
             for future in as_completed(futures):
                 result = future.result()
                 if result:
-                    files.append(result)
+                    with Lock():
+                        files.append(result)
 
         return files
 
@@ -580,9 +581,12 @@ def get_d65_file_list_from_s3(
 
 
 def download_d65_files_from_s3(
-    start: datetime,
-    end: datetime,
     download_path: Path,
+    end: datetime | str = "",
+    start: datetime | str = "",
+    s3_csv_file: Path | str = "",
+    s3_keys: list[str] = [],
+    s3_info_list: list[dict] = [],
 ) -> None:
     """
     Downloads D65 .mf4 files from S3 within the specified date range to the given download path.
@@ -592,11 +596,88 @@ def download_d65_files_from_s3(
     :param start: Start datetime for filtering files.
     :param end: End datetime for filtering files.
     :param download_path: Path object for the download directory.
+    :param s3_csv_file: Optional Path or str to a CSV file containing S3 file info.
+    :param s3_keys: Optional list of S3 keys to download directly.
+    :param s3_info_list: Optional list of dictionaries with S3 file info.
     """
-    
+
+    logger = logging.getLogger("download_d65_files_from_s3")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
+
+    keys: list[str] = []
+
+    if s3_csv_file and Path(s3_csv_file).exists():
+        s3_csv_file = Path(s3_csv_file)
+        if s3_csv_file.suffix.lower() == ".csv":
+            logger.info(f"📃 Reading S3 file list from {s3_csv_file} ...")
+            start_ts = time.time()
+            s3_files = read_s3_file(s3_csv_file, start=start, end=end)
+            logger.info(
+                f"✅ Read {len(s3_files)} files from {s3_csv_file} in {get_time_str(start_ts)}"
+            )
+            keys.extend(
+                [
+                    item["Key"]
+                    for item in s3_files
+                    if isinstance(item, dict) and "Key" in item
+                ]
+            )
+        else:
+            logger.error(f"❌ Unsupported file format: {s3_csv_file.suffix}")
+            return
+
+    if s3_keys:
+        keys.extend(s3_keys)
+
+    if s3_info_list:
+        keys.extend(
+            [
+                item["Key"]
+                for item in s3_info_list
+                if isinstance(item, dict) and "Key" in item
+            ]
+        )
+
+    if not keys:
+        logger.info("⚠️ No D65 files found in the provided list.")
+        return
+
+    if not download_path.exists():
+        logger.info(f"📁 Creating download directory: {download_path}")
+        download_path.mkdir(parents=True, exist_ok=True)
+
+    start_ts = time.time()
+    logger.info(f"⬇️ Downloading {len(keys)} files to {download_path} ...")
+    count = download_files_from_s3(
+        bucket_name=EESBuckets.S3_BUCKET_D65,
+        keys=keys,
+        download_path=download_path,
+        max_workers=9,
+    )
+    logger.info(
+        f"🏁 [D65] Downloaded {count}/{len(keys)} files in {get_time_str(start_ts)}."
+    )
 
 
-def main():
+def download_files():
+    download_path = Path(r"D:/d65files")
+    start_date = datetime(
+        year=2025,
+        month=10,
+        day=6,
+        tzinfo=ZoneInfo("America/Vancouver"),
+    )
+    end_date = start_date + timedelta(days=1)
+
+    download_d65_files_from_s3(
+        download_path=download_path,
+        start=start_date,
+        end=end_date,
+        s3_csv_file=Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv"),
+    )
+
+
+def post_to_victoriametrics():
     preprocessed_path = r"D:/utils/grafana-log-viewer/decoder/d65_files.csv"
     files = read_filtered_paths_file(preprocessed_path)
 
@@ -679,4 +760,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    download_files()
