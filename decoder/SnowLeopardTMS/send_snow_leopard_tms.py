@@ -34,71 +34,36 @@ from datetime import datetime, timedelta
 from itertools import chain
 import time
 import re
-from config import *
-from sending import (
-    send_signal,
-)
-from utils import *
+import logging
 from asammdf import MDF
 from zoneinfo import ZoneInfo
 from concurrent.futures import ThreadPoolExecutor
 
+from ..sending import send_signal_using_json_lines
+from ..config import *
+from ..utils import *
 
-def read_filtered_paths_file(
-    filepath: Path | str,
-) -> list[tuple[Path, datetime, datetime]]:
-    ts = time.time()
-    print(f"📃 Reading filtered paths from {filepath} ... ")
-    win_home = get_windows_home_path()
-    try:
-        with open(filepath, "r") as f:
-            filtered = []
-            for line in f.readlines():
-                if line.strip():
-                    path, start, end = line.strip().split(";")
+CSVContent = tuple[Path, datetime]
 
-                    filtered.append(
-                        (
-                            Path.joinpath(win_home, path),
-                            datetime.fromisoformat(start),
-                            datetime.fromisoformat(end),
-                        )
-                    )
-            print(f"✅ Recovered {len(filtered)} filtered paths in {get_time_str(ts)}")
-            return filtered
-    except Exception as e:
-        print(f"❌ Error reading filtered_paths.txt: {e}")
-        return []
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 
-def save_filtered_paths_file(filtered: list, filepath: Path | str):
-    ts = time.time()
-    print(f"💾 Saving {len(filtered)} filtered paths to {filepath} ... ")
-    try:
-        with open(filepath, "w") as f:
-            for file, start, end in filtered:
-                _file = re.sub(
-                    r"^/mnt/[a-zA-Z]+/Users/[a-zA-Z0-9 _-]+/", "", str(file.as_posix())
-                )
-                _file = re.sub(r"[a-zA-Z]:/Users/[a-zA-Z0-9 _-]+/", "", _file)
-                f.write(f"{_file};{start.isoformat()};{end.isoformat()}\n")
-
-        print(f"✅ Saved filtered paths in {get_time_str(ts)}")
-    except Exception as e:
-        print(f"☹️ Error writing {filepath}: {e}")
-
-
-def get_unique_filepaths(base_dir: Path) -> list:
+def get_unique_filepaths(
+    base_dir: Path,
+    start: datetime,
+    end: datetime,
+    max_workers: int = 10,
+) -> list[CSVContent]:
     start_ts = time.time()
 
-    print(f"📂 Scanning {base_dir} for .mf4 files ...")
+    logging.info(f"📂 Scanning {base_dir} for .mf4 files ...")
 
-    filtered: list[tuple[Path, datetime, datetime]] = list()
+    filtered: list[CSVContent] = list()
 
     def is_duplicate(file: Path) -> bool:
         _fparts = "_".join(file.parts[-3:])
         _fparts = re.sub(r" \(\d+\)", "", _fparts)  # Remove (1), (2), etc.
-        for f, _, _ in filtered:
+        for f, _ in filtered:
             if _fparts == "_".join(f.parts[-3:]):
                 return True
 
@@ -111,46 +76,34 @@ def get_unique_filepaths(base_dir: Path) -> list:
             or ("merged" in str(file).lower())
         )
 
-    def is_raw(mdf: MDF) -> bool:
-        return "CAN_DataFrame" in mdf.channels_db.keys()
-
-    def get_range(mdf: MDF) -> tuple[datetime, datetime] | None:
-        channels_with_data = [
-            ch for ch in mdf.iter_channels() if len(ch.timestamps) > 0
-        ]
-        if len(channels_with_data) == 0:
-            return None
-
-        max_timestamp = max([ch.timestamps[-1] for ch in channels_with_data])
-        return (
-            mdf.start_time,
-            mdf.start_time + timedelta(seconds=max_timestamp),
-        )
-
     if base_dir.exists() and base_dir.is_dir():
-        last_dir = None
-        for file in chain(base_dir.rglob("*.MF4"), base_dir.rglob("*.mf4")):
-            if last_dir is None or file.relative_to(base_dir).parts[0] != last_dir:
-                last_dir = file.relative_to(base_dir).parts[0]
-                print(f"  - Scanning folder: {last_dir}")
 
+        def _process_file(file: Path) -> CSVContent | None:
             if not (is_duplicate(file) or name_is_decoded(file)):
                 try:
-                    with MDF(file, process_bus_logging=False) as mdf:  # type: ignore
-                        if is_raw(mdf):
-                            _range = get_range(mdf)
-                            if _range is not None:
-                                start, end = _range
-                                print(
-                                    f"    • Adding file: ../{'/'.join(file.parts[-3:])} with range {start.isoformat()} to {end.isoformat()}"
-                                )
-
-                                filtered.append((file, start, end))
+                    start_time = get_mdf_start_time(file)
+                    if start_time and (start <= start_time <= end):
+                        logging.info(
+                            f"    • Adding file: ../{'/'.join(file.parts[-3:])} with range {start_time.isoformat()}"
+                        )
+                        return (file, start_time)
                 except Exception as e:
-                    print(f"    ‼️ Error reading {file}: {e}")
-                    continue
+                    logging.error(f"    ‼️ Error in {file}: {e}")
+                    return None
+            return None
 
-    print(f"📂 Found {len(filtered)} files to process in {get_time_str(start_ts)}")
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = (
+                executor.submit(_process_file, file)
+                for file in chain(base_dir.rglob("*.MF4"), base_dir.rglob("*.mf4"))
+            )
+
+            for future in futures:
+                result = future.result()
+                if result:
+                    filtered.append(result)
+
+    logging.info(f"📂 Found {len(filtered)} files to process in {get_time_str(start_ts)}")
 
     return filtered
 
@@ -234,7 +187,7 @@ def process_files(server: str, files: list, dbc_file: Path, batch_size: int = 1)
                 def process_signal(sig):
                     if skip_signal(sig.name):
                         return 0
-                    _n = send_signal(
+                    _n = send_signal_using_json_lines(
                         signal=sig,
                         start_time=decoded.start_time,
                         job="SnowLeopardTMS",
@@ -296,7 +249,6 @@ if __name__ == "__main__":
         "TMS Trial logs feb 25 2025",  # 10
     ]
 
-    filtered_filepath = r"D:/utils/grafana-log-viewer/decoder/snow_leopard_paths.csv"
     dbc_file = can_logs.parent.joinpath(
         "dbc_for_grafana_tools", "snow_leopard_gen2_windows_no_value_tables.dbc"
     )

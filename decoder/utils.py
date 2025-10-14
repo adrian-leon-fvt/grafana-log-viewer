@@ -10,7 +10,7 @@ import json
 import re
 from itertools import chain
 from can import LogReader, Logger
-from config import *
+from .config import *
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock

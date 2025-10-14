@@ -1,37 +1,32 @@
 import logging
-from utils import (
+from pathlib import Path
+from datetime import datetime, timedelta, timezone
+from asammdf import MDF
+from asammdf.blocks.types import DbcFileType
+from itertools import chain
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
+from typing import Literal
+import time
+from zoneinfo import ZoneInfo
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from ..utils import (
     get_windows_home_path,
     get_time_str,
     convert_to_eng,
     make_metric_line,
     is_victoriametrics_online,
 )
-from pathlib import Path
-from datetime import datetime, timedelta, timezone
-from asammdf import MDF
-from asammdf.blocks.v4_blocks import HeaderBlock
-from asammdf.blocks.types import DbcFileType, BusType, StrPath
-from itertools import chain
-from concurrent.futures import ThreadPoolExecutor
-from threading import Lock
-from typing import Optional, Literal
-import time
-from can import LogReader
-from cantools.database.can import Message, Signal, Database
-from cantools.typechecking import DecodeResultType, SignalDictType
-from sending import decode_and_send
-from zoneinfo import ZoneInfo
-from config import (
+from ..sending import decode_and_send
+from ..config import (
     LOG_FORMAT,
     server_vm_d65,
     server_vm_localhost,
     vmapi_import_prometheus,
 )
-import requests
-import re
-import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from s3_helper import *
+from ..s3_helper import *
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
@@ -40,6 +35,10 @@ CSVContent = tuple[Path, Literal["Upper", "Lower"], datetime]
 MAC_UPPER = "6C1D6B77"
 MAC_LOWER = "5A72CE4C"
 
+
+canedge_folder = Path.joinpath(
+    get_windows_home_path(), "Epiroc", "Rig Crew - Private - General", "5. Testing", "CANEdge"
+)
 
 def shortpath(p: Path) -> str:
     if len(p.parts) < 4:
@@ -91,7 +90,7 @@ def skip_signal(name: str) -> bool:
     return False
 
 
-def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[StrPath]]:
+def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
     # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
     _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
     if os.name == "nt":  # Override if on windows
@@ -113,13 +112,13 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[StrPath]]:
         ],
     }
 
-    upper_dbc_files: list[StrPath] = []
+    upper_dbc_files: list[Path] = []
     upper_dbc_files += [
         Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Upper"]
     ]
     upper_dbc_files += [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
 
-    lower_dbc_files: list[StrPath] = []
+    lower_dbc_files: list[Path] = []
     # lower_dbc_files += [
     #     Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Lower"]
     # ]
@@ -370,8 +369,8 @@ def get_d65_file_list_from_s3(
 
 def download_d65_files_from_s3(
     download_path: Path,
-    end: datetime | str = "",
     start: datetime | str = "",
+    end: datetime | str = "",
     s3_csv_file: Path | str = "",
     s3_keys: list[str] = [],
     s3_info_list: list[dict] = [],

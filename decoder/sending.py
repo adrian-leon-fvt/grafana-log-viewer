@@ -12,8 +12,8 @@ import json
 import os
 import logging
 
-from config import *
-from utils import *
+from .config import *
+from .utils import *
 from decoder.livelogger.CANReader import CANReader
 from decoder.GUI.DBCDecoder import DBCDecoder
 

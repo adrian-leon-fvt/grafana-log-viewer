@@ -2,14 +2,16 @@ from boto3 import client
 from botocore.config import Config
 from botocore.exceptions import ClientError
 import logging
-from utils import *
 from enum import Enum
 from zoneinfo import ZoneInfo
 from datetime import datetime, timezone
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
+from .utils import *
+from .config import *
 
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 class EESBuckets(Enum):
     S3_BUCKET_LOCO = ("fvt-telematics", 0)
@@ -242,7 +244,7 @@ def get_mf4_files_list_from_s3(
 def main():
     buckets = get_bucket_names()
     for bucket in buckets:
-        logging.info(f" 🪣 {bucket}")
+        logging.info(f"🪣  {bucket}")
 
 
 if __name__ == "__main__":
