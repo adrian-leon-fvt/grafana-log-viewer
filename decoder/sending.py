@@ -304,19 +304,19 @@ def send_signal_using_json_lines(
                             break  # Success, exit retry loop
                         else:
                             logger.error(
-                                f"‼️ Error sending batch (attempt {retries + 1}): HTTP {resp.status_code} - {resp.text}"
+                                f"‼️ {metric_name}: Error sending batch (attempt {retries + 1}): HTTP {resp.status_code} - {resp.text}"
                             )
                     except requests.RequestException as e:
                         logger.error(
-                            f"‼️ Exception sending batch (attempt {retries + 1}): {e}"
+                            f"‼️ {metric_name}: Exception sending batch (attempt {retries + 1}): {e}"
                         )
                     time.sleep(2 ** retries)  # Exponential backoff
 
         except Exception as e:
-            logger.error(f"‼️ Error sending batch: {e}")
+            logger.error(f"‼️ {metric_name}: Error sending batch: {e}")
 
     if num_of_samples_sent == 0:
-        logger.warning(f"  ⚠️ No samples sent for {metric_name}.")
+        logger.warning(f"  ⚠️ {metric_name}: No samples sent.")
     else:
         time_str = get_time_str(start)
         end_ts = time.time()
