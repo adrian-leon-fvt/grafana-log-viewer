@@ -291,8 +291,14 @@ def send_signal_using_json_lines(
             if print_metric_line:
                 logger.info(line)
             if send_signal:
-                requests.post(server + vmapi_import_prometheus, data=line)
-            num_of_samples_sent += line.count("values")
+                requests.post(
+                    server + vmapi_import_prometheus,
+                    data=line,
+                    timeout=10,
+                )
+            _json = json.loads(line)
+            if "values" in _json:
+                num_of_samples_sent += len(_json["values"])
             time.sleep(0.01)  # Avoid overwhelming the server
         except Exception as e:
             logger.error(f"‼️ Error sending batch: {e}")
@@ -549,7 +555,7 @@ def decode_and_send(
     return signals_sample_count
 
 
-def livestream(server:str):
+def livestream(server: str):
     logger = logging.getLogger("livestream")
     setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
@@ -592,7 +598,9 @@ def livestream(server:str):
                             job="d65_livestream",
                         )
                         try:
-                            requests.post(server + vmapi_import_prometheus, data="".join(data))
+                            requests.post(
+                                server + vmapi_import_prometheus, data="".join(data)
+                            )
                         except Exception as e:
                             logging.error(f"\n ‼️ Error sending data: {e}")
 

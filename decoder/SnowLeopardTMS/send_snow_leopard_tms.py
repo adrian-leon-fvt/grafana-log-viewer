@@ -31,6 +31,7 @@
 
 from pathlib import Path
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from itertools import chain
 import time
 import re
@@ -38,6 +39,8 @@ import logging
 from asammdf import MDF
 from zoneinfo import ZoneInfo
 from concurrent.futures import ThreadPoolExecutor
+import sys
+import os
 
 from ..sending import send_signal_using_json_lines
 from ..config import *
@@ -50,8 +53,8 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 def get_unique_filepaths(
     base_dir: Path,
-    start: datetime,
-    end: datetime,
+    start: datetime | None = None,
+    end: datetime | None = None,
     max_workers: int = 10,
 ) -> list[CSVContent]:
     start_ts = time.time()
@@ -76,13 +79,39 @@ def get_unique_filepaths(
             or ("merged" in str(file).lower())
         )
 
+    def timestamp_already_there(file: Path) -> bool:
+        if not file.suffix.lower() == ".mf4":
+            # Not a valid file
+            return True
+
+        try:
+            ts = get_mdf_start_time(file)
+            for _, t in filtered:
+                if t == ts:
+                    # Found a duplicate timestamp
+                    return True
+        except:
+            # Error reading the file, skip it
+            return True
+
+        # File is valid and timestamp not found
+        return False
+
     if base_dir.exists() and base_dir.is_dir():
 
         def _process_file(file: Path) -> CSVContent | None:
-            if not (is_duplicate(file) or name_is_decoded(file)):
+            if not (
+                is_duplicate(file)
+                or name_is_decoded(file)
+                or timestamp_already_there(file)
+            ):
                 try:
                     start_time = get_mdf_start_time(file)
-                    if start_time and (start <= start_time <= end):
+                    if (
+                        start_time
+                        and ((start <= start_time) if start else True)
+                        and ((start_time <= end) if end else True)
+                    ):
                         logging.info(
                             f"    • Adding file: ../{'/'.join(file.parts[-3:])} with range {start_time.isoformat()}"
                         )
@@ -103,7 +132,9 @@ def get_unique_filepaths(
                 if result:
                     filtered.append(result)
 
-    logging.info(f"📂 Found {len(filtered)} files to process in {get_time_str(start_ts)}")
+    logging.info(
+        f"📂 Found {len(filtered)} files to process in {get_time_str(start_ts)}"
+    )
 
     return filtered
 
@@ -146,7 +177,7 @@ def process_files(server: str, files: list, dbc_file: Path, batch_size: int = 1)
         else:
             _files = files[i:]
 
-        for j, (file, _, _) in enumerate(_files):
+        for j, (file, _) in enumerate(_files):
             print(
                 f'=> [{i + j + 1} of {len(files)}] Processing ../{"/".join(file.parts[-3:])}'
             )
@@ -154,7 +185,7 @@ def process_files(server: str, files: list, dbc_file: Path, batch_size: int = 1)
         try:
             ts = time.time()
             print(f"  ⌛ Concatenating ... ", end="\r", flush=True)
-            cc = MDF().concatenate([f for f, _, _ in _files])
+            cc = MDF().concatenate([f for f, _ in _files])
             print(f"  ☑️ Concatenated in {get_time_str(ts)}")
 
             try:
@@ -219,9 +250,7 @@ def process_files(server: str, files: list, dbc_file: Path, batch_size: int = 1)
     return total_signals
 
 
-if __name__ == "__main__":
-    logger = logging.getLogger("main")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
+def get_can_logs_path() -> Path:
     win_home = get_windows_home_path()
     can_logs = Path.joinpath(
         win_home,
@@ -233,6 +262,12 @@ if __name__ == "__main__":
         "4 Mine Testing (Lalor, Hudbay, Snow Lake) - Prototype V2",
         "CAN LOGS",
     )
+    return can_logs
+
+
+if __name__ == "__main__":
+    logger = logging.getLogger("main")
+    can_logs = get_can_logs_path()
 
     # Select which folder to process
     FOLDERS: list[str] = [
@@ -253,51 +288,54 @@ if __name__ == "__main__":
         "dbc_for_grafana_tools", "snow_leopard_gen2_windows_no_value_tables.dbc"
     )
 
-    filtered = read_filtered_paths_file(filtered_filepath)
-    if not filtered:
-        filtered = get_unique_filepaths(can_logs)
-        save_filtered_paths_file(filtered, filtered_filepath)
-    else:
-        logger.info("ℹ️ Using previously filtered paths")
-
-    _min_ts = min([start for _, start, _ in filtered])
-    _max_ts = max([end for _, _, end in filtered])
-    logger.info(
-        f" -> ℹ️ There are {len(filtered)} files to process, from {_min_ts.isoformat()} to {_max_ts.isoformat()}"
-    )
-
     server = server_vm_sltms
+    logger.info(f" -> 🛜 Testing server: {server}")
     if not is_victoriametrics_online(server):
         logger.error(f" -> ❌ {server} not available. Exiting...")
         exit(1)
-    logger.info(f" -> 🛜 Sending to {server}")
+    else:
+        logger.info(f" -> ✅ {server} is online")
 
-    for month_offset in range(1, 7):
-        start_time = _min_ts + timedelta(days=month_offset * 30)
-        end_time = start_time + timedelta(days=30)
+    start_time = datetime(2024, 6, 1, 0, 0, 0, tzinfo=ZoneInfo("America/Vancouver"))
 
-        filtered_by_date = filter_by_date(
-            filtered, start_time=start_time, end_time=end_time
-        )
+    filtered: list[CSVContent] = get_unique_filepaths(can_logs)
 
-        logger.info(
-            f" -> ℹ️ Processing {len(filtered_by_date)} files from {start_time.isoformat()} to {end_time.isoformat()}"
-        )
+    filtered.sort(key=lambda x: x[1])  # Sort by start time
 
-        # for folder in [7, 10, 4]:
-        #     # for folder in [7, 8, 6, 5, 4, 9, 10]:
-        #     selected_folder = FOLDERS[folder]
-        #     folder_files = [f for f in filtered if selected_folder in str(f)]
-        #     print(f"Found {len(folder_files)} files in folder {selected_folder} to process")
+    processed: list[CSVContent] = []
 
-        if filtered_by_date:
-            total_ts = time.time()
-            total_signals = process_files(
+    total_ts = time.time()
+    total_samples = 0
+
+    while len(filtered) > 0:  # Process 12 months in 1-month chunks
+
+        for f, ts in filtered:
+            if start_time <= ts < (start_time + relativedelta(months=1)):
+                processed.append((f, ts))
+
+        if len(processed) > 0:
+            ts = time.time()
+            total_sent = process_files(
                 server=server,
-                files=filtered_by_date,
+                files=processed,
                 dbc_file=dbc_file,
                 batch_size=10,
             )
+
+            total_samples += total_sent
+
             logger.info(
-                f"🏁 All done in {get_time_str(total_ts)}, sent {convert_to_eng(total_signals)} samples ({convert_to_eng(total_signals / (time.time() - total_ts))} samples/s)"
+                f"🏁 {start_time.date()}-{start_time.date()} done in {get_time_str(time.time())}, sent {convert_to_eng(total_sent)} samples in ({convert_to_eng(total_sent / (time.time() - ts))} samples/s)"
             )
+
+            for p in processed:
+                filtered.remove(p)
+
+            processed = []
+
+        start_time += relativedelta(months=1)
+
+    if len(processed) > 0:
+        logger.info(
+            f"🎉 All done in {get_time_str(total_ts)} ({convert_to_eng(total_samples)} | {convert_to_eng(total_samples / (time.time() - total_ts))})"
+        )

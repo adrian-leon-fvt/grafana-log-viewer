@@ -383,4 +383,4 @@ def convert_to_eng(value: int | float) -> str:
     elif value > 1e3:
         return f"{value / 1e3:.3f}k"
     else:
-        return str(value)
+        return f"{str(value):.3f}"
