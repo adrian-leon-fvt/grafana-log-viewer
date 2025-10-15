@@ -275,7 +275,7 @@ def send_signal_using_json_lines(
         return num_of_samples_sent
 
     logger.info(f"  📨 Sending {metric_name} [{_time_str}] ...")
-    lines = make_list_of_vm_json_line_format(
+    lines, counts = make_list_of_vm_json_line_format(
         metric_name=metric_name,
         message=message,
         unit=unit,
@@ -286,7 +286,7 @@ def send_signal_using_json_lines(
     )
 
     start = time.time()
-    for line in lines:
+    for line, count in zip(lines, counts):
         try:
             if print_metric_line:
                 logger.info(line)
@@ -300,9 +300,7 @@ def send_signal_using_json_lines(
                         )
                         time.sleep(0.01)  # Avoid overwhelming the server
                         if resp.status_code == 204:
-                            _json = json.loads(line)
-                            if "values" in _json:
-                                num_of_samples_sent += len(_json["values"])
+                            num_of_samples_sent += count
                             break  # Success, exit retry loop
                         else:
                             logger.error(

@@ -175,7 +175,7 @@ def make_list_of_vm_json_line_format(
     timestamps_in_ms: list[datetime] | list[int],
     job: str,
     batch_size: int = 10_000,
-) -> list[str]:
+) -> tuple[list[str], list[int]]:
     """
     Create a list of JSON lines in the VictoriaMetrics format for batch uploading.
     The JSON format is as follows:
@@ -194,6 +194,10 @@ def make_list_of_vm_json_line_format(
 
     VictoriaMetrics suggest a max of 1k to 10k samples per batch for optimal performance.
     See: https://docs.victoriametrics.com/victoriametrics/single-server-victoriametrics/#json-line-format
+
+    Returns a tuple of two lists:
+    - List of JSON lines as strings.
+    - List of counts of samples in each JSON line.
     """
 
     if len(values) != len(timestamps_in_ms):
@@ -202,9 +206,9 @@ def make_list_of_vm_json_line_format(
         raise ValueError("Batch size must be a positive integer.")
 
     if len(values) == 0:
-        return []
+        return [], []
 
-    def make_line(start_idx: int, end_idx: int) -> str:
+    def make_line(start_idx: int, end_idx: int) -> tuple[str, int]:
         json_line = {
             "metric": {
                 "__name__": metric_name,
@@ -218,13 +222,16 @@ def make_list_of_vm_json_line_format(
                 for ts in timestamps_in_ms[start_idx:end_idx]
             ],
         }
-        return json.dumps(json_line)
+        return json.dumps(json_line), len(values[start_idx:end_idx])
 
     lines: list[str] = []
+    counts: list[int] = []
     for i in range(0, len(values), batch_size):
-        lines.append(make_line(i, min(i + batch_size, len(values))))
+        line, count = make_line(i, min(i + batch_size, len(values)))
+        lines.append(line)
+        counts.append(count)
 
-    return lines
+    return lines, counts
 
 
 def make_metric_line(
