@@ -325,7 +325,7 @@ if __name__ == "__main__":
             total_samples += total_sent
 
             logger.info(
-                f"🏁 {start_time.date()}-{start_time.date()} done in {get_time_str(time.time())}, sent {convert_to_eng(total_sent)} samples in ({convert_to_eng(total_sent / (time.time() - ts))} samples/s)"
+                f"🏁 {start_time.date()}-{start_time.date()} done in {get_time_str(ts)}, sent {convert_to_eng(total_sent)} samples in ({convert_to_eng(total_sent / (time.time() - ts))} samples/s)"
             )
 
             for p in processed:
