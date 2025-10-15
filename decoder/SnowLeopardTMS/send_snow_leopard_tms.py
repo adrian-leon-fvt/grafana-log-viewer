@@ -225,7 +225,7 @@ def process_files(server: str, files: list, dbc_file: Path, batch_size: int = 1)
                         print_metric_line=False,
                         send_signal=True,
                         skip_signal_range_check=True,
-                        batch_size=250_000,
+                        batch_size=10_000,
                         server=server,
                     )
                     return _n

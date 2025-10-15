@@ -225,7 +225,7 @@ def send_signal_using_json_lines(
     print_metric_line: bool = False,
     send_signal: bool = True,
     skip_signal_range_check: bool = False,
-    batch_size: int = 250_000,
+    batch_size: int = 10_000,
 ) -> int:
     """
     Send a single signal to VictoriaMetrics using JSON lines.
@@ -236,7 +236,7 @@ def send_signal_using_json_lines(
     - print_metric_line: If True, prints the metric lines before sending (default: False).
     - send_signal: If True, actually sends the data to VictoriaMetrics (default: True).
     - skip_signal_range_check: If True, skips checking if the signal data already exists in the database (default: False).
-    - batch_size: Number of samples to send in each HTTP POST batch (default: 250,000).
+    - batch_size: Number of samples to send in each HTTP POST batch (default: 10,000) see https://docs.victoriametrics.com/victoriametrics/single-server-victoriametrics/#json-line-format.
     """
 
     logger = logging.getLogger("send_signal_using_json_lines")
@@ -262,12 +262,12 @@ def send_signal_using_json_lines(
     _sig_start_str = start_time + timedelta(seconds=_signal.timestamps[0])
     _sig_end_str = start_time + timedelta(seconds=_signal.timestamps[-1])
     values: list[float] = []
-    timestamps: list[float | datetime] = []
+    timestamps: list[int] = []
     for sample, ts in zip(_signal.samples, _signal.timestamps):
         if not is_valid_sample(sample):  # Check if sample is not float (e.g. string)
             continue  # Skip this sample
         values.append(float(sample))
-        timestamps.append((start_time + timedelta(seconds=ts)).timestamp())
+        timestamps.append(int((start_time + timedelta(seconds=ts)).timestamp() * 1e3))
     _time_str = f"{_sig_start_str.isoformat()} - {_sig_end_str.isoformat()}, {len(timestamps)} samples"
 
     if len(values) < 1 or len(timestamps) < 1:
@@ -280,7 +280,7 @@ def send_signal_using_json_lines(
         message=message,
         unit=unit,
         values=values,
-        timestamps=timestamps,
+        timestamps_in_ms=timestamps,
         job=job if job else "",
         batch_size=batch_size,
     )
@@ -291,23 +291,40 @@ def send_signal_using_json_lines(
             if print_metric_line:
                 logger.info(line)
             if send_signal:
-                requests.post(
-                    server + vmapi_import_prometheus,
-                    data=line,
-                    timeout=10,
-                )
-            _json = json.loads(line)
-            if "values" in _json:
-                num_of_samples_sent += len(_json["values"])
-            time.sleep(0.01)  # Avoid overwhelming the server
+                for retries in range(3):  # Retry up to 3 times
+                    try:
+                        resp = requests.post(
+                            server + vmapi_import,
+                            data=line,
+                            timeout=10,
+                        )
+                        time.sleep(0.01)  # Avoid overwhelming the server
+                        if resp.status_code == 204:
+                            _json = json.loads(line)
+                            if "values" in _json:
+                                num_of_samples_sent += len(_json["values"])
+                            break  # Success, exit retry loop
+                        else:
+                            logger.error(
+                                f"‼️ Error sending batch (attempt {retries + 1}): HTTP {resp.status_code} - {resp.text}"
+                            )
+                    except requests.RequestException as e:
+                        logger.error(
+                            f"‼️ Exception sending batch (attempt {retries + 1}): {e}"
+                        )
+                    time.sleep(2 ** retries)  # Exponential backoff
+
         except Exception as e:
             logger.error(f"‼️ Error sending batch: {e}")
 
-    time_str = get_time_str(start)
-    end_ts = time.time()
-    logger.info(
-        f"  📨 Sent {metric_name} in {time_str} ({convert_to_eng(num_of_samples_sent)} samples | {convert_to_eng(num_of_samples_sent / (end_ts - start))} samples/s)"
-    )
+    if num_of_samples_sent == 0:
+        logger.warning(f"  ⚠️ No samples sent for {metric_name}.")
+    else:
+        time_str = get_time_str(start)
+        end_ts = time.time()
+        logger.info(
+            f"  📨 Sent {metric_name} in {time_str} ({convert_to_eng(num_of_samples_sent)} samples | {convert_to_eng(num_of_samples_sent / (end_ts - start))} samples/s)"
+        )
     return num_of_samples_sent
 
 

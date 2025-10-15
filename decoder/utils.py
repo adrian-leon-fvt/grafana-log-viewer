@@ -172,9 +172,9 @@ def make_list_of_vm_json_line_format(
     message: str,
     unit: str,
     values: list[float],
-    timestamps: list[float | datetime],
+    timestamps_in_ms: list[datetime] | list[int],
     job: str,
-    batch_size: int = 250_000,
+    batch_size: int = 10_000,
 ) -> list[str]:
     """
     Create a list of JSON lines in the VictoriaMetrics format for batch uploading.
@@ -191,9 +191,12 @@ def make_list_of_vm_json_line_format(
     }
 
     The total samples in each JSON line should not exceed the batch_size.
+
+    VictoriaMetrics suggest a max of 1k to 10k samples per batch for optimal performance.
+    See: https://docs.victoriametrics.com/victoriametrics/single-server-victoriametrics/#json-line-format
     """
 
-    if len(values) != len(timestamps):
+    if len(values) != len(timestamps_in_ms):
         raise ValueError("Values and timestamps must have the same length.")
     if batch_size <= 0:
         raise ValueError("Batch size must be a positive integer.")
@@ -211,8 +214,8 @@ def make_list_of_vm_json_line_format(
             },
             "values": values[start_idx:end_idx],
             "timestamps": [
-                ts.timestamp() if isinstance(ts, datetime) else ts
-                for ts in timestamps[start_idx:end_idx]
+                int(ts.timestamp() * 1e3) if isinstance(ts, datetime) else ts
+                for ts in timestamps_in_ms[start_idx:end_idx]
             ],
         }
         return json.dumps(json_line)
@@ -258,6 +261,26 @@ def is_victoriametrics_online(server: str, timeout: float = 3.0) -> bool:
         return False
 
     return resp_status_code == 200
+
+
+def delete_series_from_vm(server: str, match: str, timeout: int = 10) -> requests.Response | None:
+    logger = logging.getLogger("vm_delete_series")
+    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
+
+    try:
+        resp = requests.post(
+            server + vmapi_delete_series,
+            params={"match[]": match},
+            timeout=timeout,
+        )
+
+        if resp.status_code == 204:
+            logging.info(f"✅ Successfully deleted series matching {{{match}}}")
+
+        return resp
+    except Exception as e:
+        logging.error(f"⚠️ Error: {e}")
+        return None
 
 
 def get_metrics_from_vm(
@@ -383,4 +406,4 @@ def convert_to_eng(value: int | float) -> str:
     elif value > 1e3:
         return f"{value / 1e3:.3f}k"
     else:
-        return f"{str(value):.3f}"
+        return f"{value:.3f}"
