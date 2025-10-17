@@ -37,25 +37,18 @@ MAC_LOWER = "5A72CE4C"
 
 
 canedge_folder = Path.joinpath(
-    get_windows_home_path(), "Epiroc", "Rig Crew - Private - General", "5. Testing", "CANEdge"
+    get_windows_home_path(),
+    "Epiroc",
+    "Rig Crew - Private - General",
+    "5. Testing",
+    "CANEdge",
 )
+
 
 def shortpath(p: Path) -> str:
     if len(p.parts) < 4:
         return p.as_posix()
     return "../" + "/".join(p.parts[-3:])
-
-
-def get_range(mdf: MDF) -> tuple[datetime, datetime] | None:
-    channels_with_data = [ch for ch in mdf.iter_channels() if len(ch.timestamps) > 0]
-    if len(channels_with_data) == 0:
-        return None
-
-    max_timestamp = max([ch.timestamps[-1] for ch in channels_with_data])
-    return (
-        mdf.start_time,
-        mdf.start_time + timedelta(seconds=max_timestamp),
-    )
 
 
 def upper_or_lower(p: Path) -> Literal["Upper", "Lower"] | None:
@@ -119,10 +112,10 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
     upper_dbc_files += [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
 
     lower_dbc_files: list[Path] = []
-    # lower_dbc_files += [
-    #     Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Lower"]
-    # ]
-    lower_dbc_files += [Path.joinpath(_d65_loc, "one_shot_updates.dbc")]
+    lower_dbc_files += [
+        Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Lower"]
+    ]
+    # lower_dbc_files += [Path.joinpath(_d65_loc, "one_shot_updates.dbc")]
 
     return {
         "Upper": upper_dbc_files,
@@ -133,13 +126,12 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
 def send_files_to_victoriametrics(
     server: str,
     files: list[CSVContent],
-    max_batch_count: int = 10,
-    threaded: bool = True,
-    max_batch_size: int = 250_000,
+    concat_size: int = 10,
+    max_batch_size: int = 10_000,
 ) -> dict[str, int]:
     """
     Sends the provided list of files to VictoriaMetrics in batches.
-    Each file is a tuple of (Path, "Upper"|"Lower", start_time, end_time).
+    Each file is a tuple of (Path, "Upper"|"Lower", start_time).
     Returns a  with the total counts of signals sent.
     Uses ThreadPoolExecutor to send batches in parallel.
     """
@@ -147,6 +139,10 @@ def send_files_to_victoriametrics(
     if not files:
         logging.warning("⚠️ No files to send.")
         return {}
+
+    if concat_size < 1:
+        concat_size = 1
+        logging.warning("⚠️ concat_size must be at least 1. Setting to 1.")
 
     dbc_files = get_d65_dbc_files()
     upper_dbc_files: list[DbcFileType] = [(dbc, 0) for dbc in dbc_files["Upper"]]
@@ -166,17 +162,14 @@ def send_files_to_victoriametrics(
 
     total_counts: dict[str, int] = {}
 
-    if not threaded:
-        for idx, batch_files in batch(upper_files, max_batch_count):
-            start_idx = idx + 1
-            end_idx = idx + len(batch_files)
-            concat_msg = f"[{start_idx}-{end_idx}]"
+    if concat_size == 1:
+        def process_files(files, dbc_files, job):
             result = decode_and_send(
-                files=batch_files,
-                dbc_files=upper_dbc_files,
-                job="Upper",
-                concat_first=True,
-                concat_msg=concat_msg,
+                files=files,
+                dbc_files=dbc_files,
+                job=job,
+                concat_first=False,
+                concat_msg="",
                 skip_signal_fn=skip_signal,
                 skip_signal_range_check=True,
                 batch_size=max_batch_size,
@@ -186,78 +179,32 @@ def send_files_to_victoriametrics(
                 for k, v in result.items():
                     total_counts[k] = total_counts.get(k, 0) + v
 
-        for idx, batch_files in batch(lower_files, max_batch_count):
-            start_idx = idx + 1
-            end_idx = idx + len(batch_files)
-            concat_msg = f"[{start_idx}-{end_idx}]"
-            result = decode_and_send(
-                files=batch_files,
-                dbc_files=lower_dbc_files,
-                job="Lower",
-                concat_first=True,
-                concat_msg=concat_msg,
-                skip_signal_fn=skip_signal,
-                skip_signal_range_check=True,
-                batch_size=max_batch_size,
-                server=server,
-            )
-            if isinstance(result, dict):
-                for k, v in result.items():
-                    total_counts[k] = total_counts.get(k, 0) + v
-
-        return total_counts
-
+        process_files(upper_files, upper_dbc_files, "Upper")
+        process_files(lower_files, lower_dbc_files, "Lower")
     else:
-        with ThreadPoolExecutor() as executor:
-            futures = []
 
-            for idx, batch_files in batch(upper_files, max_batch_count):
+        def process_batches(files, dbc_files, job):
+            for idx, batch_files in batch(files, concat_size):
                 start_idx = idx + 1
                 end_idx = idx + len(batch_files)
                 concat_msg = f"[{start_idx}-{end_idx}]"
-                futures.append(
-                    executor.submit(
-                        decode_and_send,
-                        files=batch_files,
-                        dbc_files=upper_dbc_files,
-                        job="Upper",
-                        concat_first=True,
-                        concat_msg=concat_msg,
-                        skip_signal_fn=skip_signal,
-                        skip_signal_range_check=True,
-                        batch_size=max_batch_size,
-                        server=server,
-                    )
+                result = decode_and_send(
+                    files=batch_files,
+                    dbc_files=dbc_files,
+                    job=job,
+                    concat_first=True,
+                    concat_msg=concat_msg,
+                    skip_signal_fn=skip_signal,
+                    skip_signal_range_check=True,
+                    batch_size=max_batch_size,
+                    server=server,
                 )
+                if isinstance(result, dict):
+                    for k, v in result.items():
+                        total_counts[k] = total_counts.get(k, 0) + v
 
-            for idx, batch_files in batch(lower_files, max_batch_count):
-                start_idx = idx + 1
-                end_idx = idx + len(batch_files)
-                concat_msg = f"[{start_idx}-{end_idx}]"
-                futures.append(
-                    executor.submit(
-                        decode_and_send,
-                        files=batch_files,
-                        dbc_files=lower_dbc_files,
-                        job="Lower",
-                        concat_first=True,
-                        concat_msg=concat_msg,
-                        skip_signal_fn=skip_signal,
-                        skip_signal_range_check=True,
-                        batch_size=max_batch_size,
-                        server=server,
-                    )
-                )
-
-            for future in futures:
-                try:
-                    result = future.result()
-                    if isinstance(result, dict):
-                        with Lock():
-                            for k, v in result.items():
-                                total_counts[k] = total_counts.get(k, 0) + v
-                except Exception as e:
-                    logging.error(f"❌ Error processing batch: {e}")
+        process_batches(upper_files, upper_dbc_files, "Upper")
+        process_batches(lower_files, lower_dbc_files, "Lower")
 
     return total_counts
 
@@ -443,24 +390,6 @@ def download_d65_files_from_s3(
     )
 
 
-def main_download_files():
-    download_path = Path(r"D:/d65files")
-    start_date = datetime(
-        year=2025,
-        month=6,
-        day=1,
-        tzinfo=ZoneInfo("America/Vancouver"),
-    )
-    end_date = datetime.now().astimezone(start_date.tzinfo)
-
-    download_d65_files_from_s3(
-        download_path=download_path,
-        start=start_date,
-        end=end_date,
-        s3_csv_file=Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv"),
-    )
-
-
 def get_files_in_range(
     dir_path: Path, start: datetime, end: datetime
 ) -> list[CSVContent]:
@@ -544,34 +473,40 @@ def main_post_to_victoriametrics():
 
     start_date = datetime(
         year=2025,
-        month=7,
-        day=15,
+        month=9,
+        day=5,
         tzinfo=ZoneInfo("America/Vancouver"),
     )
 
-    end_date = start_date + timedelta(days=1)
+    end_date = datetime.now().astimezone(start_date.tzinfo)
 
     whp = get_windows_home_path()
     canedge_folder = Path.joinpath(
         whp, "Epiroc", "Rig Crew - Private - General", "5. Testing", "CANEdge"
     )
+    cancloud_folder = Path("D:/d65files")
 
-    _files = get_files_in_range(canedge_folder, start_date, end_date)
-    # _files = filter_by_date(files, start_date, end_date)
-    _files = filter_by_job(_files, "Lower")
-    # _files = filter_by_job(_files, "Upper")
+    _files = get_files_in_range(
+        cancloud_folder,
+        start_date,
+        end_date,
+    )
 
     logging.info(f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}.")
 
-    server = server_vm_localhost
+    # server = server_vm_test_dump
+    server = server_vm_d65
+    # server = server_vm_localhost
+    logging.info(f" 🌐 Checking for server availability to VictoriaMetrics at {server} ...")
     if not is_victoriametrics_online(server):
         logging.error(f" -> ❌ {server} not available. Exiting...")
         exit(1)
 
+    logging.info(f" -> ✅ {server} is online. Sending files...")
     total_counts = send_files_to_victoriametrics(
         server=server,
         files=_files,
-        max_batch_count=10,
+        concat_size=10,
     )
     end_ts = time.time()
     total_signals_sent = len(total_counts.keys())
@@ -582,7 +517,25 @@ def main_post_to_victoriametrics():
     )
 
 
+def main_download_files():
+    download_path = Path(r"D:/d65files")
+    start_date = datetime(
+        year=2025,
+        month=6,
+        day=1,
+        tzinfo=ZoneInfo("America/Vancouver"),
+    )
+    end_date = datetime.now().astimezone(start_date.tzinfo)
+
+    download_d65_files_from_s3(
+        download_path=download_path,
+        start=start_date,
+        end=end_date,
+        s3_csv_file=Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv"),
+    )
+
+
 if __name__ == "__main__":
-    main_read_files()
+    # main_read_files()
     # main_download_files()
-    # main_post_to_victoriametrics()
+    main_post_to_victoriametrics()

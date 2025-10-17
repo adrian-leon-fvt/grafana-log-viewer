@@ -15,6 +15,7 @@ CAN_CHANNEL = 'vcan0'
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = "[%(asctime)s] %(filename)s:%(lineno)d %(message)s"
 
+server_vm_test_dump = "http://victoriametrics.tail696b12.ts.net:8427"
 server_vm_d65 = "http://victoriametrics.tail696b12.ts.net:8428"
 server_vm_sltms = "http://victoriametrics.tail696b12.ts.net:8429"
 server_vm_localhost = "http://localhost:8428"
