@@ -1,15 +1,21 @@
+import sys
+import time
+import logging
+
 from boto3 import client
 from botocore.config import Config
 from botocore.exceptions import ClientError
-import logging
 from enum import Enum
 from zoneinfo import ZoneInfo
 from datetime import datetime, timezone
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
-from .utils import *
-from .config import *
+
+if __name__ == "__main__":
+    sys.path.append(str(Path(__file__).parent.parent))
+
+from decoder.utils import *
+from decoder.config import *
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
