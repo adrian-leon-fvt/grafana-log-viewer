@@ -25,7 +25,7 @@
 # - filter_by_folder:
 #    Filters the list of files by a given folder name
 # - process_files:
-#    Processes the list of files in batches, concatenates them, decodes them
+#    Processes the list of files in batches, stacks them, decodes them
 #    using the provided DBC file, and sends the decoded signals to the TSDB
 
 
@@ -184,9 +184,9 @@ def process_files(server: str, files: list, dbc_file: Path, batch_size: int = 1)
 
         try:
             ts = time.time()
-            print(f"  ⌛ Concatenating ... ", end="\r", flush=True)
-            cc = MDF().concatenate([f for f, _ in _files])
-            print(f"  ☑️ Concatenated in {get_time_str(ts)}")
+            print(f"  ⌛ Stacking ... ", end="\r", flush=True)
+            cc = MDF().stack([f for f, _ in _files])
+            print(f"  ☑️ Stacked in {get_time_str(ts)}")
 
             try:
                 ts = time.time()
@@ -244,7 +244,7 @@ def process_files(server: str, files: list, dbc_file: Path, batch_size: int = 1)
                 print(f"  ❌ Error decoding and sending signals: {e}")
                 continue
         except Exception as e:
-            print(f"  ❌ Error concatenating files: {e}")
+            print(f"  ❌ Error stacking files: {e}")
             continue
 
     return total_signals
