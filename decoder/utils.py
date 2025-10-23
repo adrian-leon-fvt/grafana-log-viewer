@@ -282,7 +282,7 @@ def delete_series_from_vm(server: str, match: str, timeout: int = 10) -> request
         )
 
         if resp.status_code == 204:
-            logging.info(f"✅ Successfully deleted series matching {{{match}}}")
+            logging.info(f"✅ Successfully deleted series matching {match}")
 
         return resp
     except Exception as e:
