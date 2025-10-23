@@ -1,8 +1,15 @@
+import sys
+from pathlib import Path
+
 import can
 import logging
-from typing import Optional, Dict
+from typing import Optional
 from can import Message
-from decoder.GUI.DBCDecoder import DBCDecoder
+
+if __name__ == "__main__":
+    sys.path.append(str(Path(__file__).parent.parent.parent))
+
+from decoder.livelogger.DBCDecoder import DBCDecoder
 
 
 class CANReader:
@@ -35,6 +42,10 @@ class CANReader:
             return False
 
     def read_message(self, timeout: float = 1.0) -> Optional[Message]:
+        if not self.bus:
+            self.logger.error("CAN bus not connected")
+            return None
+        
         try:
             msg = self.bus.recv(timeout)
             if msg:

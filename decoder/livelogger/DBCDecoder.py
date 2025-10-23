@@ -1,7 +1,13 @@
-import cantools
+import sys
 import logging
+from pathlib import Path
+
+import cantools
 from typing import Dict, Optional, List
 from can import Message
+
+if __name__ == "__main__":
+    sys.path.append(str(Path(__file__).parent.parent.parent))
 
 
 class DBCDecoder:
@@ -9,7 +15,7 @@ class DBCDecoder:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.db = self._load_dbc_files(dbc_paths)
 
-    def _load_dbc_files(self, dbc_paths: List[str]) -> cantools.db.Database:
+    def _load_dbc_files(self, dbc_paths: List[str]) -> cantools.database.Database:
         """Load and merge multiple DBC files into single database"""
         db = cantools.db.Database()
 
@@ -37,8 +43,16 @@ class DBCDecoder:
             or None if decoding fails
         """
         try:
-            decoded_signals = self.db.decode_message(
-                msg.arbitration_id, msg.data)
+            decoded_signals = self.db.decode_message(msg.arbitration_id, msg.data)
+
+            if type(decoded_signals) is not dict:
+                logging.warning(
+                    f"Decoded signals is not a dict for ID {msg.arbitration_id:04X}"
+                )
+                logging.warning(
+                    f"Decoded signals (type {type(decoded_signals)}): {decoded_signals}"
+                )
+                return None
             # Find the message object manually by arbitration_id
             message_obj = None
             for m in self.db.messages:
@@ -61,13 +75,16 @@ class DBCDecoder:
             signals_with_units = {}
             if message_obj is not None:
                 for signal_name, value in decoded_signals.items():
-                    signal_obj = next((s for s in message_obj.signals if s.name == signal_name), None)
-                    unit = signal_obj.unit if signal_obj and hasattr(signal_obj, 'unit') else ""
+                    signal_obj = next(
+                        (s for s in message_obj.signals if s.name == signal_name), None
+                    )
+                    unit = (
+                        signal_obj.unit
+                        if signal_obj and hasattr(signal_obj, "unit")
+                        else ""
+                    )
                     signals_with_units[signal_name] = (value, unit)
-                return {
-                    "message": message_obj,
-                    "decoded_signals": signals_with_units
-                }
+                return {"message": message_obj, "decoded_signals": signals_with_units}
             else:
                 self.logger.warning(
                     f"No message object found for ID {msg.arbitration_id:04X}"
@@ -82,7 +99,7 @@ class DBCDecoder:
             )
             return None
 
-    def get_message_by_name(self, name: str) -> Optional[cantools.db.Message]:
+    def get_message_by_name(self, name: str) -> Optional[cantools.database.Message]:
         try:
             return self.db.get_message_by_name(name)
         except KeyError:
