@@ -41,14 +41,3 @@ vmapi_federate = "/federate"
 vmapi_graphite_find = "/graphite/metrics/find"
 vmapi_influx_write = "/influx/write"
 vmapi_resetRollupResultCache = "/internal/resetRollupResultCache"
-
-
-# vm_import_url = "http://victoriametrics.tail696b12.ts.net:8428/api/v1/import/prometheus"
-# vm_export_url = "http://victoriametrics.tail696b12.ts.net:8428/api/v1/export"
-# vm_query_url = "http://victoriametrics.tail696b12.ts.net:8428/api/v1/query"
-# vm_query_range_url = "http://victoriametrics.tail696b12.ts.net:8428/api/v1/query_range"
-
-# vm_import_url = "http://localhost:8428/api/v1/import/prometheus"
-# vm_export_url = "http://localhost:8428/api/v1/export"
-# vm_query_url = "http://localhost:8428/api/v1/query"
-# vm_query_range_url = "http://localhost:8428/api/v1/query_range"
