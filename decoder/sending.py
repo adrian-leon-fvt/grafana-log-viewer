@@ -1,21 +1,25 @@
+import time
+import json
+import os
+import sys
+import logging
+from pathlib import Path
+
+import requests
 from asammdf import MDF, Signal
 from asammdf.blocks.types import DbcFileType, BusType
-import requests
-from pathlib import Path
 from datetime import datetime, timedelta
-import time
 from collections.abc import Iterable
 from typing import Sequence, Callable, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import json
-import os
-import logging
+if __name__ == "__main__":
+    sys.path.append(str(Path(__file__).parent.parent))
 
-from .config import *
-from .utils import *
+from decoder.config import *
+from decoder.utils import *
 from decoder.livelogger.CANReader import CANReader
-from decoder.GUI.DBCDecoder import DBCDecoder
+from decoder.livelogger.DBCDecoder import DBCDecoder
 
 os.environ["NO_PROXY"] = "localhost"  # Bypass proxy for VictoriaMetrics
 
@@ -333,7 +337,7 @@ def send_file(
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
     batch_size: int = 10_000,
-    max_thread_workers = 10,
+    max_thread_workers=10,
 ) -> dict[str, int]:
     logger = logging.getLogger("send_file")
     setup_simple_logger(logger, format=LOG_FORMAT)
@@ -421,7 +425,7 @@ def send_decoded(
                     skip_signal_range_check=skip_signal_range_check,
                     batch_size=batch_size,
                     server=server,
-                ) : sig
+                ): sig
                 for sig in decoded.iter_channels()
                 if skip_signal_fn is None or not skip_signal_fn(sig.name)
             }
@@ -511,7 +515,11 @@ def decode_and_send(
             mdf = MDF(file)
             if job is None:
                 job = file.stem
-            _dispname = "../" + "/".join(file.parts[-2:]) if len(file.parts) >= 2 else str(file.as_posix())
+            _dispname = (
+                "../" + "/".join(file.parts[-2:])
+                if len(file.parts) >= 2
+                else str(file.as_posix())
+            )
             try:
                 start = time.time()
                 logger.info(f" ⏳ Decoding ../{_dispname} ...")
@@ -542,76 +550,5 @@ def decode_and_send(
     return signals_sample_count
 
 
-def livestream(server: str):
-    logger = logging.getLogger("livestream")
-    setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
-
-    if is_victoriametrics_online(server):
-        dbc_decoder = None
-        if DBC_FILE_PATHS:
-            logger.info("Initializing DBC decoder...")
-            dbc_decoder = DBCDecoder(DBC_FILE_PATHS)
-
-        # Initialize CAN reader
-        logger.info("Initializing CAN reader...")
-        can_reader = CANReader(
-            interface=CAN_INTERFACE, channel=CAN_CHANNEL, dbc_decoder=dbc_decoder
-        )
-
-        if not can_reader.connect():
-            logger.error("Failed to initialize CAN interface")
-            return
-
-        logger.info("Starting CAN monitoring...")
-        while True:
-            try:
-                result = can_reader.read_decoded_message()
-                if result is None:
-                    continue
-                timestamp, message_data = result
-                if not message_data:
-                    continue
-                message = message_data["message"]
-                decoded_signals = message_data["decoded_signals"]
-                if message:
-                    for signal in decoded_signals.keys():
-                        value, unit = decoded_signals[signal]
-                        data = make_metric_line(
-                            message.name,
-                            signal,
-                            unit,
-                            value,
-                            timestamp,
-                            job="d65_livestream",
-                        )
-                        try:
-                            requests.post(
-                                server + vmapi_import_prometheus, data="".join(data)
-                            )
-                        except Exception as e:
-                            logging.error(f"\n ‼️ Error sending data: {e}")
-
-            except KeyboardInterrupt:  # Shutting down properly
-                break
-
-        logger.info("Shutting down...")
-        can_reader.shutdown()
-
-
-def main():
-    if LIVE_STREAMING:  # Streaming live CAN data
-        livestream(LIVE_STREAMING_SERVER)
-
-
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(
-    #     description="Decode MDF4 files and send to VictoriaMetrics."
-    # )
-    # parser.add_argument("directory", type=str, help="Directory containing MDF4 files.")
-    # parser.add_argument("job", type=str, default=None, help="Job name for the metrics.")
-
-    # args = parser.parse_args()
-
-    # decode_and_send(args.directory, args.job)
-    # print("👍 Decoding and sending completed 👍")
-    main()
+    # main_livestream()
