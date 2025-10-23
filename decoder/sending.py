@@ -477,7 +477,7 @@ def decode_and_send(
         try:
             logger.info(f" ⏳ {concat_msg}: Concatenating {len(files)} files")
             start = time.time()
-            mdf = MDF().concatenate(files)
+            mdf = MDF().stack(files)
             logger.info(f" ✅ {concat_msg}: Concatenated in {time.time() - start:.3f}s")
 
             try:
