@@ -162,7 +162,7 @@ def get_d65_cancloud_folder() -> Path:
 def send_files_to_victoriametrics(
     server: str,
     files: list[CSVContent],
-    concat_size: int = 10,
+    stack_size: int = 10,
     max_batch_size: int = 10_000,
 ) -> dict[str, int]:
     """
@@ -176,8 +176,8 @@ def send_files_to_victoriametrics(
         logging.warning("⚠️ No files to send.")
         return {}
 
-    if concat_size < 1:
-        concat_size = 1
+    if stack_size < 1:
+        stack_size = 1
         logging.warning("⚠️ concat_size must be at least 1. Setting to 1.")
 
     dbc_files = get_d65_dbc_files()
@@ -198,15 +198,15 @@ def send_files_to_victoriametrics(
 
     total_counts: dict[str, int] = {}
 
-    if concat_size == 1:
+    if stack_size == 1:
 
         def process_files(files, dbc_files, job):
             result = decode_and_send(
                 files=files,
                 dbc_files=dbc_files,
                 job=job,
-                concat_first=False,
-                concat_msg="",
+                stack_first=False,
+                stack_msg="",
                 skip_signal_fn=skip_signal,
                 skip_signal_range_check=True,
                 batch_size=max_batch_size,
@@ -221,7 +221,7 @@ def send_files_to_victoriametrics(
     else:
 
         def process_batches(files, dbc_files, job, total_files):
-            for idx, batch_files in batch(files, concat_size):
+            for idx, batch_files in batch(files, stack_size):
                 start_idx = idx + 1
                 end_idx = idx + len(batch_files)
                 concat_msg = f"[{start_idx}-{end_idx} of {total_files}]"
@@ -229,8 +229,8 @@ def send_files_to_victoriametrics(
                     files=batch_files,
                     dbc_files=dbc_files,
                     job=job,
-                    concat_first=True,
-                    concat_msg=concat_msg,
+                    stack_first=True,
+                    stack_msg=concat_msg,
                     skip_signal_fn=skip_signal,
                     skip_signal_range_check=True,
                     batch_size=max_batch_size,
@@ -487,11 +487,12 @@ def filter_by_job(
     return [(f, k_seg, start) for f, k_seg, start in files if k_seg == job]
 
 
-def main_read_files():
-    start_ts = time.time()
+def get_all_unique_d65_files(sorted: bool = True) -> list[CSVContent]:
     whp = get_windows_home_path()
     canedge_folder = get_d65_canedge_folder()
-    canedge_files = get_files_in_range(
+    logging.info(f" 📁 Reading CANCloud files from {canedge_folder} ...")
+    start_ts = time.time()
+    canedge_files: list[CSVContent] = get_files_in_range(
         dir_path=canedge_folder,
         start=datetime(
             year=2025,
@@ -502,12 +503,13 @@ def main_read_files():
         end=datetime.now().astimezone(),
     )
 
-    logging.info(f" ✔️  Found {len(canedge_files)} files in {get_time_str(start_ts)}")
+    logging.info(f" ✔️  [Rig Crew] Found {len(canedge_files)} files in {get_time_str(start_ts)}")
 
     cancloud_folder = get_d65_cancloud_folder()
 
+    logging.info(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
     start_ts = time.time()
-    cancloud_files = get_files_in_range(
+    cancloud_files: list[CSVContent] = get_files_in_range(
         dir_path=cancloud_folder,
         start=datetime(
             year=2025,
@@ -518,12 +520,52 @@ def main_read_files():
         end=datetime.now().astimezone(),
     )
 
-    logging.info(f" ✔️  Found {len(cancloud_files)} files in {get_time_str(start_ts)}")
+    logging.info(f" ✔️  [CANCloud] Found {len(cancloud_files)} files in {get_time_str(start_ts)}")
 
-    # In CANCloud, there are 
+    # CANEdge are files that were taken directly from the SD-card before they could be uploaded to CANCloud
+    # Find just the unique files that are not in CANCloud
 
+    def normalize_cancloud_filename(p: Path) -> str:
+        # The name when downloaded replaces the '/' with '_' and adds a suffix:
+        # e.g., 5A72CE4C_00001105_00000003-6853309D.MF4
+        # we need to remove the suffix
+        name = p.name.split('-')[0] + p.suffix  # Remove hex suffix
+        # This gives a name of the form:
+        # MACADDRESS_FOLDER_FILENAME.MF4
+        # e.g., 5A72CE4C_00001105_00000003.MF4
 
-def main_post_to_victoriametrics():
+        return name
+    
+    def normalize_canedge_filename(p: Path) -> str:
+        # The names are of the form:
+        # e.g., 5A72CE4C/00001105/00000003.MF4
+        parts = p.parts[-3:]  # Get last 3 parts
+        name = "_".join(parts)
+        return name
+
+    normalized_cancloud_files = [
+        normalize_cancloud_filename(f) for f, _, _ in cancloud_files
+    ]
+    unique_canedge_files: list[CSVContent] = [
+        (f, k_seg, start)
+        for f, k_seg, start in canedge_files
+        if normalize_canedge_filename(f) not in normalized_cancloud_files
+    ]
+
+    unique_canedge_files.sort(key=lambda x: x[2])  # Sort by start time
+
+    logging.info(f" ✔️  Found {len(unique_canedge_files)} unique CANEdge files not in CANCloud.")
+    # for f, k_seg, start in unique_canedge_files:
+    #     logging.info(f" 🗂  {shortpath(f)} | {k_seg} | {start.astimezone().isoformat()}")
+
+    full_list = cancloud_files + unique_canedge_files
+
+    if sorted:
+        full_list.sort(key=lambda x: x[2])  # Sort by start time
+        
+    return full_list
+
+def main_post_to_victoriametrics(server: str):
     start_ts = time.time()
 
     start_date = datetime(
@@ -535,20 +577,16 @@ def main_post_to_victoriametrics():
 
     end_date = datetime.now().astimezone()
 
-    canedge_folder = get_d65_canedge_folder()
-    cancloud_folder = Path("D:/d65files")
+    files = get_all_unique_d65_files(sorted=True)
 
-    _files = get_files_in_range(
-        cancloud_folder,
-        start_date,
-        end_date,
+    files = filter_by_date(
+        files,
+        start_time=start_date,
+        end_time=end_date,
     )
 
-    logging.info(f" ✔️  Found to {len(_files)} files from {start_date} to {end_date}.")
+    logging.info(f" ✔️  Found to {len(files)} files from {start_date} to {end_date}.")
 
-    # server = server_vm_test_dump
-    # server = server_vm_d65
-    server = server_vm_localhost
     logging.info(
         f" 🌐 Checking for server availability to VictoriaMetrics at {server} ..."
     )
@@ -559,8 +597,8 @@ def main_post_to_victoriametrics():
     logging.info(f" -> ✅ {server} is online. Sending files...")
     total_counts = send_files_to_victoriametrics(
         server=server,
-        files=_files,
-        concat_size=20,
+        files=files,
+        stack_size=20,
     )
     end_ts = time.time()
     total_signals_sent = len(total_counts.keys())
@@ -589,48 +627,7 @@ def main_download_files():
     )
 
 
-def main_decode_range():
-    download_path = Path(r"D:/d65files")
-    start_date = datetime(
-        year=2025,
-        month=9,
-        day=5,
-        tzinfo=ZoneInfo("America/Vancouver"),
-    )
-    end_date = start_date + timedelta(days=1)
-    save_loc = Path(
-        f"D:/utils/grafana-log-viewer/decoder/notebooks/decoded_upper_{start_date.strftime('%Y%m%d')}.mf4"
-    )
-
-    files: list[CSVContent] = get_files_in_range(
-        dir_path=download_path, start=start_date, end=end_date
-    )
-    files = filter_by_job(files, "Upper")
-    files.sort(key=lambda x: x[2])  # Sort by start time
-    for f, k_seg, start in files:
-        logging.info(f" 🗂  {shortpath(f)} | {k_seg} | {start.isoformat()}")
-
-    # dbc_files = get_upper_dbc_files()
-
-    # logging.info(f" ⬇️ Concatenating {len(files)} files ...")
-    # mdf = MDF().concatenate([f for f, _, _ in files])
-    # mdf.save(Path.joinpath(save_loc.parent, "temp_concat.mf4"), overwrite=True)
-    # logging.info(f" ⬇️ Decoding {len(files)} files ...")
-    # decoded = mdf.extract_bus_logging(
-    #     database_files={"CAN": dbc_files},
-    #     ignore_value2text_conversion=True,
-    # )
-    # logging.info(f" ✅ Decoded successfully.")
-
-    # logging.info(f" 💾 Saving decoded file to {save_loc} ...")
-    # saved = decoded.save(save_loc, overwrite=True)
-    # logging.info(f" ✅ Saved decoded file to {saved}.")
-
-
-def main_delete_all_series():
-    # server = server_vm_d65
-    # server = server_vm_test_dump
-    server = server_vm_localhost
+def main_delete_all_series(server: str):
     resp = delete_series_from_vm(server=server, match='{message=~".+"}')
 
     if resp:
@@ -638,8 +635,10 @@ def main_delete_all_series():
 
 
 if __name__ == "__main__":
-    main_read_files()
+    # server = server_vm_test_dump
+    # server = server_vm_d65
+    server = server_vm_localhost
+
     # main_download_files()
-    # main_decode_range()
-    # main_delete_all_series()
-    # main_post_to_victoriametrics()
+    main_delete_all_series(server)
+    main_post_to_victoriametrics(server)
