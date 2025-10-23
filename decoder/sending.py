@@ -291,7 +291,7 @@ def send_signal_using_json_lines(
             if print_metric_line:
                 logger.info(line)
             if send_signal:
-                for retries in range(3):  # Retry up to 3 times
+                for retries in range(5):  # Retry up to 5 times
                     try:
                         resp = requests.post(
                             server + vmapi_import,
