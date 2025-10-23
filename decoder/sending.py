@@ -511,9 +511,7 @@ def decode_and_send(
             mdf = MDF(file)
             if job is None:
                 job = file.stem
-            _file = str(file.as_posix())
-            _split = _file.split("/")
-            _dispname = "/".join(_split[_split.index(job) :])
+            _dispname = "../" + "/".join(file.parts[-2:]) if len(file.parts) >= 2 else str(file.as_posix())
             try:
                 start = time.time()
                 logger.info(f" ⏳ Decoding ../{_dispname} ...")
