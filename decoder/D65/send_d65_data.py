@@ -144,11 +144,12 @@ def get_d65_canedge_folder() -> Path:
     canedge_folder = Path.joinpath(
         whp, "Epiroc", "Rig Crew - Private - General", "5. Testing", "CANEdge"
     )
-    
+
     if not canedge_folder.exists():
         logging.error(f"❌ CANEdge folder does not exist: {canedge_folder}")
 
     return canedge_folder
+
 
 def get_d65_cancloud_folder() -> Path:
     cancloud_folder = Path("D:/d65files")
@@ -487,23 +488,60 @@ def filter_by_job(
     return [(f, k_seg, start) for f, k_seg, start in files if k_seg == job]
 
 
-def get_all_unique_d65_files(sorted: bool = True) -> list[CSVContent]:
-    whp = get_windows_home_path()
+def get_all_d65_canedge_files(
+    start: datetime, end: datetime, ignore_dchv_files: bool = True
+) -> list[CSVContent]:
     canedge_folder = get_d65_canedge_folder()
-    logging.info(f" 📁 Reading CANCloud files from {canedge_folder} ...")
+    logging.info(f" 📁 Reading CANEdge files from {canedge_folder} ...")
     start_ts = time.time()
     canedge_files: list[CSVContent] = get_files_in_range(
         dir_path=canedge_folder,
-        start=datetime(
-            year=2025,
-            month=1,
-            day=1,
-            tzinfo=ZoneInfo("America/Vancouver"),
-        ),
-        end=datetime.now().astimezone(),
+        start=start,
+        end=end,
     )
 
-    logging.info(f" ✔️  [Rig Crew] Found {len(canedge_files)} files in {get_time_str(start_ts)}")
+    if ignore_dchv_files:
+        modded: list[CSVContent] = [
+            (f, k_seg, start)
+            for f, k_seg, start in canedge_files
+            if "DCHV" not in str(f) and "logCan" not in str(f)
+        ]
+        canedge_files = modded
+
+    logging.info(
+        f" ✔️  [Rig Crew] Found {len(canedge_files)} files in {get_time_str(start_ts)}"
+    )
+
+    return canedge_files
+
+
+def get_all_d65_cancloud_files(start: datetime, end: datetime) -> list[CSVContent]:
+    cancloud_folder = get_d65_cancloud_folder()
+
+    logging.info(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
+    start_ts = time.time()
+    cancloud_files: list[CSVContent] = get_files_in_range(
+        dir_path=cancloud_folder,
+        start=start,
+        end=end,
+    )
+
+    logging.info(
+        f" ✔️  [CANCloud] Found {len(cancloud_files)} files in {get_time_str(start_ts)}"
+    )
+
+    return cancloud_files
+
+
+def get_all_unique_d65_files(
+    start: datetime, end: datetime, sorted: bool = True, ignore_dchv_files: bool = True
+) -> list[CSVContent]:
+    canedge_folder = get_d65_canedge_folder()
+    logging.info(f" 📁 Reading CANCloud files from {canedge_folder} ...")
+    start_ts = time.time()
+    canedge_files = get_all_d65_canedge_files(
+        start=start, end=end, ignore_dchv_files=ignore_dchv_files
+    )
 
     cancloud_folder = get_d65_cancloud_folder()
 
@@ -511,16 +549,13 @@ def get_all_unique_d65_files(sorted: bool = True) -> list[CSVContent]:
     start_ts = time.time()
     cancloud_files: list[CSVContent] = get_files_in_range(
         dir_path=cancloud_folder,
-        start=datetime(
-            year=2025,
-            month=1,
-            day=1,
-            tzinfo=ZoneInfo("America/Vancouver"),
-        ),
-        end=datetime.now().astimezone(),
+        start=start,
+        end=end,
     )
 
-    logging.info(f" ✔️  [CANCloud] Found {len(cancloud_files)} files in {get_time_str(start_ts)}")
+    logging.info(
+        f" ✔️  [CANCloud] Found {len(cancloud_files)} files in {get_time_str(start_ts)}"
+    )
 
     # CANEdge are files that were taken directly from the SD-card before they could be uploaded to CANCloud
     # Find just the unique files that are not in CANCloud
@@ -529,13 +564,13 @@ def get_all_unique_d65_files(sorted: bool = True) -> list[CSVContent]:
         # The name when downloaded replaces the '/' with '_' and adds a suffix:
         # e.g., 5A72CE4C_00001105_00000003-6853309D.MF4
         # we need to remove the suffix
-        name = p.name.split('-')[0] + p.suffix  # Remove hex suffix
+        name = p.name.split("-")[0] + p.suffix  # Remove hex suffix
         # This gives a name of the form:
         # MACADDRESS_FOLDER_FILENAME.MF4
         # e.g., 5A72CE4C_00001105_00000003.MF4
 
         return name
-    
+
     def normalize_canedge_filename(p: Path) -> str:
         # The names are of the form:
         # e.g., 5A72CE4C/00001105/00000003.MF4
@@ -554,16 +589,25 @@ def get_all_unique_d65_files(sorted: bool = True) -> list[CSVContent]:
 
     unique_canedge_files.sort(key=lambda x: x[2])  # Sort by start time
 
-    logging.info(f" ✔️  Found {len(unique_canedge_files)} unique CANEdge files not in CANCloud.")
-    # for f, k_seg, start in unique_canedge_files:
-    #     logging.info(f" 🗂  {shortpath(f)} | {k_seg} | {start.astimezone().isoformat()}")
+    logging.info(
+        f" ✔️  Found {len(unique_canedge_files)} unique CANEdge files not in CANCloud."
+    )
 
     full_list = cancloud_files + unique_canedge_files
 
     if sorted:
         full_list.sort(key=lambda x: x[2])  # Sort by start time
-        
+
     return full_list
+
+
+def main_read_all_files():
+    start = datetime(2025, 1, 1, tzinfo=ZoneInfo("America/Vancouver"))
+    end = datetime.now().astimezone()
+    files = get_all_unique_d65_files(
+        sorted=True, start=start, end=end, ignore_dchv_files=True
+    )
+
 
 def main_post_to_victoriametrics(server: str):
     start_ts = time.time()
@@ -577,15 +621,18 @@ def main_post_to_victoriametrics(server: str):
 
     end_date = datetime.now().astimezone()
 
-    files = get_all_unique_d65_files(sorted=True)
-
-    files = filter_by_date(
-        files,
-        start_time=start_date,
-        end_time=end_date,
+    files = get_all_unique_d65_files(
+        sorted=True, start=start_date, end=end_date, ignore_dchv_files=False
     )
 
-    logging.info(f" ✔️  Found to {len(files)} files from {start_date} to {end_date}.")
+    if len(files) == 0:
+        logging.warning("⚠️ No files found to send. Exiting...")
+        return
+    
+    if len(files) == 1:
+        logging.info(f" ✔️  Found 1 file starting at {files[0][2].astimezone().isoformat()}.")
+    else:
+        logging.info(f" ✔️  Found to {len(files)} files from {files[0][2].astimezone().isoformat()} to {files[-1][2].astimezone().isoformat()}.")
 
     logging.info(
         f" 🌐 Checking for server availability to VictoriaMetrics at {server} ..."
