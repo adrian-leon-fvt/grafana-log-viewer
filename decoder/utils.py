@@ -1,19 +1,25 @@
 import time
-from datetime import datetime, timedelta, timezone
+import os
+import sys
+import logging
 from pathlib import Path
+
+from datetime import datetime, timedelta, timezone
 from asammdf import MDF
 from asammdf.blocks.v4_blocks import HeaderBlock
 from asammdf.blocks.types import StrPath
 import requests
-import os
 import json
 import re
 from itertools import chain
 from can import LogReader, Logger
-from .config import *
-import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
+
+if __name__ == "__main__":
+    sys.path.append(str(Path(__file__).parent.parent))
+
+from decoder.config import *
 
 
 def setup_simple_logger(
@@ -119,7 +125,7 @@ def get_mdf_start_time(mdf: Path) -> datetime | None:
         except Exception as e:
             logging.error(f"❌ Error reading MDF header from {mdf}: {e}")
             return None
-    
+
     return None
 
 
@@ -146,7 +152,7 @@ def get_trc_start_time(trc: Path, use_iso_line: bool = False) -> datetime | None
                 # Find the comment that starts with "; Start time:"
                 if not line.startswith(";"):
                     break
-                match = re.match(r";.+start time: (.+)",_line.lower())
+                match = re.match(r";.+start time: (.+)", _line.lower())
                 if not match:
                     continue
                 else:
@@ -163,7 +169,7 @@ def get_trc_start_time(trc: Path, use_iso_line: bool = False) -> datetime | None
                     # Get the offset
                     offset = float(_line.split("=")[1])
                     return datetime(1899, 12, 30) + timedelta(days=offset)
-            
+
     return None
 
 
@@ -270,7 +276,9 @@ def is_victoriametrics_online(server: str, timeout: float = 3.0) -> bool:
     return resp_status_code == 200
 
 
-def delete_series_from_vm(server: str, match: str, timeout: int = 10) -> requests.Response | None:
+def delete_series_from_vm(
+    server: str, match: str, timeout: int = 10
+) -> requests.Response | None:
     logger = logging.getLogger("vm_delete_series")
     setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
@@ -406,11 +414,31 @@ def get_windows_home_path() -> Path:
 
 
 def convert_to_eng(value: int | float) -> str:
+    if not (type(value) is int or type(value) is float):
+        try:
+            logging.warning(f"⚠️ Value: `{value}` is of type {type(value)}, returning as string.")
+            return str(value)
+        except Exception:
+            logging.error(f"❌ Cannot convert value to string: {value}")
+            return ""
+
     if value > 1e9:
         return f"{value / 1e9:.3f}G"
     elif value > 1e6:
         return f"{value / 1e6:.3f}M"
     elif value > 1e3:
         return f"{value / 1e3:.3f}k"
+    elif value is int:
+        return f"{value}"
     else:
         return f"{value:.3f}"
+
+if __name__ == "__main__":
+    # Example usage
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    print(convert_to_eng(1234567890))  # Output: 1.235G
+    print(convert_to_eng(1234567))     # Output: 1.235M
+    print(convert_to_eng(1234))        # Output: 1.234k
+    print(convert_to_eng(123))         # Output: 123
+    print(convert_to_eng(123.456789))  # Output: 123.457
+    print(convert_to_eng("test"))      # Output: test
