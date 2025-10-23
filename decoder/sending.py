@@ -452,8 +452,8 @@ def decode_and_send(
     dbc_files: Sequence[DbcFileType],
     server: str,
     job: str = "test_job",
-    concat_first: bool = True,
-    concat_msg: str = "Concat",
+    stack_first: bool = True,
+    stack_msg: str = "Stack",
     skip_signal_range_check: bool = True,
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
     batch_size=10_000,
@@ -476,21 +476,21 @@ def decode_and_send(
         logger.error("⚠️ No DBC files specified.")
         return signals_sample_count
 
-    if concat_first and len(files) > 1:
+    if stack_first and len(files) > 1:
         mdf = MDF()
         try:
-            logger.info(f" ⏳ {concat_msg}: Concatenating {len(files)} files")
+            logger.info(f" ⏳ {stack_msg}: Stacking {len(files)} files")
             start = time.time()
             mdf = MDF().stack(files)
-            logger.info(f" ✅ {concat_msg}: Concatenated in {time.time() - start:.3f}s")
+            logger.info(f" ✅ {stack_msg}: Stacked in {time.time() - start:.3f}s")
 
             try:
-                logger.info(f" ⏳ {concat_msg}: Decoding concatenated files")
+                logger.info(f" ⏳ {stack_msg}: Decoding stacked file")
                 start = time.time()
                 decoded = mdf.extract_bus_logging(
                     database_files, ignore_value2text_conversion=True
                 )
-                logger.info(f" ✅ {concat_msg}: Decoded in {time.time() - start:.3f}s")
+                logger.info(f" ✅ {stack_msg}: Decoded in {time.time() - start:.3f}s")
                 if list(decoded.iter_channels()):
                     result = send_decoded(
                         decoded=decoded,
@@ -506,9 +506,9 @@ def decode_and_send(
                     logger.warning("⚠️ No signals found, skipping sending.")
 
             except Exception as e:
-                logger.error(f"❌ Error decoding concatenated files: {e}")
+                logger.error(f"❌ Error decoding stacking files: {e}")
         except Exception as e:
-            logger.error(f"❌ Error concatenating files: {e}")
+            logger.error(f"❌ Error stacking files: {e}")
 
     else:
         for file in files:
@@ -552,3 +552,5 @@ def decode_and_send(
 
 if __name__ == "__main__":
     # main_livestream()
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    logging.info("Sending module called directly, no action taken.")
