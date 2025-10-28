@@ -24,7 +24,7 @@ from decoder.utils import (
     make_metric_line,
     is_victoriametrics_online,
 )
-from decoder.sending import decode_and_send
+from decoder.sending import send_decoded
 from decoder.config import (
     LOG_FORMAT,
     server_vm_d65,
@@ -185,64 +185,131 @@ def send_files_to_victoriametrics(
     upper_dbc_files: list[DbcFileType] = [(dbc, 0) for dbc in dbc_files["Upper"]]
     lower_dbc_files: list[DbcFileType] = [(dbc, 0) for dbc in dbc_files["Lower"]]
 
-    upper_tuples = [item for item in files if item[1] == "Upper"]
-    upper_tuples.sort(key=lambda x: x[2])  # Sort by start time
-    upper_files = [file for file, _, _ in upper_tuples]
-
-    lower_tuples = [item for item in files if item[1] == "Lower"]
-    lower_tuples.sort(key=lambda x: x[2])  # Sort by start time
-    lower_files = [file for file, _, _ in lower_tuples]
-
-    def batch(lst, n):
-        for i in range(0, len(lst), n):
-            yield i, lst[i : i + n]
-
     total_counts: dict[str, int] = {}
+    total_files = len(files)
 
     if stack_size == 1:
 
-        def process_files(files, dbc_files, job):
-            result = decode_and_send(
-                files=files,
-                dbc_files=dbc_files,
-                job=job,
-                stack_first=False,
-                stack_msg="",
-                skip_signal_fn=skip_signal,
-                skip_signal_range_check=True,
-                batch_size=max_batch_size,
-                server=server,
-            )
-            if isinstance(result, dict):
-                for k, v in result.items():
-                    total_counts[k] = total_counts.get(k, 0) + v
+        for i, (f, k, _) in enumerate(files):
+            count_str = f"[{i} of {total_files}]"
+            try:
+                mdf = MDF(f)
 
-        process_files(upper_files, upper_dbc_files, "Upper")
-        process_files(lower_files, lower_dbc_files, "Lower")
+                try:
+                    start = time.time()
+                    logging.info(f" ⏳ {count_str} Decoding file {shortpath(f)} ...")
+                    if k not in ["Upper", "Lower"]:
+                        logging.error(
+                            f"❌ Unknown job type '{k}' for file {shortpath(f)}, skipping."
+                        )
+                    else:
+                        dbc: list[DbcFileType] = (
+                            upper_dbc_files if k == "Upper" else lower_dbc_files
+                        )
+                        decoded = mdf.extract_bus_logging(
+                            database_files={"CAN": dbc},
+                            ignore_value2text_conversion=True,
+                        )
+                        logging.info(
+                            f" ✅ {count_str} Decoded file {shortpath(f)} in {get_time_str(start)}"
+                        )
+
+                        if not list(decoded.iter_channels()):
+                            logging.warning(
+                                f"⚠️ No signals found in file {shortpath(f)}, skipping sending."
+                            )
+                        else:
+                            result = send_decoded(
+                                decoded=decoded,
+                                server=server,
+                                job=k,
+                                skip_signal_fn=skip_signal,
+                                skip_signal_range_check=True,
+                                batch_size=max_batch_size,
+                            )
+
+                            for k, v in result.items():
+                                total_counts[k] = total_counts.get(k, 0) + v
+                except Exception as e:
+                    logging.error(f"❌ Error decoding file {shortpath(f)}: {e}")
+                    continue
+
+            except Exception as e:
+                logging.error(f"❌ Error reading file {shortpath(f)}: {e}")
+                continue
     else:
 
-        def process_batches(files, dbc_files, job, total_files):
-            for idx, batch_files in batch(files, stack_size):
-                start_idx = idx + 1
-                end_idx = idx + len(batch_files)
-                concat_msg = f"[{start_idx}-{end_idx} of {total_files}]"
-                result = decode_and_send(
-                    files=batch_files,
-                    dbc_files=dbc_files,
-                    job=job,
-                    stack_first=True,
-                    stack_msg=concat_msg,
-                    skip_signal_fn=skip_signal,
-                    skip_signal_range_check=True,
-                    batch_size=max_batch_size,
-                    server=server,
-                )
-                if isinstance(result, dict):
-                    for k, v in result.items():
-                        total_counts[k] = total_counts.get(k, 0) + v
+        def batch(lst, n):
+            for i in range(0, len(lst), n):
+                yield i, lst[i : i + n]
 
-        process_batches(upper_files, upper_dbc_files, "Upper", len(upper_files))
-        process_batches(lower_files, lower_dbc_files, "Lower", len(lower_files))
+        def process_batch(files, dbc_files, job, stack_msg):
+            logging.info(f" ⏳ {stack_msg}: Stacking {len(files)} files ...")
+            start = time.time()
+            try:
+                mdf = MDF().stack(files)
+                logging.info(
+                    f" ✅ {stack_msg}: Stacked {len(files)} files in {get_time_str(start)}"
+                )
+
+                logging.info(f" ⏳ {stack_msg}: Decoding stacked files ...")
+                start = time.time()
+                try:
+                    decoded = mdf.extract_bus_logging(
+                        database_files={"CAN": dbc_files},
+                        ignore_value2text_conversion=True,
+                    )
+                    logging.info(
+                        f" ✅ {stack_msg}: Decoded stacked files in {get_time_str(start)}"
+                    )
+                    if not list(decoded.iter_channels()):
+                        logging.warning(
+                            f"⚠️ No signals found in stacked files {stack_msg}, skipping sending."
+                        )
+                    else:
+                        result = send_decoded(
+                            decoded=decoded,
+                            server=server,
+                            job=job,
+                            skip_signal_fn=skip_signal,
+                            skip_signal_range_check=True,
+                            batch_size=max_batch_size,
+                        )
+
+                        for k, v in result.items():
+                            total_counts[k] = total_counts.get(k, 0) + v
+
+                except Exception as e:
+                    logging.error(f"❌ Error decoding stacked files {stack_msg}: {e}")
+            except Exception as e:
+                logging.error(f"❌ Error stacking files {stack_msg}: {e}")
+
+        for batch_idx, batch_files in batch(files, stack_size):
+            upper_tuples = [item for item in batch_files if item[1] == "Upper"]
+            upper_tuples.sort(key=lambda x: x[2])  # Sort by start time
+            upper_files = [file for file, _, _ in upper_tuples]
+
+            lower_tuples = [item for item in batch_files if item[1] == "Lower"]
+            lower_tuples.sort(key=lambda x: x[2])  # Sort by start time
+            lower_files = [file for file, _, _ in lower_tuples]
+
+            start_idx = batch_idx + 1
+            end_idx = batch_idx + len(batch_files)
+
+            if len(upper_files) > 0:
+                process_batch(
+                    upper_files,
+                    upper_dbc_files,
+                    "Upper",
+                    f"[Upper ({len(upper_files)}/{len(batch_files)}) in {start_idx}-{end_idx} of {total_files}]",
+                )
+            if len(lower_files) > 0:
+                process_batch(
+                    lower_files,
+                    lower_dbc_files,
+                    "Lower",
+                    f"[Lower ({len(lower_files)}/{len(batch_files)}) in {start_idx}-{end_idx} of {total_files}]",
+                )
 
     return total_counts
 
@@ -534,7 +601,11 @@ def get_all_d65_cancloud_files(start: datetime, end: datetime) -> list[CSVConten
 
 
 def get_all_unique_d65_files(
-    start: datetime, end: datetime, sorted: bool = True, ignore_dchv_files: bool = True
+    start: datetime,
+    end: datetime,
+    sorted: bool = True,
+    reverse_sort: bool = False,
+    ignore_dchv_files: bool = True,
 ) -> list[CSVContent]:
     canedge_folder = get_d65_canedge_folder()
     logging.info(f" 📁 Reading CANCloud files from {canedge_folder} ...")
@@ -587,7 +658,9 @@ def get_all_unique_d65_files(
         if normalize_canedge_filename(f) not in normalized_cancloud_files
     ]
 
-    unique_canedge_files.sort(key=lambda x: x[2])  # Sort by start time
+    unique_canedge_files.sort(
+        key=lambda x: x[2], reverse=reverse_sort
+    )  # Sort by start time
 
     logging.info(
         f" ✔️  Found {len(unique_canedge_files)} unique CANEdge files not in CANCloud."
@@ -625,14 +698,20 @@ def main_post_to_victoriametrics(server: str):
         sorted=True, start=start_date, end=end_date, ignore_dchv_files=False
     )
 
+    files.sort(key=lambda x: x[2], reverse=True)  # Sort by start time
+
     if len(files) == 0:
         logging.warning("⚠️ No files found to send. Exiting...")
         return
-    
+
     if len(files) == 1:
-        logging.info(f" ✔️  Found 1 file starting at {files[0][2].astimezone().isoformat()}.")
+        logging.info(
+            f" ✔️  Found 1 file starting at {files[0][2].astimezone().isoformat()}."
+        )
     else:
-        logging.info(f" ✔️  Found to {len(files)} files from {files[0][2].astimezone().isoformat()} to {files[-1][2].astimezone().isoformat()}.")
+        logging.info(
+            f" ✔️  Found to {len(files)} files from {files[0][2].astimezone().isoformat()} to {files[-1][2].astimezone().isoformat()}."
+        )
 
     logging.info(
         f" 🌐 Checking for server availability to VictoriaMetrics at {server} ..."
@@ -683,8 +762,8 @@ def main_delete_all_series(server: str):
 
 if __name__ == "__main__":
     # server = server_vm_test_dump
-    # server = server_vm_d65
-    server = server_vm_localhost
+    server = server_vm_d65
+    # server = server_vm_localhost
 
     # main_download_files()
     main_delete_all_series(server)
