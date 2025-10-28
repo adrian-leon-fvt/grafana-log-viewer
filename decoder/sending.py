@@ -482,7 +482,7 @@ def decode_and_send(
             logger.info(f" ⏳ {stack_msg}: Stacking {len(files)} files")
             start = time.time()
             mdf = MDF().stack(files)
-            logger.info(f" ✅ {stack_msg}: Stacked in {time.time() - start:.3f}s")
+            logger.info(f" ✅ {stack_msg}: Stacked in {get_time_str(start)}s")
 
             try:
                 logger.info(f" ⏳ {stack_msg}: Decoding stacked file")
@@ -490,7 +490,7 @@ def decode_and_send(
                 decoded = mdf.extract_bus_logging(
                     database_files, ignore_value2text_conversion=True
                 )
-                logger.info(f" ✅ {stack_msg}: Decoded in {time.time() - start:.3f}s")
+                logger.info(f" ✅ {stack_msg}: Decoded in {get_time_str(start)}s")
                 if list(decoded.iter_channels()):
                     result = send_decoded(
                         decoded=decoded,
