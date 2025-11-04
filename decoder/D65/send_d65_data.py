@@ -165,6 +165,7 @@ def send_files_to_victoriametrics(
     files: list[CSVContent],
     stack_size: int = 10,
     max_batch_size: int = 10_000,
+    skip_signal_range_check: bool = True,
 ) -> dict[str, int]:
     """
     Sends the provided list of files to VictoriaMetrics in batches.
@@ -224,7 +225,7 @@ def send_files_to_victoriametrics(
                                 server=server,
                                 job=k,
                                 skip_signal_fn=skip_signal,
-                                skip_signal_range_check=True,
+                                skip_signal_range_check=skip_signal_range_check,
                                 batch_size=max_batch_size,
                             )
 
@@ -687,18 +688,25 @@ def main_post_to_victoriametrics(server: str):
 
     start_date = datetime(
         year=2025,
-        month=1,
-        day=1,
+        month=11,
+        day=3,
         tzinfo=ZoneInfo("America/Vancouver"),
     )
 
-    end_date = datetime.now().astimezone()
+    end_date = datetime(
+        year=2025,
+        month=11,
+        day=5,
+        tzinfo=ZoneInfo("America/Vancouver"),
+    )
+
+    # end_date = datetime.now().astimezone()
 
     files = get_all_unique_d65_files(
         sorted=True, start=start_date, end=end_date, ignore_dchv_files=False
     )
 
-    files.sort(key=lambda x: x[2], reverse=True)  # Sort by start time
+    files.sort(key=lambda x: x[2], reverse=False)  # Sort by start time
 
     if len(files) == 0:
         logging.warning("⚠️ No files found to send. Exiting...")
@@ -725,6 +733,7 @@ def main_post_to_victoriametrics(server: str):
         server=server,
         files=files,
         stack_size=20,
+        skip_signal_range_check=False,
     )
     end_ts = time.time()
     total_signals_sent = len(total_counts.keys())
@@ -739,17 +748,35 @@ def main_download_files():
     download_path = Path(r"D:/d65files")
     start_date = datetime(
         year=2025,
-        month=6,
-        day=1,
+        month=11,
+        day=4,
+        hour=10,
+        minute=25,
         tzinfo=ZoneInfo("America/Vancouver"),
     )
-    end_date = datetime.now().astimezone(start_date.tzinfo)
+    end_date = datetime(
+        year=2025,
+        month=11,
+        day=5,
+        tzinfo=ZoneInfo("America/Vancouver"),
+    )
+    # end_date = datetime.now().astimezone(start_date.tzinfo)
+
+    # output_csv = Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
+
+    s3_info_list = get_d65_file_list_from_s3(
+        start=start_date,
+        end=end_date,
+        save_to_csv=True,
+        # output_file=output_csv,
+    )
 
     download_d65_files_from_s3(
         download_path=download_path,
         start=start_date,
         end=end_date,
-        s3_csv_file=Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv"),
+        s3_info_list=s3_info_list,
+        # s3_csv_file=output_csv,
     )
 
 
@@ -765,6 +792,6 @@ if __name__ == "__main__":
     server = server_vm_d65
     # server = server_vm_localhost
 
-    # main_download_files()
-    main_delete_all_series(server)
+    main_download_files()
+    # main_delete_all_series(server)
     main_post_to_victoriametrics(server)
