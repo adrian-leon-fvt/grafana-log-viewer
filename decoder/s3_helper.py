@@ -19,6 +19,7 @@ from decoder.config import *
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
+
 class EESBuckets(Enum):
     S3_BUCKET_LOCO = ("fvt-telematics", 0)
     S3_BUCKET_D65 = ("d65-telematics", 1)
@@ -92,9 +93,13 @@ def download_files_from_s3(
                     f"❌ Error downloading {key} from bucket '{bucket_name}' (attempt {attempt}): {e}"
                 )
             except Exception as e:
-                logging.error(f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}")
+                logging.error(
+                    f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}"
+                )
             if attempt <= max_retries:
-                logging.info(f"🔄 Retrying download for {key} (attempt {attempt + 1})...")
+                logging.info(
+                    f"🔄 Retrying download for {key} (attempt {attempt + 1})..."
+                )
                 time.sleep(1)
         return False
 
@@ -102,7 +107,8 @@ def download_files_from_s3(
         try:
             future_to_key = {
                 executor.submit(download_with_retry, key): key
-                for key in keys if not processed_path(key).exists()
+                for key in keys
+                if not processed_path(key).exists()
             }
             for future in as_completed(future_to_key):
                 key = future_to_key[future]
@@ -187,7 +193,16 @@ def get_mf4_files_list_from_s3(
     try:
         s3c = client("s3")
         paginator = s3c.get_paginator("list_objects_v2")
-        page_iterator = paginator.paginate(Bucket=bucket_name)
+        page_iterator = paginator.paginate(
+            Bucket=bucket_name,
+            Delimiter=kwargs.get("Delimiter", ""),
+            EncodingType=kwargs.get("EncodingType", "url"),
+            Prefix=kwargs.get("Prefix", ""),
+            FetchOwner=kwargs.get("FetchOwner", False),
+            StartAfter=kwargs.get("StartAfter", ""),
+            RequestPayer=kwargs.get("RequestPayer", ""),
+            PaginationConfig=kwargs.get("PaginationConfig", {"PageSize": 1000}),
+        )
 
         def process_object(obj, idx: int, total: int) -> dict:
             logging.info(f"🔍 [{idx:4d}/{total:4d}]: {obj['Key']}")
