@@ -746,21 +746,23 @@ def main_post_to_victoriametrics(server: str):
 
 def main_download_files():
     download_path = Path(r"D:/d65files")
-    start_date = datetime(
-        year=2025,
-        month=11,
-        day=4,
-        hour=10,
-        minute=25,
-        tzinfo=ZoneInfo("America/Vancouver"),
-    )
-    end_date = datetime(
-        year=2025,
-        month=11,
-        day=5,
-        tzinfo=ZoneInfo("America/Vancouver"),
-    )
-    # end_date = datetime.now().astimezone(start_date.tzinfo)
+    # start_date = datetime(
+    #     year=2025,
+    #     month=11,
+    #     day=4,
+    #     hour=10,
+    #     minute=25,
+    #     tzinfo=ZoneInfo("America/Vancouver"),
+    # )
+    # end_date = datetime(
+    #     year=2025,
+    #     month=11,
+    #     day=5,
+    #     tzinfo=ZoneInfo("America/Vancouver"),
+    # )
+
+    start_date = datetime.today().astimezone(ZoneInfo("America/Vancouver"))
+    end_date = datetime.now().astimezone(start_date.tzinfo)
 
     # output_csv = Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
 
