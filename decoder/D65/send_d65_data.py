@@ -703,24 +703,26 @@ def main_read_all_files():
     )
 
 
-def main_post_to_victoriametrics(server: str):
+def main_post_to_victoriametrics(server: str, start_date: datetime | None = None, end_date: datetime | None = None):
     start_ts = time.time()
 
-    start_date = datetime(
-        year=2025,
-        month=11,
-        day=3,
-        tzinfo=ZoneInfo("America/Vancouver"),
-    )
+    if start_date is None:
+        start_date = datetime(
+            year=2025,
+            month=11,
+            day=5,
+            tzinfo=ZoneInfo("America/Vancouver"),
+        )
 
-    end_date = datetime(
-        year=2025,
-        month=11,
-        day=5,
-        tzinfo=ZoneInfo("America/Vancouver"),
-    )
+    if end_date is None:
+        # end_date = datetime(
+        #     year=2025,
+        #     month=11,
+        #     day=5,
+        #     tzinfo=ZoneInfo("America/Vancouver"),
+        # )
 
-    # end_date = datetime.now().astimezone()
+        end_date = datetime.now().astimezone()
 
     files: list[CSVContent] = get_all_unique_d65_files(
         sorted=True, start=start_date, end=end_date, ignore_dchv_files=True
@@ -776,25 +778,29 @@ def main_post_to_victoriametrics(server: str):
     )
 
 
-def main_download_files():
+def main_download_files(start_date: datetime | None = None, end_date: datetime | None = None):
     download_path = Path(r"D:/d65files")
-    # start_date = datetime(
-    #     year=2025,
-    #     month=11,
-    #     day=4,
-    #     hour=10,
-    #     minute=25,
-    #     tzinfo=ZoneInfo("America/Vancouver"),
-    # )
-    # end_date = datetime(
-    #     year=2025,
-    #     month=11,
-    #     day=5,
-    #     tzinfo=ZoneInfo("America/Vancouver"),
-    # )
+    if start_date is None:
+        start_date = datetime(
+            year=2025,
+            month=11,
+            day=5,
+            hour=0,
+            minute=0,
+            tzinfo=ZoneInfo("America/Vancouver"),
+        )
 
-    start_date = datetime.today().astimezone(ZoneInfo("America/Vancouver"))
-    end_date = datetime.now().astimezone(start_date.tzinfo)
+        # start_date = datetime.today().astimezone(ZoneInfo("America/Vancouver"))
+
+    if end_date is None:
+        # end_date = datetime(
+        #     year=2025,
+        #     month=11,
+        #     day=5,
+        #     tzinfo=ZoneInfo("America/Vancouver"),
+        # )
+
+        end_date = datetime.now().astimezone(start_date.tzinfo)
 
     # output_csv = Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
 
@@ -818,7 +824,8 @@ def main_delete_all_series(server: str):
     resp = delete_series_from_vm(server=server, match='{message=~".+"}')
 
     if resp:
-        logging.info(f" ✅ Deleted series response: {resp.status_code}: {resp.text}")
+        logging.info(
+            f" ✅ Deleted series response: {resp.status_code}: {resp.text}")
 
 
 if __name__ == "__main__":
@@ -826,6 +833,11 @@ if __name__ == "__main__":
     server = server_vm_d65
     # server = server_vm_localhost
 
-    main_download_files()
+    start_date: datetime = datetime.today().astimezone(
+        ZoneInfo("America/Vancouver")) - timedelta(days=5)
+    end_date: datetime = datetime.now().astimezone(start_date.tzinfo)
+
+    main_download_files(start_date=start_date, end_date=end_date)
     # main_delete_all_series(server)
-    main_post_to_victoriametrics(server)
+    main_post_to_victoriametrics(
+        server=server, start_date=start_date, end_date=end_date)
