@@ -89,7 +89,8 @@ def skip_signal(name: str) -> bool:
 
 def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
     # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
-    _d65_loc = Path.joinpath(Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
+    _d65_loc = Path.joinpath(
+        Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
     if os.name == "nt":  # Override if on windows
         _d65_loc = Path(
             r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
@@ -113,7 +114,8 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
     upper_dbc_files += [
         Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Upper"]
     ]
-    upper_dbc_files += [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
+    upper_dbc_files += [Path.joinpath(_d65_loc,
+                                      "brightloop", "d65_brightloops.dbc")]
 
     lower_dbc_files: list[Path] = []
     lower_dbc_files += [
@@ -339,7 +341,8 @@ def read_s3_file(
                 key, _, last_modified, size, timestamp = parts
                 _ts = datetime.fromisoformat(timestamp.strip())
                 if isinstance(start, str) and start:
-                    start = datetime.fromisoformat(start).astimezone(timezone.utc)
+                    start = datetime.fromisoformat(
+                        start).astimezone(timezone.utc)
                 if isinstance(end, str) and end:
                     end = datetime.fromisoformat(end).astimezone(timezone.utc)
 
@@ -394,7 +397,8 @@ def get_d65_file_list_from_s3(
 
     if save_to_csv:
         if not output_file:
-            output_file = Path(r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
+            output_file = Path(
+                r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
 
         with open(output_file, "w") as f:
             f.write("Key,LastModified,Size,Timestamp\n")
@@ -408,13 +412,15 @@ def get_d65_file_list_from_s3(
 
                 if k_seg == "Upper" or k_seg == "Lower":
                     last_modified: datetime = (
-                        file["LastModified"].astimezone(timezone.utc).isoformat()
+                        file["LastModified"].astimezone(
+                            timezone.utc).isoformat()
                     )
                     size: int = file["Size"]
                     timestamp: datetime = (
                         file["Timestamp"].astimezone(timezone.utc).isoformat()
                     )
-                    f.write(f"{key},{k_seg},{last_modified},{size},{timestamp}\n")
+                    f.write(
+                        f"{key},{k_seg},{last_modified},{size},{timestamp}\n")
 
     return files
 
