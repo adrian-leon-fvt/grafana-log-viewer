@@ -21,7 +21,6 @@ from decoder.utils import (
     get_windows_home_path,
     get_time_str,
     convert_to_eng,
-    make_metric_line,
     is_victoriametrics_online,
 )
 from decoder.sending import send_decoded
