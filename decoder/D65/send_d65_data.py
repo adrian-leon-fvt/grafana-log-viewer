@@ -167,11 +167,11 @@ def send_files_to_victoriametrics(
     stack_size: int = 10,
     max_batch_size: int = 10_000,
     skip_signal_range_check: bool = True,
-) -> dict[str, int]:
+) -> tuple[dict[str, int], dict[str, int]]:
     """
     Sends the provided list of files to VictoriaMetrics in batches.
     Each file is a tuple of (Path, "Upper"|"Lower", start_time).
-    Returns a  with the total counts of signals sent.
+    Returns a pair of dictionaries with the total counts of signals sent per device.
     Uses ThreadPoolExecutor to send batches in parallel.
     """
 
@@ -184,10 +184,13 @@ def send_files_to_victoriametrics(
         logging.warning("⚠️ concat_size must be at least 1. Setting to 1.")
 
     dbc_files = get_d65_dbc_files()
-    upper_dbc_files: list[DbcFileType] = [(dbc, 0) for dbc in dbc_files["Upper"]]
-    lower_dbc_files: list[DbcFileType] = [(dbc, 0) for dbc in dbc_files["Lower"]]
+    upper_dbc_files: list[DbcFileType] = [
+        (dbc, 0) for dbc in dbc_files["Upper"]]
+    lower_dbc_files: list[DbcFileType] = [
+        (dbc, 0) for dbc in dbc_files["Lower"]]
 
-    total_counts: dict[str, int] = {}
+    total_upper_counts: dict[str, int] = {}
+    total_lower_counts: dict[str, int] = {}
     total_files = len(files)
 
     if stack_size == 1:
@@ -199,7 +202,8 @@ def send_files_to_victoriametrics(
 
                 try:
                     start = time.time()
-                    logging.info(f" ⏳ {count_str} Decoding file {shortpath(f)} ...")
+                    logging.info(
+                        f" ⏳ {count_str} Decoding file {shortpath(f)} ...")
                     if k not in ["Upper", "Lower"]:
                         logging.error(
                             f"❌ Unknown job type '{k}' for file {shortpath(f)}, skipping."
@@ -230,8 +234,13 @@ def send_files_to_victoriametrics(
                                 batch_size=max_batch_size,
                             )
 
-                            for k, v in result.items():
-                                total_counts[k] = total_counts.get(k, 0) + v
+                            for s, v in result.items():
+                                if k == "Upper":
+                                    total_upper_counts[s] = total_upper_counts.get(
+                                        s, 0) + v
+                                else:
+                                    total_lower_counts[s] = total_lower_counts.get(
+                                        s, 0) + v
                 except Exception as e:
                     logging.error(f"❌ Error decoding file {shortpath(f)}: {e}")
                     continue
@@ -243,7 +252,7 @@ def send_files_to_victoriametrics(
 
         def batch(lst, n):
             for i in range(0, len(lst), n):
-                yield i, lst[i : i + n]
+                yield i, lst[i: i + n]
 
         def process_batch(files, dbc_files, job, stack_msg):
             logging.info(f" ⏳ {stack_msg}: Stacking {len(files)} files ...")
@@ -278,11 +287,17 @@ def send_files_to_victoriametrics(
                             batch_size=max_batch_size,
                         )
 
-                        for k, v in result.items():
-                            total_counts[k] = total_counts.get(k, 0) + v
+                        for s, v in result.items():
+                            if job == "Upper":
+                                total_upper_counts[s] = total_upper_counts.get(
+                                    s, 0) + v
+                            else:
+                                total_lower_counts[s] = total_lower_counts.get(
+                                    s, 0) + v
 
                 except Exception as e:
-                    logging.error(f"❌ Error decoding stacked files {stack_msg}: {e}")
+                    logging.error(
+                        f"❌ Error decoding stacked files {stack_msg}: {e}")
             except Exception as e:
                 logging.error(f"❌ Error stacking files {stack_msg}: {e}")
 
@@ -313,7 +328,7 @@ def send_files_to_victoriametrics(
                     f"[Lower ({len(lower_files)}/{len(batch_files)}) in {start_idx}-{end_idx} of {total_files}]",
                 )
 
-    return total_counts
+    return total_lower_counts, total_upper_counts
 
 
 def read_s3_file(
@@ -707,8 +722,8 @@ def main_post_to_victoriametrics(server: str):
 
     # end_date = datetime.now().astimezone()
 
-    files = get_all_unique_d65_files(
-        sorted=True, start=start_date, end=end_date, ignore_dchv_files=False
+    files: list[CSVContent] = get_all_unique_d65_files(
+        sorted=True, start=start_date, end=end_date, ignore_dchv_files=True
     )
 
     files.sort(key=lambda x: x[2], reverse=False)  # Sort by start time
@@ -717,14 +732,15 @@ def main_post_to_victoriametrics(server: str):
         logging.warning("⚠️ No files found to send. Exiting...")
         return
 
-    if len(files) == 1:
-        logging.info(
-            f" ✔️  Found 1 file starting at {files[0][2].astimezone().isoformat()}."
-        )
-    else:
-        logging.info(
-            f" ✔️  Found to {len(files)} files from {files[0][2].astimezone().isoformat()} to {files[-1][2].astimezone().isoformat()}."
-        )
+    for _files, _name in [([u for u in files if u[1] == "Upper"], "Upper"), ([l for l in files if l[1] == "Lower"], "Lower")]:
+        if len(_files) == 1:
+            logging.info(
+                f" ✔️  [{_name}] Found 1 file starting at {files[0][2].astimezone().isoformat()}."
+            )
+        else:
+            logging.info(
+                f" ✔️  [{_name}] Found {len(files)} files from {files[0][2].astimezone().isoformat()} to {files[-1][2].astimezone().isoformat()}."
+            )
 
     logging.info(
         f" 🌐 Checking for server availability to VictoriaMetrics at {server} ..."
@@ -734,15 +750,26 @@ def main_post_to_victoriametrics(server: str):
         exit(1)
 
     logging.info(f" -> ✅ {server} is online. Sending files...")
-    total_counts = send_files_to_victoriametrics(
+    total_lower_counts, total_upper_counts = send_files_to_victoriametrics(
         server=server,
         files=files,
         stack_size=20,
         skip_signal_range_check=False,
     )
     end_ts = time.time()
-    total_signals_sent = len(total_counts.keys())
-    total_samples_sent = sum(total_counts.values())
+
+    for device, total_counts in [("Upper", total_upper_counts), ("Lower", total_lower_counts)]:
+        total_signals_sent = len(total_counts.keys())
+        total_samples_sent = sum(total_counts.values())
+
+        logging.info(
+            f" ✔️  [{device}] Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
+        )
+
+    total_signals_sent = len(total_lower_counts.keys()) + \
+        len(total_upper_counts.keys())
+    total_samples_sent = sum(total_lower_counts.values()) + \
+        sum(total_upper_counts.values())
 
     logging.info(
         f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
