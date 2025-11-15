@@ -177,7 +177,7 @@ def send_files_to_victoriametrics(
 
     if not files:
         logging.warning("⚠️ No files to send.")
-        return {}
+        return {}, {}
 
     if stack_size < 1:
         stack_size = 1
