@@ -167,6 +167,7 @@ def send_files_to_victoriametrics(
     stack_size: int = 10,
     max_batch_size: int = 10_000,
     skip_signal_range_check: bool = True,
+    **kwargs,
 ) -> tuple[dict[str, int], dict[str, int]]:
     """
     Sends the provided list of files to VictoriaMetrics in batches.
@@ -175,6 +176,28 @@ def send_files_to_victoriametrics(
     Uses ThreadPoolExecutor to send batches in parallel.
     """
 
+    dbc_files = get_d65_dbc_files()
+    if dbc_files_override := kwargs.get("dbc_files_override", None):
+        if "Upper" in dbc_files_override:
+            dbc_files["Upper"] = dbc_files_override["Upper"]
+        if "Lower" in dbc_files_override:
+            dbc_files["Lower"] = dbc_files_override["Lower"]
+    upper_dbc_files: list[DbcFileType] = [
+        (dbc, 0) for dbc in dbc_files["Upper"]]
+    lower_dbc_files: list[DbcFileType] = [
+        (dbc, 0) for dbc in dbc_files["Lower"]]
+
+    if len(upper_dbc_files) == 0:
+        start_count = len(files)
+        files = filter_by_job(files, "Lower")
+        if len(files) != start_count:
+            logging.info("⚠️ No Upper DBC files found. Skipping Upper files.")
+    if len(lower_dbc_files) == 0:
+        start_count = len(files)
+        files = filter_by_job(files, "Upper")
+        if len(files) != start_count:
+            logging.info("⚠️ No Lower DBC files found. Skipping Lower files.")
+
     if not files:
         logging.warning("⚠️ No files to send.")
         return {}, {}
@@ -182,12 +205,6 @@ def send_files_to_victoriametrics(
     if stack_size < 1:
         stack_size = 1
         logging.warning("⚠️ concat_size must be at least 1. Setting to 1.")
-
-    dbc_files = get_d65_dbc_files()
-    upper_dbc_files: list[DbcFileType] = [
-        (dbc, 0) for dbc in dbc_files["Upper"]]
-    lower_dbc_files: list[DbcFileType] = [
-        (dbc, 0) for dbc in dbc_files["Lower"]]
 
     total_upper_counts: dict[str, int] = {}
     total_lower_counts: dict[str, int] = {}
@@ -212,6 +229,7 @@ def send_files_to_victoriametrics(
                         dbc: list[DbcFileType] = (
                             upper_dbc_files if k == "Upper" else lower_dbc_files
                         )
+
                         decoded = mdf.extract_bus_logging(
                             database_files={"CAN": dbc},
                             ignore_value2text_conversion=True,
@@ -236,11 +254,13 @@ def send_files_to_victoriametrics(
 
                             for s, v in result.items():
                                 if k == "Upper":
-                                    total_upper_counts[s] = total_upper_counts.get(
-                                        s, 0) + v
+                                    total_upper_counts[s] = (
+                                        total_upper_counts.get(s, 0) + v
+                                    )
                                 else:
-                                    total_lower_counts[s] = total_lower_counts.get(
-                                        s, 0) + v
+                                    total_lower_counts[s] = (
+                                        total_lower_counts.get(s, 0) + v
+                                    )
                 except Exception as e:
                     logging.error(f"❌ Error decoding file {shortpath(f)}: {e}")
                     continue
@@ -703,7 +723,14 @@ def main_read_all_files():
     )
 
 
-def main_post_to_victoriametrics(server: str, start_date: datetime | None = None, end_date: datetime | None = None):
+def main_post_to_victoriametrics(
+    server: str,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+    ignore_upper: bool = False,
+    ignore_lower: bool = False,
+    **kwargs,
+):
     start_ts = time.time()
 
     if start_date is None:
@@ -728,13 +755,22 @@ def main_post_to_victoriametrics(server: str, start_date: datetime | None = None
         sorted=True, start=start_date, end=end_date, ignore_dchv_files=True
     )
 
+    if ignore_upper:
+        files = filter_by_job(files, "Lower")
+
+    if ignore_lower:
+        files = filter_by_job(files, "Upper")
+
     files.sort(key=lambda x: x[2], reverse=False)  # Sort by start time
 
     if len(files) == 0:
         logging.warning("⚠️ No files found to send. Exiting...")
         return
 
-    for _files, _name in [([u for u in files if u[1] == "Upper"], "Upper"), ([l for l in files if l[1] == "Lower"], "Lower")]:
+    for _files, _name in [
+        ([u for u in files if u[1] == "Upper"], "Upper"),
+        ([l for l in files if l[1] == "Lower"], "Lower"),
+    ]:
         if len(_files) == 1:
             logging.info(
                 f" ✔️  [{_name}] Found 1 file starting at {files[0][2].astimezone().isoformat()}."
@@ -757,10 +793,14 @@ def main_post_to_victoriametrics(server: str, start_date: datetime | None = None
         files=files,
         stack_size=20,
         skip_signal_range_check=False,
+        **kwargs,
     )
     end_ts = time.time()
 
-    for device, total_counts in [("Upper", total_upper_counts), ("Lower", total_lower_counts)]:
+    for device, total_counts in [
+        ("Upper", total_upper_counts),
+        ("Lower", total_lower_counts),
+    ]:
         total_signals_sent = len(total_counts.keys())
         total_samples_sent = sum(total_counts.values())
 
@@ -770,15 +810,18 @@ def main_post_to_victoriametrics(server: str, start_date: datetime | None = None
 
     total_signals_sent = len(total_lower_counts.keys()) + \
         len(total_upper_counts.keys())
-    total_samples_sent = sum(total_lower_counts.values()) + \
-        sum(total_upper_counts.values())
+    total_samples_sent = sum(total_lower_counts.values()) + sum(
+        total_upper_counts.values()
+    )
 
     logging.info(
         f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
     )
 
 
-def main_download_files(start_date: datetime | None = None, end_date: datetime | None = None):
+def main_download_files(
+    start_date: datetime | None = None, end_date: datetime | None = None
+):
     download_path = Path(r"D:/d65files")
     if start_date is None:
         start_date = datetime(
@@ -834,10 +877,19 @@ if __name__ == "__main__":
     # server = server_vm_localhost
 
     start_date: datetime = datetime.today().astimezone(
-        ZoneInfo("America/Vancouver")) - timedelta(days=5)
+        ZoneInfo("America/Vancouver")
+    )
     end_date: datetime = datetime.now().astimezone(start_date.tzinfo)
 
-    main_download_files(start_date=start_date, end_date=end_date)
+    # main_download_files(start_date=start_date, end_date=end_date)
     # main_delete_all_series(server)
     main_post_to_victoriametrics(
-        server=server, start_date=start_date, end_date=end_date)
+        server=server,
+        start_date=start_date,
+        end_date=end_date,
+        # ignore_upper=True,
+        # dbc_files_override={
+        #     "Upper": [],
+        #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
+        # },
+    )
