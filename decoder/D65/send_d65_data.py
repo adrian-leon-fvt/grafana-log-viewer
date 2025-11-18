@@ -86,26 +86,31 @@ def skip_signal(name: str) -> bool:
 
     return False
 
+
 def get_d65_dbc_base_path() -> Path:
     # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
     _d65_loc = Path.joinpath(
-        Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
+        Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
+    )
     if os.name == "nt":  # Override if on windows
         _d65_loc = Path(
             r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
         )
-    
+
     return _d65_loc
 
 
-def get_d65_dbc_file(job: Literal["Upper", "Lower", "Brightloop", "NV", "Main", "RCS", "CM", "EVCC"]) -> list[Path]:
+def get_d65_dbc_file(
+    job: Literal[
+        "Upper", "Lower", "Brightloop", "NV", "Main", "RCS", "CM", "EVCC"
+    ],
+) -> list[Path]:
     _d65_loc = get_d65_dbc_base_path()
 
     if job == "Upper" or job == "Lower":
         get_d65_dbc_files()[job]
     elif job == "Brightloop":
-        return [Path.joinpath(_d65_loc,
-                                      "brightloop", "d65_brightloops.dbc")]
+        return [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
     elif job == "NV":
         return [Path.joinpath(_d65_loc, "busses", "D65_CH0_NV.dbc")]
     elif job == "Main":
@@ -116,7 +121,7 @@ def get_d65_dbc_file(job: Literal["Upper", "Lower", "Brightloop", "NV", "Main", 
         return [Path.joinpath(_d65_loc, "busses", "D65_CH5_CM.dbc")]
     elif job == "EVCC":
         return [Path.joinpath(_d65_loc, "busses", "D65_CH6_EVCC.dbc")]
-    
+
     return []
 
 
@@ -142,8 +147,9 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
     upper_dbc_files += [
         Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Upper"]
     ]
-    upper_dbc_files += [Path.joinpath(_d65_loc,
-                                      "brightloop", "d65_brightloops.dbc")]
+    upper_dbc_files += [
+        Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")
+    ]
 
     lower_dbc_files: list[Path] = []
     lower_dbc_files += [
@@ -211,9 +217,11 @@ def send_files_to_victoriametrics(
         if "Lower" in dbc_files_override:
             dbc_files["Lower"] = dbc_files_override["Lower"]
     upper_dbc_files: list[DbcFileType] = [
-        (dbc, 0) for dbc in dbc_files["Upper"]]
+        (dbc, 0) for dbc in dbc_files["Upper"]
+    ]
     lower_dbc_files: list[DbcFileType] = [
-        (dbc, 0) for dbc in dbc_files["Lower"]]
+        (dbc, 0) for dbc in dbc_files["Lower"]
+    ]
 
     if len(upper_dbc_files) == 0:
         start_count = len(files)
@@ -248,7 +256,8 @@ def send_files_to_victoriametrics(
                 try:
                     start = time.time()
                     logging.info(
-                        f" ⏳ {count_str} Decoding file {shortpath(f)} ...")
+                        f" ⏳ {count_str} Decoding file {shortpath(f)} ..."
+                    )
                     if k not in ["Upper", "Lower"]:
                         logging.error(
                             f"❌ Unknown job type '{k}' for file {shortpath(f)}, skipping."
@@ -300,7 +309,7 @@ def send_files_to_victoriametrics(
 
         def batch(lst, n):
             for i in range(0, len(lst), n):
-                yield i, lst[i: i + n]
+                yield i, lst[i : i + n]
 
         def process_batch(files, dbc_files, job, stack_msg):
             logging.info(f" ⏳ {stack_msg}: Stacking {len(files)} files ...")
@@ -337,15 +346,18 @@ def send_files_to_victoriametrics(
 
                         for s, v in result.items():
                             if job == "Upper":
-                                total_upper_counts[s] = total_upper_counts.get(
-                                    s, 0) + v
+                                total_upper_counts[s] = (
+                                    total_upper_counts.get(s, 0) + v
+                                )
                             else:
-                                total_lower_counts[s] = total_lower_counts.get(
-                                    s, 0) + v
+                                total_lower_counts[s] = (
+                                    total_lower_counts.get(s, 0) + v
+                                )
 
                 except Exception as e:
                     logging.error(
-                        f"❌ Error decoding stacked files {stack_msg}: {e}")
+                        f"❌ Error decoding stacked files {stack_msg}: {e}"
+                    )
             except Exception as e:
                 logging.error(f"❌ Error stacking files {stack_msg}: {e}")
 
@@ -404,8 +416,9 @@ def read_s3_file(
                 key, _, last_modified, size, timestamp = parts
                 _ts = datetime.fromisoformat(timestamp.strip())
                 if isinstance(start, str) and start:
-                    start = datetime.fromisoformat(
-                        start).astimezone(timezone.utc)
+                    start = datetime.fromisoformat(start).astimezone(
+                        timezone.utc
+                    )
                 if isinstance(end, str) and end:
                     end = datetime.fromisoformat(end).astimezone(timezone.utc)
 
@@ -461,7 +474,8 @@ def get_d65_file_list_from_s3(
     if save_to_csv:
         if not output_file:
             output_file = Path(
-                r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv")
+                r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv"
+            )
 
         with open(output_file, "w") as f:
             f.write("Key,LastModified,Size,Timestamp\n")
@@ -475,15 +489,17 @@ def get_d65_file_list_from_s3(
 
                 if k_seg == "Upper" or k_seg == "Lower":
                     last_modified: datetime = (
-                        file["LastModified"].astimezone(
-                            timezone.utc).isoformat()
+                        file["LastModified"]
+                        .astimezone(timezone.utc)
+                        .isoformat()
                     )
                     size: int = file["Size"]
                     timestamp: datetime = (
                         file["Timestamp"].astimezone(timezone.utc).isoformat()
                     )
                     f.write(
-                        f"{key},{k_seg},{last_modified},{size},{timestamp}\n")
+                        f"{key},{k_seg},{last_modified},{size},{timestamp}\n"
+                    )
 
     return files
 
@@ -597,7 +613,9 @@ def get_files_in_range(
                         continue
                     if start_time.tzinfo is None:
                         start_time = start_time.replace(tzinfo=timezone.utc)
-                    if start_time and (start_time >= start and start_time <= end):
+                    if start_time and (
+                        start_time >= start and start_time <= end
+                    ):
                         files.append((p, k_seg, start_time))
 
             except Exception as e:
@@ -651,7 +669,9 @@ def get_all_d65_canedge_files(
     return canedge_files
 
 
-def get_all_d65_cancloud_files(start: datetime, end: datetime) -> list[CSVContent]:
+def get_all_d65_cancloud_files(
+    start: datetime, end: datetime
+) -> list[CSVContent]:
     cancloud_folder = get_d65_cancloud_folder()
 
     logging.info(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
@@ -836,8 +856,9 @@ def main_post_to_victoriametrics(
             f" ✔️  [{device}] Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
         )
 
-    total_signals_sent = len(total_lower_counts.keys()) + \
-        len(total_upper_counts.keys())
+    total_signals_sent = len(total_lower_counts.keys()) + len(
+        total_upper_counts.keys()
+    )
     total_samples_sent = sum(total_lower_counts.values()) + sum(
         total_upper_counts.values()
     )
@@ -896,7 +917,8 @@ def main_delete_all_series(server: str):
 
     if resp:
         logging.info(
-            f" ✅ Deleted series response: {resp.status_code}: {resp.text}")
+            f" ✅ Deleted series response: {resp.status_code}: {resp.text}"
+        )
 
 
 if __name__ == "__main__":
@@ -906,7 +928,7 @@ if __name__ == "__main__":
 
     start_date: datetime = datetime.today().astimezone(
         ZoneInfo("America/Vancouver")
-    )
+    ) - timedelta(days=1)
     end_date: datetime = datetime.now().astimezone(start_date.tzinfo)
 
     # main_download_files(start_date=start_date, end_date=end_date)
