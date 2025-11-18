@@ -86,8 +86,7 @@ def skip_signal(name: str) -> bool:
 
     return False
 
-
-def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
+def get_d65_dbc_base_path() -> Path:
     # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
     _d65_loc = Path.joinpath(
         Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc")
@@ -95,6 +94,35 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
         _d65_loc = Path(
             r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
         )
+    
+    return _d65_loc
+
+
+def get_d65_dbc_file(job: Literal["Upper", "Lower", "Brightloop", "NV", "Main", "RCS", "CM", "EVCC"]) -> list[Path]:
+    _d65_loc = get_d65_dbc_base_path()
+
+    if job == "Upper" or job == "Lower":
+        get_d65_dbc_files()[job]
+    elif job == "Brightloop":
+        return [Path.joinpath(_d65_loc,
+                                      "brightloop", "d65_brightloops.dbc")]
+    elif job == "NV":
+        return [Path.joinpath(_d65_loc, "busses", "D65_CH0_NV.dbc")]
+    elif job == "Main":
+        return [Path.joinpath(_d65_loc, "busses", "D65_CH4_Main.dbc")]
+    elif job == "RCS":
+        return [Path.joinpath(_d65_loc, "busses", "D65_CH3_RCS_Module.dbc")]
+    elif job == "CM":
+        return [Path.joinpath(_d65_loc, "busses", "D65_CH5_CM.dbc")]
+    elif job == "EVCC":
+        return [Path.joinpath(_d65_loc, "busses", "D65_CH6_EVCC.dbc")]
+    
+    return []
+
+
+def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
+    # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
+    _d65_loc = get_d65_dbc_base_path()
 
     d65_dbc_files = {
         "Lower": [
