@@ -1,3 +1,8 @@
 {
-    "python-envs.pythonProjects": []
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+    // "editor.defaultFormatter": "ms-python.autopep8",
+  },
+  "black-formatter.args": ["--line-length", "80"],
+  "autopep8.args": ["--max-line-length", "80"]
 }
