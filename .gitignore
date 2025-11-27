@@ -10,3 +10,4 @@ files/
 victoria-metrics-data
 
 Zscaler_Root_CA.crt
+decoder/d65_s3_files.csv
