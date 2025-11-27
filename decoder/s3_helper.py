@@ -205,7 +205,7 @@ def get_mf4_files_list_from_s3(
         )
 
         def process_object(obj, idx: int, total: int) -> dict:
-            logging.info(f"🔍 [{idx:4d}/{total:4d}]: {obj['Key']}")
+            logging.info(f"🔍 [{idx+1:4d}/{total:4d}]: {obj['Key']}")
             key = obj["Key"]
             if key.lower().endswith(".mf4"):
                 timestamp: datetime | None = get_timestamp(key)
