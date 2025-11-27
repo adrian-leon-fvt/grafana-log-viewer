@@ -4,12 +4,10 @@ LIVE_STREAMING = False
 LIVE_STREAMING_SERVER = "http://localhost:8428"
 
 TEST_MF4_FILE = "/home/default/work/test_dbc/00000007.MF4"
-DBC_FILE_PATHS = [
-    "/home/default/work/test_dbc/d65_brightloops.dbc"
-]
+DBC_FILE_PATHS = ["/home/default/work/test_dbc/d65_brightloops.dbc"]
 
-CAN_INTERFACE = 'socketcan'
-CAN_CHANNEL = 'vcan0'
+CAN_INTERFACE = "socketcan"
+CAN_CHANNEL = "vcan0"
 
 # Logging Configuration
 LOG_LEVEL = logging.INFO
