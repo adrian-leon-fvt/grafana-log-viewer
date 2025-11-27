@@ -31,6 +31,8 @@ from decoder.config import (
     vmapi_import_prometheus,
 )
 from decoder.s3_helper import *
+import argparse
+import re
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
@@ -102,7 +104,15 @@ def get_d65_dbc_base_path() -> Path:
 
 def get_d65_dbc_file(
     job: Literal[
-        "Upper", "Lower", "Brightloop", "NV", "Main", "RCS", "CM", "EVCC"
+        "Upper",
+        "Lower",
+        "Brightloop",
+        "NV",
+        "Main",
+        "RCS",
+        "CM",
+        "EVCC",
+        "OneShot",
     ],
 ) -> list[Path]:
     _d65_loc = get_d65_dbc_base_path()
@@ -121,6 +131,8 @@ def get_d65_dbc_file(
         return [Path.joinpath(_d65_loc, "busses", "D65_CH5_CM.dbc")]
     elif job == "EVCC":
         return [Path.joinpath(_d65_loc, "busses", "D65_CH6_EVCC.dbc")]
+    elif job == "OneShot":
+        return [Path.joinpath(_d65_loc, "one_shot_updates.dbc")]
 
     return []
 
@@ -461,12 +473,22 @@ def get_d65_file_list_from_s3(
     max_workers: int = 10,
     save_to_csv: bool = True,
     output_file: Path | str = "",
+    ignore_upper: bool = False,
+    ignore_lower: bool = False,
+    **kwargs,
 ) -> list[dict]:
+    prefix: str = ""
+    if ignore_upper and not ignore_lower:
+        prefix = MAC_LOWER
+    elif ignore_lower and not ignore_upper:
+        prefix = MAC_UPPER
     files = get_mf4_files_list_from_s3(
         bucket_name=EESBuckets.S3_BUCKET_D65,
         start_time=start,
         end_time=end,
         max_workers=max_workers,
+        Prefix=prefix,
+        **kwargs,
     )
 
     logging.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket.")
@@ -800,7 +822,11 @@ def main_post_to_victoriametrics(
         end_date = datetime.now().astimezone()
 
     files: list[CSVContent] = get_all_unique_d65_files(
-        sorted=True, start=start_date, end=end_date, ignore_dchv_files=True
+        sorted=True,
+        start=start_date,
+        end=end_date,
+        ignore_dchv_files=True,
+        reverse_sort=kwargs.get("send_newest_first", True),
     )
 
     if ignore_upper:
@@ -809,7 +835,9 @@ def main_post_to_victoriametrics(
     if ignore_lower:
         files = filter_by_job(files, "Upper")
 
-    files.sort(key=lambda x: x[2], reverse=False)  # Sort by start time
+    files.sort(
+        key=lambda x: x[2], reverse=kwargs.get("send_newest_first", True)
+    )  # Sort by start time
 
     if len(files) == 0:
         logging.warning("⚠️ No files found to send. Exiting...")
@@ -869,7 +897,10 @@ def main_post_to_victoriametrics(
 
 
 def main_download_files(
-    start_date: datetime | None = None, end_date: datetime | None = None
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+    ignore_upper: bool = False,
+    ignore_lower: bool = False,
 ):
     download_path = Path(r"D:/d65files")
     if start_date is None:
@@ -900,6 +931,8 @@ def main_download_files(
         start=start_date,
         end=end_date,
         save_to_csv=True,
+        ignore_lower=ignore_lower,
+        ignore_upper=ignore_upper,
         # output_file=output_csv,
     )
 
@@ -921,25 +954,101 @@ def main_delete_all_series(server: str):
         )
 
 
+def parse_time_offset(offset_str: str) -> timedelta:
+    """
+    Parses a time offset string like '10m', '2h', '1d' and returns a timedelta.
+    Only supports negative offsets.
+    """
+    match = re.match(r"(\d+)([smhd])", offset_str)
+    if not match:
+        raise ValueError(f"Invalid offset format: {offset_str}")
+    value, unit = match.groups()
+    value = int(value)
+    if unit == "s":
+        return timedelta(seconds=value)
+    elif unit == "m":
+        return timedelta(minutes=value)
+    elif unit == "h":
+        return timedelta(hours=value)
+    elif unit == "d":
+        return timedelta(days=value)
+    else:
+        raise ValueError(f"Unknown time unit: {unit}")
+
+
 if __name__ == "__main__":
-    # server = server_vm_test_dump
-    server = server_vm_d65
-    # server = server_vm_localhost
-
-    start_date: datetime = datetime.today().astimezone(
-        ZoneInfo("America/Vancouver")
-    ) - timedelta(days=1)
-    end_date: datetime = datetime.now().astimezone(start_date.tzinfo)
-
-    # main_download_files(start_date=start_date, end_date=end_date)
-    # main_delete_all_series(server)
-    main_post_to_victoriametrics(
-        server=server,
-        start_date=start_date,
-        end_date=end_date,
-        # ignore_upper=True,
-        # dbc_files_override={
-        #     "Upper": [],
-        #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
-        # },
+    parser = argparse.ArgumentParser(
+        description="Send D65 data to VictoriaMetrics"
     )
+    parser.add_argument(
+        "--start",
+        type=str,
+        default="today",
+        help="Start time offset (e.g. '10m', '2h', '1d') from now",
+    )
+    parser.add_argument(
+        "--end",
+        type=str,
+        default="now",
+        help="End time offset (e.g. '10m', '2h', '1d') from now or 'now'",
+    )
+    parser.add_argument(
+        "--skip_download",
+        action="store_true",
+        help="Download files from S3",
+    )
+    parser.add_argument(
+        "--ignore-upper",
+        action="store_true",
+        help="Ignore Upper files",
+    )
+    parser.add_argument(
+        "--ignore-lower",
+        action="store_true",
+        help="Ignore Lower files",
+    )
+    parser.add_argument(
+        "--skip_post",
+        action="store_true",
+        help="Don't post signals to VictoriaMetrics",
+    )
+    args = parser.parse_args()
+
+    server = server_vm_d65
+
+    # Parse start time
+    now = datetime.now().astimezone(ZoneInfo("America/Vancouver"))
+    if args.start == "today":
+        start_date = datetime.today().astimezone(now.tzinfo)
+    else:
+        start_date = now - parse_time_offset(args.start)
+
+    # Parse end time
+    if args.end == "now":
+        end_date = now
+    else:
+        end_date = now - parse_time_offset(args.end)
+
+    if not args.skip_download:
+        logging.info("⬇️ Starting D65 file download from S3 ...")
+        main_download_files(
+            start_date=start_date,
+            end_date=end_date,
+            ignore_upper=args.ignore_upper,
+            ignore_lower=args.ignore_lower,
+        )
+    # main_delete_all_series(server)
+    if not args.skip_post:
+        logging.info("🌐 Starting D65 data post to VictoriaMetrics ...")
+        main_post_to_victoriametrics(
+            server=server,
+            start_date=start_date,
+            end_date=end_date,
+            ignore_upper=args.ignore_upper,
+            ignore_lower=args.ignore_lower,
+            send_newest_first=True,
+            # dbc_files_override={
+            #     "Upper": [],
+            #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
+            # },
+        )
