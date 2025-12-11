@@ -26,7 +26,13 @@ def get_d65_log_path() -> Path:
 
 if __name__ == "__main__":
     if os.name == "nt":
-        sd_card_root = Path(r"F:/")
+        sd_card_root = Path(r"E:/")
+        # sd_card_root = Path(
+        #     r"C:\Users\CARAL\Epiroc\Rig Crew - Private - General\5. Testing\4. Lafarge Field Trial\2025-11-26 Machine Logs\Lower"
+        # )
+        # sd_card_root = Path(
+        #     r"C:\Users\CARAL\Epiroc\Rig Crew - Private - General\5. Testing\4. Lafarge Field Trial\2025-11-26 Machine Logs"
+        # )
     else:
         sd_card_root = Path("/mnt/f/")
 
