@@ -1,18 +1,20 @@
 import sys
 import os
 import shutil
+import argparse
 from pathlib import Path
 
 import logging
 
 from typing import Literal
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 if __name__ == "__main__":
     sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from decoder.config import LOG_FORMAT
-from decoder.D65.send_d65_data import upper_or_lower, MAC_LOWER, MAC_UPPER
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from decoder.D65.send_d65_data import get_d65_rig_crew_folder
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
@@ -25,19 +27,34 @@ def get_d65_log_path() -> Path:
 
 
 if __name__ == "__main__":
-    if os.name == "nt":
-        sd_card_root = Path(r"E:/")
-        # sd_card_root = Path(
-        #     r"C:\Users\CARAL\Epiroc\Rig Crew - Private - General\5. Testing\4. Lafarge Field Trial\2025-11-26 Machine Logs\Lower"
-        # )
-        # sd_card_root = Path(
-        #     r"C:\Users\CARAL\Epiroc\Rig Crew - Private - General\5. Testing\4. Lafarge Field Trial\2025-11-26 Machine Logs"
-        # )
-    else:
-        sd_card_root = Path("/mnt/f/")
+    parser = argparse.ArgumentParser(
+        description="Updates D65 log folder from a path."
+    )
+    parser.add_argument(
+        "--source",
+        "--src",
+        type=str,
+        default=r"E:/" if os.name == "nt" else "/mnt/e/",
+        help="The path with the logs to copy",
+    )
+    parser.add_argument(
+        "--lafarge_field_trial",
+        action="store_true",
+        help="Use Lafarge Field Trial as startup dir",
+    )
+    args = parser.parse_args()
 
-    if not sd_card_root.exists():
-        logging.error(f"SD card root path {sd_card_root} does not exist.")
+    src = Path(args.source)
+
+    if args.lafarge_field_trial:
+        src = get_d65_rig_crew_folder().joinpath(
+            "5. Testing", "4. Lafarge Field Trial"
+        )
+        if args.source not in ["E:/", "/mnt/e/"]:
+            src.joinpath(args.source)
+
+    if not src.exists():
+        logging.error(f"Source path {src} does not exist.")
         sys.exit(1)
 
     # CANEdge loggers have a structure like
@@ -59,7 +76,7 @@ if __name__ == "__main__":
     ) -> str:
         return "_".join(filename.parts[-3:])
 
-    mf4_files_iterator = sd_card_root.rglob("*.MF4")
+    mf4_files_iterator = src.rglob("*.MF4")
 
     with ThreadPoolExecutor() as executor:
         futures = [

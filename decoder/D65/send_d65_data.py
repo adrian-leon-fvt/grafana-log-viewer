@@ -2,6 +2,8 @@ import os
 import sys
 import time
 import logging
+import argparse
+import re
 from pathlib import Path
 
 from datetime import datetime, timedelta, timezone
@@ -31,8 +33,7 @@ from decoder.config import (
     vmapi_import_prometheus,
 )
 from decoder.s3_helper import *
-import argparse
-import re
+
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
@@ -185,12 +186,21 @@ def get_lower_dbc_files() -> Iterable[DbcFileType]:
     return [(dbc, 0) for dbc in dbc_files["Lower"]]
 
 
+def get_d65_rig_crew_folder() -> Path:
+    whp = get_windows_home_path()
+    rig_crew_folder = Path.joinpath(
+        whp, "Epiroc", "Rig Crew - Private - General"
+    )
+
+    if not rig_crew_folder.exists():
+        logging.error(f"❌ Rig Crew folder does not exist: {rig_crew_folder}")
+
+    return rig_crew_folder
+
+
 def get_d65_canedge_folder() -> Path:
 
-    whp = get_windows_home_path()
-    canedge_folder = Path.joinpath(
-        whp, "Epiroc", "Rig Crew - Private - General", "5. Testing", "CANEdge"
-    )
+    canedge_folder = get_d65_rig_crew_folder().joinpath("5. Testing", "CANEdge")
 
     if not canedge_folder.exists():
         logging.error(f"❌ CANEdge folder does not exist: {canedge_folder}")
