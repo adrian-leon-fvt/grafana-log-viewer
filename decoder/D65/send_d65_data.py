@@ -46,7 +46,8 @@ MAC_LOWER = "5A72CE4C"
 canedge_folder = Path.joinpath(
     get_windows_home_path(),
     "Epiroc",
-    "Rig Crew - Private - General",
+    "Rig Crew - Private - Documents",
+    "General",
     "5. Testing",
     "CANEdge",
 )
