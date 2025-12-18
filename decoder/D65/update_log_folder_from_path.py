@@ -31,7 +31,6 @@ if __name__ == "__main__":
         description="Updates D65 log folder from a path."
     )
     parser.add_argument(
-        "--source",
         "--src",
         type=str,
         default=r"E:/" if os.name == "nt" else "/mnt/e/",
@@ -44,14 +43,14 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    src = Path(args.source)
+    src = Path(args.src)
 
     if args.lafarge_field_trial:
         src = get_d65_rig_crew_folder().joinpath(
             "5. Testing", "4. Lafarge Field Trial"
         )
-        if args.source not in ["E:/", "/mnt/e/"]:
-            src.joinpath(args.source)
+        if not args.src in ["E:/", "/mnt/e/"]:
+            src = src.joinpath(args.src)
 
     if not src.exists():
         logging.error(f"Source path {src} does not exist.")
@@ -78,15 +77,27 @@ if __name__ == "__main__":
 
     mf4_files_iterator = src.rglob("*.MF4")
 
-    with ThreadPoolExecutor() as executor:
-        futures = [
-            executor.submit(
-                shutil.copy, mf4_file, d65_log_path / process_filename(mf4_file)
-            )
-            for mf4_file in mf4_files_iterator
-            if process_filename(mf4_file) not in filepaths_wo_identifier
-        ]
+    for mf4_file in mf4_files_iterator:
+        dest_file = d65_log_path / process_filename(mf4_file)
+        if dest_file not in filepaths_wo_identifier:
+            # shutil.copy(mf4_file, dest_file)
+            logging.info(f" 📄 {dest_file}")
 
-        for future in as_completed(futures):
-            processed_name = future.result()
-            logging.info(f" 📄 {processed_name}")
+    # try:
+    #     with ThreadPoolExecutor() as executor:
+    #         futures = [
+    #             executor.submit(
+    #                 shutil.copy,
+    #                 mf4_file,
+    #                 d65_log_path / process_filename(mf4_file),
+    #             )
+    #             for mf4_file in mf4_files_iterator
+    #             if process_filename(mf4_file) not in filepaths_wo_identifier
+    #         ]
+
+    #         for future in as_completed(futures):
+    #             processed_name = future.result()
+    #             logging.info(f" 📄 {processed_name}")
+    # except KeyboardInterrupt:
+    #     logging.warning("Operation cancelled by user (Ctrl+C). Exiting...")
+    #     sys.exit(130)
