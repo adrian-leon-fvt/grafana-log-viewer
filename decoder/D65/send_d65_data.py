@@ -190,7 +190,10 @@ def get_lower_dbc_files() -> Iterable[DbcFileType]:
 def get_d65_rig_crew_folder() -> Path:
     whp = get_windows_home_path()
     rig_crew_folder = Path.joinpath(
-        whp, "Epiroc", "Rig Crew - Private - General"
+        whp,
+        "Epiroc",
+        "Rig Crew - Private - Documents",
+        "General",
     )
 
     if not rig_crew_folder.exists():
@@ -502,7 +505,7 @@ def get_d65_file_list_from_s3(
         **kwargs,
     )
 
-    logging.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket.")
+    logging.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket betwen {start}-{end}.")
 
     if save_to_csv:
         if not output_file:
@@ -727,15 +730,7 @@ def get_all_unique_d65_files(
     end: datetime,
     sorted: bool = True,
     reverse_sort: bool = False,
-    ignore_dchv_files: bool = True,
 ) -> list[CSVContent]:
-    canedge_folder = get_d65_canedge_folder()
-    logging.info(f" 📁 Reading CANCloud files from {canedge_folder} ...")
-    start_ts = time.time()
-    canedge_files = get_all_d65_canedge_files(
-        start=start, end=end, ignore_dchv_files=ignore_dchv_files
-    )
-
     cancloud_folder = get_d65_cancloud_folder()
 
     logging.info(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
@@ -746,62 +741,21 @@ def get_all_unique_d65_files(
         end=end,
     )
 
-    logging.info(
-        f" ✔️  [CANCloud] Found {len(cancloud_files)} files in {get_time_str(start_ts)}"
-    )
-
-    # CANEdge are files that were taken directly from the SD-card before they could be uploaded to CANCloud
-    # Find just the unique files that are not in CANCloud
-
-    def normalize_cancloud_filename(p: Path) -> str:
-        # The name when downloaded replaces the '/' with '_' and adds a suffix:
-        # e.g., 5A72CE4C_00001105_00000003-6853309D.MF4
-        # we need to remove the suffix
-        name = p.name.split("-")[0] + p.suffix  # Remove hex suffix
-        # This gives a name of the form:
-        # MACADDRESS_FOLDER_FILENAME.MF4
-        # e.g., 5A72CE4C_00001105_00000003.MF4
-
-        return name
-
-    def normalize_canedge_filename(p: Path) -> str:
-        # The names are of the form:
-        # e.g., 5A72CE4C/00001105/00000003.MF4
-        parts = p.parts[-3:]  # Get last 3 parts
-        name = "_".join(parts)
-        return name
-
-    normalized_cancloud_files = [
-        normalize_cancloud_filename(f) for f, _, _ in cancloud_files
-    ]
-    unique_canedge_files: list[CSVContent] = [
-        (f, k_seg, start)
-        for f, k_seg, start in canedge_files
-        if normalize_canedge_filename(f) not in normalized_cancloud_files
-    ]
-
-    unique_canedge_files.sort(
-        key=lambda x: x[2], reverse=reverse_sort
-    )  # Sort by start time
-
-    logging.info(
-        f" ✔️  Found {len(unique_canedge_files)} unique CANEdge files not in CANCloud."
-    )
-
-    full_list = cancloud_files + unique_canedge_files
-
     if sorted:
-        full_list.sort(key=lambda x: x[2])  # Sort by start time
+        cancloud_files.sort(
+            key=lambda x: x[2], reverse=reverse_sort
+        )  # Sort by start time
 
-    return full_list
+    return cancloud_files
 
 
 def main_read_all_files():
     start = datetime(2025, 1, 1, tzinfo=ZoneInfo("America/Vancouver"))
     end = datetime.now().astimezone()
-    files = get_all_unique_d65_files(
-        sorted=True, start=start, end=end, ignore_dchv_files=True
-    )
+    files = get_all_unique_d65_files(sorted=True, start=start, end=end)
+
+    for f, k, ts in files:
+        logging.info(f" 📄 {shortpath(f)} | {k} | {ts.isoformat()}")
 
 
 def main_post_to_victoriametrics(
@@ -836,7 +790,6 @@ def main_post_to_victoriametrics(
         sorted=True,
         start=start_date,
         end=end_date,
-        ignore_dchv_files=True,
         reverse_sort=kwargs.get("send_newest_first", True),
     )
 
