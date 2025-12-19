@@ -41,7 +41,8 @@ B3SR_JOB = "B3SR"
 canedge_folder = Path.joinpath(
     get_windows_home_path(),
     "Epiroc",
-    "O365 Epiroc R&D B3SR for D65 Electrification - General",
+    "O365 Epiroc R&D B3SR for D65 Electrification - Documents",
+    "General",
     "06_Design",
     "9. Testing",
     "13. TMS Testing",
