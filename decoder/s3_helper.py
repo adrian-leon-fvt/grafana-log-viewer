@@ -119,7 +119,9 @@ def download_files_from_s3(
                         if progress_callable and callable(progress_callable):
                             progress_callable(count, total_keys)
                 except Exception as e:
-                    logging.error(f"❌ Unexpected error in future for {key}: {e}")
+                    logging.error(
+                        f"❌ Unexpected error in future for {key}: {e}"
+                    )
         except KeyboardInterrupt:
             logging.warning("⚠️ Download interrupted by user.")
             executor.shutdown(wait=False)
@@ -180,11 +182,25 @@ def get_mf4_files_list_from_s3(
                 return None
 
             timestamp = resp["Metadata"]["timestamp"]
-            timestamp = (
-                datetime.strptime(timestamp, "%Y%m%dT%H%M%S")
-                .replace(tzinfo=timezone.utc)
-                .astimezone(ZoneInfo("America/Vancouver"))
-            )
+            try:
+                # Try parsing with timezone info first
+                timestamp = datetime.fromisoformat(timestamp).astimezone(
+                    ZoneInfo("America/Vancouver")
+                )
+            except (ValueError, TypeError):
+                try:
+                    # Fall back to parsing without timezone
+                    timestamp = (
+                        datetime.strptime(timestamp.strip("Z"), "%Y%m%dT%H%M%S")
+                        .replace(tzinfo=timezone.utc)
+                        .astimezone(ZoneInfo("America/Vancouver"))
+                    )
+                except ValueError as e:
+                    logging.error(
+                        f"❌ Failed to parse timestamp '{timestamp}': {e}"
+                    )
+                    return None
+
             return timestamp
         except KeyError:
             logging.warning(f"⚠️ No metadata for {key}")
@@ -257,7 +273,9 @@ def get_mf4_files_list_from_s3(
 
         return mf4_files
     except ClientError as e:
-        logging.error(f"❌ Error fetching files from bucket '{bucket_name}': {e}")
+        logging.error(
+            f"❌ Error fetching files from bucket '{bucket_name}': {e}"
+        )
 
     return []
 
