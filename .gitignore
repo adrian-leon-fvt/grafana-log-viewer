@@ -6,6 +6,8 @@ __pycache__/
 # Files folder
 files/
 
+data/
+
 # Victoria Metrics data
 victoria-metrics-data
 
