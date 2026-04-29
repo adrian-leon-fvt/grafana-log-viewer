@@ -952,9 +952,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--end",
+        "--stop",
+        dest="end",
         type=str,
         default="now",
-        help="End time offset (e.g. '10m', '2h', '1d') from now or 'now'",
+        help="End/stop time offset (e.g. '10m', '2h', '1d') from now or 'now'",
     )
     parser.add_argument(
         "--skip_download",
