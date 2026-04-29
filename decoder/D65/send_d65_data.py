@@ -4,6 +4,7 @@ import time
 import logging
 import argparse
 import re
+from copy import deepcopy
 from pathlib import Path
 
 from datetime import datetime, timedelta, timezone
@@ -14,7 +15,9 @@ from itertools import chain
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Literal, Iterable
+from typing import Literal, Iterable, cast
+from canmatrix import CanMatrix
+from canmatrix import formats as canmatrix_formats
 
 if __name__ == "__main__":
     sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -38,6 +41,7 @@ from decoder.s3_helper import *
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 CSVContent = tuple[Path, Literal["Upper", "Lower"], datetime]
+DBCSource = str | os.PathLike[str] | CanMatrix
 
 MAC_UPPER = "6C1D6B77"
 MAC_LOWER = "5A72CE4C"
@@ -177,6 +181,172 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
     }
 
 
+def _load_can_matrices_from_dbc(source_dbc: Path) -> list[CanMatrix]:
+    if not source_dbc.exists():
+        logging.warning(f"⚠️ DBC not found: {source_dbc}")
+        return []
+
+    loaded = canmatrix_formats.loadp(str(source_dbc))
+    if isinstance(loaded, dict):
+        return [m for m in loaded.values() if isinstance(m, CanMatrix)]
+
+    if isinstance(loaded, CanMatrix):
+        return [loaded]
+
+    return []
+
+
+def build_context_canmatrix_for_signals(
+    source_dbc: Path,
+    signals: set[str],
+    messages: set[str],
+) -> tuple[list[CanMatrix], set[str], set[str], int]:
+    """
+    Build context-only CanMatrix objects containing only frames with requested
+    signals and/or requested message names.
+    Matching is always case-insensitive.
+    Returns (filtered_matrices, matched_signals, matched_messages, selected_frame_count).
+    """
+    matrices = _load_can_matrices_from_dbc(source_dbc)
+    if not matrices:
+        return [], set(), set(), 0
+
+    matched_signals: set[str] = set()
+    matched_messages: set[str] = set()
+    selected_frame_count = 0
+    filtered_matrices: list[CanMatrix] = []
+
+    for matrix in matrices:
+        filtered = deepcopy(matrix)
+
+        for frame in list(filtered.frames):
+            frame_name = frame.name or ""
+            message_match = frame_name.lower() in messages if frame_name else False
+            frame_signal_matches = {
+                sig.name
+                for sig in frame.signals
+                if sig.name and sig.name.lower() in signals
+            }
+
+            if not message_match and not frame_signal_matches:
+                filtered.remove_frame(frame)
+                continue
+
+            if message_match:
+                matched_messages.add(frame_name)
+            matched_signals.update(frame_signal_matches)
+            selected_frame_count += 1
+
+        if filtered.frames:
+            filtered_matrices.append(filtered)
+
+    return filtered_matrices, matched_signals, matched_messages, selected_frame_count
+
+
+def build_dbc_override_for_filters(
+    requested_signals: list[str],
+    requested_messages: list[str],
+) -> tuple[
+    dict[Literal["Upper", "Lower"], list[DBCSource]],
+    set[str],
+    set[str],
+    set[str],
+    set[str],
+    set[str],
+]:
+    """
+    Returns:
+    - dbc override mapping for Upper/Lower
+    - jobs with at least one matched signal
+    - all matched requested signals
+    - requested signals not found in any configured DBC
+    - all matched requested messages
+    - requested messages not found in any configured DBC
+    """
+    signal_lookup = {
+        s.strip().lower(): s.strip()
+        for s in requested_signals
+        if s and s.strip()
+    }
+    message_lookup = {
+        m.strip().lower(): m.strip()
+        for m in requested_messages
+        if m and m.strip()
+    }
+    requested_signal_set = set(signal_lookup.keys())
+    requested_message_set = set(message_lookup.keys())
+
+    if not requested_signal_set and not requested_message_set:
+        return {"Upper": [], "Lower": []}, set(), set(), set(), set(), set()
+
+    dbc_files = get_d65_dbc_files()
+    context_overrides: dict[Literal["Upper", "Lower"], list[DBCSource]] = {
+        "Upper": [],
+        "Lower": [],
+    }
+    matched_jobs: set[str] = set()
+    matched_signals: set[str] = set()
+    matched_signal_lower: set[str] = set()
+    matched_messages: set[str] = set()
+    matched_message_lower: set[str] = set()
+
+    jobs: list[Literal["Upper", "Lower"]] = ["Upper", "Lower"]
+    for job in jobs:
+        for dbc in dbc_files[job]:
+            matrices, found_signals, found_messages, selected_frame_count = (
+                build_context_canmatrix_for_signals(
+                source_dbc=dbc,
+                signals=requested_signal_set,
+                messages=requested_message_set,
+            )
+            )
+            if selected_frame_count > 0 and matrices:
+                context_overrides[job].extend(matrices)
+                matched_jobs.add(job)
+                matched_signals.update(found_signals)
+                matched_signal_lower.update({s.lower() for s in found_signals})
+                matched_messages.update(found_messages)
+                matched_message_lower.update({m.lower() for m in found_messages})
+                logging.info(
+                    f"🎯 [{job}] Using signal context from {dbc.name}: "
+                    f"{selected_frame_count} messages, "
+                    f"{len(found_signals)} signal matches, "
+                    f"{len(found_messages)} message matches."
+                )
+
+    missing_signals = {
+        original
+        for lower, original in signal_lookup.items()
+        if lower not in matched_signal_lower
+    }
+    missing_messages = {
+        original
+        for lower, original in message_lookup.items()
+        if lower not in matched_message_lower
+    }
+    return (
+        context_overrides,
+        matched_jobs,
+        matched_signals,
+        missing_signals,
+        matched_messages,
+        missing_messages,
+    )
+
+
+def parse_include_arg(raw_values: list[str] | None) -> list[str]:
+    if not raw_values:
+        return []
+
+    parsed: list[str] = []
+    for raw in raw_values:
+        parts = [p.strip() for p in re.split(r"[\s,]+", raw) if p.strip()]
+        parsed.extend(parts)
+
+    # Preserve input order but remove duplicates.
+    return list(dict.fromkeys(parsed))
+
+
 def get_upper_dbc_files() -> Iterable[DbcFileType]:
     dbc_files = get_d65_dbc_files()
     return [(dbc, 0) for dbc in dbc_files["Upper"]]
@@ -236,18 +406,34 @@ def send_files_to_victoriametrics(
     Uses ThreadPoolExecutor to send batches in parallel.
     """
 
+    def _normalize_dbc_entries(
+        entries: Iterable[DbcFileType | DBCSource],
+    ) -> list[DbcFileType]:
+        normalized: list[DbcFileType] = []
+        for entry in entries:
+            if (
+                isinstance(entry, tuple)
+                and len(entry) == 2
+                and isinstance(entry[1], int)
+            ):
+                normalized.append(cast(DbcFileType, entry))
+            else:
+                normalized.append((cast(DBCSource, entry), 0))
+        return normalized
+
     dbc_files = get_d65_dbc_files()
     if dbc_files_override := kwargs.get("dbc_files_override", None):
         if "Upper" in dbc_files_override:
             dbc_files["Upper"] = dbc_files_override["Upper"]
         if "Lower" in dbc_files_override:
             dbc_files["Lower"] = dbc_files_override["Lower"]
-    upper_dbc_files: list[DbcFileType] = [
-        (dbc, 0) for dbc in dbc_files["Upper"]
-    ]
-    lower_dbc_files: list[DbcFileType] = [
-        (dbc, 0) for dbc in dbc_files["Lower"]
-    ]
+
+    upper_dbc_files: list[DbcFileType] = _normalize_dbc_entries(
+        dbc_files["Upper"]
+    )
+    lower_dbc_files: list[DbcFileType] = _normalize_dbc_entries(
+        dbc_files["Lower"]
+    )
 
     if len(upper_dbc_files) == 0:
         start_count = len(files)
@@ -980,6 +1166,25 @@ if __name__ == "__main__":
         action="store_true",
         help="Don't post signals to VictoriaMetrics",
     )
+    parser.add_argument(
+        "--signals",
+        nargs="+",
+        default=[],
+        help=(
+            "Signals to include. Supports comma-separated and/or space-separated "
+            "values, e.g. '--signals SigA,SigB' or '--signals SigA SigB'."
+        ),
+    )
+    parser.add_argument(
+        "--messages",
+        nargs="+",
+        default=[],
+        help=(
+            "Message names to include (case-insensitive). Supports comma-separated "
+            "and/or space-separated values, e.g. '--messages MsgA,MsgB' or "
+            "'--messages MsgA MsgB'."
+        ),
+    )
     args = parser.parse_args()
 
     server = server_vm_d65
@@ -997,14 +1202,84 @@ if __name__ == "__main__":
     else:
         end_date = now - parse_time_offset(args.end)
 
+    requested_signals = parse_include_arg(args.signals)
+    requested_messages = parse_include_arg(args.messages)
+    effective_ignore_upper = args.ignore_upper
+    effective_ignore_lower = args.ignore_lower
+    dbc_files_override: dict[Literal["Upper", "Lower"], list[DBCSource]] | None = (
+        None
+    )
+
+    if requested_signals or requested_messages:
+        if requested_signals:
+            logging.info(
+                f"🎯 Signal filter enabled for: {', '.join(requested_signals)}"
+            )
+        if requested_messages:
+            logging.info(
+                f"🎯 Message filter enabled for: {', '.join(requested_messages)}"
+            )
+        (
+            dbc_files_override,
+            matched_jobs,
+            matched_signals,
+            missing_signals,
+            matched_messages,
+            missing_messages,
+        ) = build_dbc_override_for_filters(
+            requested_signals=requested_signals,
+            requested_messages=requested_messages,
+        )
+
+        if missing_signals:
+            logging.warning(
+                "⚠️ Requested signals not found in configured D65 DBCs: "
+                + ", ".join(sorted(missing_signals))
+            )
+        if missing_messages:
+            logging.warning(
+                "⚠️ Requested messages not found in configured D65 DBCs: "
+                + ", ".join(sorted(missing_messages))
+            )
+
+        if not matched_jobs:
+            logging.error(
+                "❌ None of the requested signals were found in Upper/Lower DBC files. "
+                "Nothing to process."
+            )
+            exit(1)
+
+        if "Upper" not in matched_jobs and not effective_ignore_upper:
+            logging.info(
+                "⚡ No requested signals in Upper DBCs. Skipping Upper activities."
+            )
+            effective_ignore_upper = True
+        if "Lower" not in matched_jobs and not effective_ignore_lower:
+            logging.info(
+                "⚡ No requested signals in Lower DBCs. Skipping Lower activities."
+            )
+            effective_ignore_lower = True
+
+        if matched_signals:
+            logging.info(
+                "✅ Matched requested signals in DBCs: "
+                + ", ".join(sorted(matched_signals))
+            )
+        if matched_messages:
+            logging.info(
+                "✅ Matched requested messages in DBCs: "
+                + ", ".join(sorted(matched_messages))
+            )
+
     if not args.skip_download:
         logging.info("⬇️ Starting D65 file download from S3 ...")
         main_download_files(
             start_date=start_date,
             end_date=end_date,
-            ignore_upper=args.ignore_upper,
-            ignore_lower=args.ignore_lower,
+            ignore_upper=effective_ignore_upper,
+            ignore_lower=effective_ignore_lower,
         )
+
     # main_delete_all_series(server)
     if not args.skip_post:
         logging.info("🌐 Starting D65 data post to VictoriaMetrics ...")
@@ -1012,9 +1287,10 @@ if __name__ == "__main__":
             server=server,
             start_date=start_date,
             end_date=end_date,
-            ignore_upper=args.ignore_upper,
-            ignore_lower=args.ignore_lower,
+            ignore_upper=effective_ignore_upper,
+            ignore_lower=effective_ignore_lower,
             send_newest_first=True,
+            dbc_files_override=dbc_files_override,
             # dbc_files_override={
             #     "Upper": [],
             #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
