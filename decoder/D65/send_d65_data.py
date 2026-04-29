@@ -394,6 +394,9 @@ def get_d65_canedge_folder() -> Path:
 def get_d65_cancloud_folder() -> Path:
     cancloud_folder = Path("D:/d65files")
 
+    if os.name != "nt":
+        cancloud_folder = Path(str(cancloud_folder).replace("D:/", "/mnt/d/"))
+
     if not cancloud_folder.exists():
         logging.error(f"❌ CANCloud folder does not exist: {cancloud_folder}")
 
@@ -680,7 +683,7 @@ def get_d65_file_list_from_s3(
     start: datetime | str = "",
     end: datetime | str = "",
     max_workers: int = 10,
-    save_to_csv: bool = True,
+    save_to_csv: bool = False,
     output_file: Path | str = "",
     ignore_upper: bool = False,
     ignore_lower: bool = False,
@@ -710,7 +713,10 @@ def get_d65_file_list_from_s3(
                 r"D:/utils/grafana-log-viewer/decoder/d65_s3_files.csv"
             )
 
-        with open(output_file, "w") as f:
+            if os.name != "nt":
+                output_file = Path(str(output_file).replace("D:/", "/mnt/d/"))
+
+        with open(output_file, "x+t") as f:
             f.write("Key,LastModified,Size,Timestamp\n")
             for file in files:
                 key: str = file["Key"]
@@ -1064,6 +1070,10 @@ def main_download_files(
     ignore_lower: bool = False,
 ):
     download_path = Path(r"D:/d65files")
+
+    if os.name != "nt":
+        download_path = Path(str(download_path).replace("D:/", "/mnt/d/"))
+
     if start_date is None:
         start_date = datetime(
             year=2025,
@@ -1091,7 +1101,6 @@ def main_download_files(
     s3_info_list = get_d65_file_list_from_s3(
         start=start_date,
         end=end_date,
-        save_to_csv=True,
         ignore_lower=ignore_lower,
         ignore_upper=ignore_upper,
         # output_file=output_csv,
