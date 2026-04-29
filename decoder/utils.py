@@ -1,6 +1,7 @@
 import time
 import os
 import sys
+import subprocess
 import logging
 from pathlib import Path
 
@@ -23,7 +24,9 @@ from decoder.config import *
 
 
 def setup_simple_logger(
-    logger: logging.Logger, level: int = logging.INFO, format: str = "%(message)s"
+    logger: logging.Logger,
+    level: int = logging.INFO,
+    format: str = "%(message)s",
 ):
     # Define a simple logger
     handler = logging.StreamHandler()
@@ -55,7 +58,9 @@ def get_time_str(start_time: float, end_ts: float | None = None) -> str:
     return "".join(parts)
 
 
-def get_files(directory: Path | str, extension: str | list[str]) -> list[StrPath]:
+def get_files(
+    directory: Path | str, extension: str | list[str]
+) -> list[StrPath]:
     """
     Get all files with the specified extensions in the specified directory.
     """
@@ -67,16 +72,23 @@ def get_files(directory: Path | str, extension: str | list[str]) -> list[StrPath
 
     if isinstance(extension, str):
         patterns = (
-            [f"*{extension}"] if extension.startswith(".") else [f"*.{extension}"]
+            [f"*{extension}"]
+            if extension.startswith(".")
+            else [f"*.{extension}"]
         )
-    elif isinstance(extension, list) and all(isinstance(ext, str) for ext in extension):
+    elif isinstance(extension, list) and all(
+        isinstance(ext, str) for ext in extension
+    ):
         patterns = [
-            f"*{ext}" if ext.startswith(".") else f"*.{ext}" for ext in extension
+            f"*{ext}" if ext.startswith(".") else f"*.{ext}"
+            for ext in extension
         ]
     else:
         raise ValueError("Extension must be a string or a list of strings.")
 
-    return list(chain.from_iterable(directory.rglob(pattern) for pattern in patterns))
+    return list(
+        chain.from_iterable(directory.rglob(pattern) for pattern in patterns)
+    )
 
 
 def get_dbc_files(directory: Path | str) -> list[StrPath]:
@@ -129,7 +141,9 @@ def get_mdf_start_time(mdf: Path) -> datetime | None:
     return None
 
 
-def get_trc_start_time(trc: Path, use_iso_line: bool = False) -> datetime | None:
+def get_trc_start_time(
+    trc: Path, use_iso_line: bool = False
+) -> datetime | None:
     """
     Get the start time from the TRC file without having to read the whole file
     """
@@ -157,9 +171,13 @@ def get_trc_start_time(trc: Path, use_iso_line: bool = False) -> datetime | None
                     continue
                 else:
                     try:
-                        return datetime.strptime(match.group(1), "%d.%m.%Y %H:%M:%S.%f")
+                        return datetime.strptime(
+                            match.group(1), "%d.%m.%Y %H:%M:%S.%f"
+                        )
                     except ValueError as ve:
-                        logging.error(f"❌ Invalid start_time format: {match.group(1)}")
+                        logging.error(
+                            f"❌ Invalid start_time format: {match.group(1)}"
+                        )
                         return None
             else:
                 # Find the comment that starts with ";$STARTTIME="
@@ -361,7 +379,9 @@ def get_metrics_from_vm(
     return ret
 
 
-def convert_mf4_to_trc(paths: list[Path | str], output_name: str | Path) -> None:
+def convert_mf4_to_trc(
+    paths: list[Path | str], output_name: str | Path
+) -> None:
     logger = logging.getLogger("mf4_to_trc_converter")
     setup_simple_logger(logger, level=logging.INFO, format=LOG_FORMAT)
 
@@ -416,7 +436,9 @@ def get_windows_home_path() -> Path:
 def convert_to_eng(value: int | float) -> str:
     if not (type(value) is int or type(value) is float):
         try:
-            logging.warning(f"⚠️ Value: `{value}` is of type {type(value)}, returning as string.")
+            logging.warning(
+                f"⚠️ Value: `{value}` is of type {type(value)}, returning as string."
+            )
             return str(value)
         except Exception:
             logging.error(f"❌ Cannot convert value to string: {value}")
@@ -433,12 +455,13 @@ def convert_to_eng(value: int | float) -> str:
     else:
         return f"{value:.3f}"
 
+
 if __name__ == "__main__":
     # Example usage
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
     print(convert_to_eng(1234567890))  # Output: 1.235G
-    print(convert_to_eng(1234567))     # Output: 1.235M
-    print(convert_to_eng(1234))        # Output: 1.234k
-    print(convert_to_eng(123))         # Output: 123
+    print(convert_to_eng(1234567))  # Output: 1.235M
+    print(convert_to_eng(1234))  # Output: 1.234k
+    print(convert_to_eng(123))  # Output: 123
     print(convert_to_eng(123.456789))  # Output: 123.457
-    print(convert_to_eng("test"))      # Output: test
+    print(convert_to_eng("test"))  # Output: test

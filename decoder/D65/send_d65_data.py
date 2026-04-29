@@ -221,7 +221,9 @@ def build_context_canmatrix_for_signals(
 
         for frame in list(filtered.frames):
             frame_name = frame.name or ""
-            message_match = frame_name.lower() in messages if frame_name else False
+            message_match = (
+                frame_name.lower() in messages if frame_name else False
+            )
             frame_signal_matches = {
                 sig.name
                 for sig in frame.signals
@@ -240,7 +242,12 @@ def build_context_canmatrix_for_signals(
         if filtered.frames:
             filtered_matrices.append(filtered)
 
-    return filtered_matrices, matched_signals, matched_messages, selected_frame_count
+    return (
+        filtered_matrices,
+        matched_signals,
+        matched_messages,
+        selected_frame_count,
+    )
 
 
 def build_dbc_override_for_filters(
@@ -295,10 +302,10 @@ def build_dbc_override_for_filters(
         for dbc in dbc_files[job]:
             matrices, found_signals, found_messages, selected_frame_count = (
                 build_context_canmatrix_for_signals(
-                source_dbc=dbc,
-                signals=requested_signal_set,
-                messages=requested_message_set,
-            )
+                    source_dbc=dbc,
+                    signals=requested_signal_set,
+                    messages=requested_message_set,
+                )
             )
             if selected_frame_count > 0 and matrices:
                 context_overrides[job].extend(matrices)
@@ -306,7 +313,9 @@ def build_dbc_override_for_filters(
                 matched_signals.update(found_signals)
                 matched_signal_lower.update({s.lower() for s in found_signals})
                 matched_messages.update(found_messages)
-                matched_message_lower.update({m.lower() for m in found_messages})
+                matched_message_lower.update(
+                    {m.lower() for m in found_messages}
+                )
                 logging.info(
                     f"🎯 [{job}] Using signal context from {dbc.name}: "
                     f"{selected_frame_count} messages, "
@@ -1206,9 +1215,9 @@ if __name__ == "__main__":
     requested_messages = parse_include_arg(args.messages)
     effective_ignore_upper = args.ignore_upper
     effective_ignore_lower = args.ignore_lower
-    dbc_files_override: dict[Literal["Upper", "Lower"], list[DBCSource]] | None = (
-        None
-    )
+    dbc_files_override: (
+        dict[Literal["Upper", "Lower"], list[DBCSource]] | None
+    ) = None
 
     if requested_signals or requested_messages:
         if requested_signals:
