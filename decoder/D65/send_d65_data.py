@@ -505,7 +505,9 @@ def get_d65_file_list_from_s3(
         **kwargs,
     )
 
-    logging.info(f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket betwen {start}-{end}.")
+    logging.info(
+        f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket betwen {start}-{end}."
+    )
 
     if save_to_csv:
         if not output_file:
