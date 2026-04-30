@@ -1026,9 +1026,21 @@ def main_post_to_victoriametrics(
     logging.info(
         f" 🌐 Checking for server availability to VictoriaMetrics at {server} ..."
     )
-    if not is_victoriametrics_online(server):
-        logging.error(f" -> ❌ {server} not available. Exiting...")
-        exit(1)
+    max_retries = 10
+    retry_interval_seconds = 60
+    for attempt in range(1, max_retries + 1):
+        if is_victoriametrics_online(server):
+            break
+        if attempt < max_retries:
+            logging.warning(
+                f" -> ⚠️ {server} not available (attempt {attempt}/{max_retries}). Retrying in 1 minute..."
+            )
+            time.sleep(retry_interval_seconds)
+        else:
+            logging.error(
+                f" -> ❌ {server} not available after {max_retries} attempts. Exiting..."
+            )
+            exit(1)
 
     logging.info(f" -> ✅ {server} is online. Sending files...")
     total_lower_counts, total_upper_counts = send_files_to_victoriametrics(
