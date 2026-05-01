@@ -103,12 +103,24 @@ def download_files_from_s3(
                 time.sleep(1)
         return False
 
+    skipped_existing_keys: list[str] = []
+    keys_to_download: list[str] = []
+    for key in keys:
+        if processed_path(key).exists():
+            skipped_existing_keys.append(key)
+        else:
+            keys_to_download.append(key)
+
+    if skipped_existing_keys:
+        logging.info(
+            f"⏭️ Skipping {len(skipped_existing_keys)}/{total_keys} files that already exist locally."
+        )
+
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         try:
             future_to_key = {
                 executor.submit(download_with_retry, key): key
-                for key in keys
-                if not processed_path(key).exists()
+                for key in keys_to_download
             }
             for future in as_completed(future_to_key):
                 key = future_to_key[future]
@@ -174,6 +186,10 @@ def get_mf4_files_list_from_s3(
             logging.error(f"❌ Invalid end_time format: {end_time}")
             return []
 
+    posted_after: datetime | None = kwargs.get("posted_after", None)
+    if isinstance(posted_after, datetime) and posted_after.tzinfo is None:
+        posted_after = posted_after.replace(tzinfo=timezone.utc)
+
     def get_timestamp(key: str) -> datetime | None:
         resp = s3c.head_object(Bucket=bucket_name, Key=key)
         try:
@@ -229,8 +245,14 @@ def get_mf4_files_list_from_s3(
                     return {}
 
                 last_modified = obj["LastModified"]
-                if (not start_time or timestamp >= start_time) and (
-                    not end_time or timestamp <= end_time
+                posted_ok = True
+                if posted_after:
+                    posted_ok = last_modified >= posted_after
+
+                if (
+                    (not start_time or timestamp >= start_time)
+                    and (not end_time or timestamp <= end_time)
+                    and posted_ok
                 ):
                     return {
                         "Key": key,

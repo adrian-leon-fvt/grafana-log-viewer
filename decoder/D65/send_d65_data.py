@@ -37,7 +37,6 @@ from decoder.config import (
 )
 from decoder.s3_helper import *
 
-
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 CSVContent = tuple[Path, Literal["Upper", "Lower"], datetime]
@@ -682,6 +681,7 @@ def read_s3_file(
 def get_d65_file_list_from_s3(
     start: datetime | str = "",
     end: datetime | str = "",
+    posted_after: datetime | None = None,
     max_workers: int = 10,
     save_to_csv: bool = False,
     output_file: Path | str = "",
@@ -699,12 +699,18 @@ def get_d65_file_list_from_s3(
         start_time=start,
         end_time=end,
         max_workers=max_workers,
+        posted_after=posted_after,
         Prefix=prefix,
         **kwargs,
     )
 
+    posted_str = (
+        f" | posted_after={posted_after.astimezone().isoformat()}"
+        if isinstance(posted_after, datetime)
+        else ""
+    )
     logging.info(
-        f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket betwen {start}-{end}."
+        f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket betwen {start}-{end}[{posted_str}]."
     )
 
     if save_to_csv:
@@ -863,6 +869,48 @@ def get_files_in_range(
     return files
 
 
+def build_local_files_from_s3_info(
+    s3_info_list: list[dict],
+    download_path: Path,
+) -> list[CSVContent]:
+    """
+    Build local file tuples from S3 info using S3 metadata Timestamp as the
+    canonical time basis for this run.
+    """
+
+    files: list[CSVContent] = []
+    missing_local = 0
+
+    for item in s3_info_list:
+        if not isinstance(item, dict):
+            continue
+
+        key = item.get("Key")
+        ts = item.get("Timestamp")
+        if not isinstance(key, str) or not isinstance(ts, datetime):
+            continue
+
+        local_path = download_path / Path(key.replace("/", "_"))
+        if not local_path.exists():
+            missing_local += 1
+            continue
+
+        k_seg = upper_or_lower(local_path)
+        if not k_seg:
+            continue
+
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        files.append((local_path, k_seg, ts))
+
+    if missing_local:
+        logging.warning(
+            f"⚠️ {missing_local} files from S3 selection were not found locally in {download_path}."
+        )
+
+    return files
+
+
 def filter_by_date(
     files: list[CSVContent],
     start_time: datetime,
@@ -967,6 +1015,7 @@ def main_post_to_victoriametrics(
     end_date: datetime | None = None,
     ignore_upper: bool = False,
     ignore_lower: bool = False,
+    s3_info_list: list[dict] | None = None,
     **kwargs,
 ):
     start_ts = time.time()
@@ -989,12 +1038,25 @@ def main_post_to_victoriametrics(
 
         end_date = datetime.now().astimezone()
 
-    files: list[CSVContent] = get_all_unique_d65_files(
-        sorted=True,
-        start=start_date,
-        end=end_date,
-        reverse_sort=kwargs.get("send_newest_first", True),
-    )
+    if s3_info_list:
+        cancloud_folder = get_d65_cancloud_folder()
+        files = build_local_files_from_s3_info(
+            s3_info_list=s3_info_list,
+            download_path=cancloud_folder,
+        )
+        files.sort(
+            key=lambda x: x[2], reverse=kwargs.get("send_newest_first", True)
+        )
+        logging.info(
+            f" ✔️  [CANCloud] Using S3 metadata timestamp basis for {len(files)} local files."
+        )
+    else:
+        files = get_all_unique_d65_files(
+            sorted=True,
+            start=start_date,
+            end=end_date,
+            reverse_sort=kwargs.get("send_newest_first", True),
+        )
 
     if ignore_upper:
         files = filter_by_job(files, "Lower")
@@ -1080,7 +1142,8 @@ def main_download_files(
     end_date: datetime | None = None,
     ignore_upper: bool = False,
     ignore_lower: bool = False,
-):
+    posted_after: datetime | None = None,
+) -> list[dict]:
     download_path = Path(r"D:/d65files")
 
     if os.name != "nt":
@@ -1113,6 +1176,7 @@ def main_download_files(
     s3_info_list = get_d65_file_list_from_s3(
         start=start_date,
         end=end_date,
+        posted_after=posted_after,
         ignore_lower=ignore_lower,
         ignore_upper=ignore_upper,
         # output_file=output_csv,
@@ -1125,6 +1189,8 @@ def main_download_files(
         s3_info_list=s3_info_list,
         # s3_csv_file=output_csv,
     )
+
+    return s3_info_list
 
 
 def main_delete_all_series(server: str):
@@ -1197,6 +1263,15 @@ if __name__ == "__main__":
         help="Don't post signals to VictoriaMetrics",
     )
     parser.add_argument(
+        "--posted-within",
+        type=str,
+        default="",
+        help=(
+            "Optional S3 post/upload recency filter (e.g. '10m', '2h', '1d'). "
+            "Only includes objects whose S3 LastModified is within the last X time."
+        ),
+    )
+    parser.add_argument(
         "--signals",
         nargs="+",
         default=[],
@@ -1231,6 +1306,13 @@ if __name__ == "__main__":
         end_date = now
     else:
         end_date = now - parse_time_offset(args.end)
+
+    posted_after: datetime | None = None
+    if args.posted_within:
+        posted_after = now - parse_time_offset(args.posted_within)
+        logging.info(
+            f"🕒 S3 recency filter enabled: only files posted after {posted_after.isoformat()}"
+        )
 
     requested_signals = parse_include_arg(args.signals)
     requested_messages = parse_include_arg(args.messages)
@@ -1301,13 +1383,16 @@ if __name__ == "__main__":
                 + ", ".join(sorted(matched_messages))
             )
 
+    s3_info_list_for_post: list[dict] | None = None
+
     if not args.skip_download:
         logging.info("⬇️ Starting D65 file download from S3 ...")
-        main_download_files(
+        s3_info_list_for_post = main_download_files(
             start_date=start_date,
             end_date=end_date,
             ignore_upper=effective_ignore_upper,
             ignore_lower=effective_ignore_lower,
+            posted_after=posted_after,
         )
 
     # main_delete_all_series(server)
@@ -1319,6 +1404,7 @@ if __name__ == "__main__":
             end_date=end_date,
             ignore_upper=effective_ignore_upper,
             ignore_lower=effective_ignore_lower,
+            s3_info_list=s3_info_list_for_post,
             send_newest_first=True,
             dbc_files_override=dbc_files_override,
             # dbc_files_override={
