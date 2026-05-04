@@ -240,19 +240,16 @@ def get_mf4_files_list_from_s3(
             logging.info(f"🔍 [{idx+1:4d}/{total:4d}]: {obj['Key']}")
             key = obj["Key"]
             if key.lower().endswith(".mf4"):
+                last_modified = obj["LastModified"]
+                if posted_after and last_modified < posted_after:
+                    return {}
+
                 timestamp: datetime | None = get_timestamp(key)
                 if not timestamp:
                     return {}
 
-                last_modified = obj["LastModified"]
-                posted_ok = True
-                if posted_after:
-                    posted_ok = last_modified >= posted_after
-
-                if (
-                    (not start_time or timestamp >= start_time)
-                    and (not end_time or timestamp <= end_time)
-                    and posted_ok
+                if (not start_time or timestamp >= start_time) and (
+                    not end_time or timestamp <= end_time
                 ):
                     return {
                         "Key": key,

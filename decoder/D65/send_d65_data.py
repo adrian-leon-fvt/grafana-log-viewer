@@ -1231,7 +1231,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--start",
         type=str,
-        default="today",
+        default="7d",
         help="Start time offset (e.g. '10m', '2h', '1d') from now",
     )
     parser.add_argument(
