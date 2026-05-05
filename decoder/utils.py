@@ -3,6 +3,8 @@ import os
 import sys
 import subprocess
 import logging
+import subprocess
+import shutil
 from pathlib import Path
 
 from datetime import datetime, timedelta, timezone
@@ -447,14 +449,30 @@ def get_windows_home_path() -> Path:
     Try to get the windows home path on both Windows and WSL/Linux.
     Looks for a suitable path in the PATH environment variable or defaults to a common location.
     """
-    return Path(
-        os.environ["USERPROFILE"]
-        if os.name == "nt"
-        else f'/mnt/c/Users/{subprocess.run(["powershell.exe", "Write-Host $env:USERNAME"], capture_output=True, text=True).stdout.strip()}'
-    )
+    if os.name == "nt":
+        return Path(os.environ.get("USERPROFILE", str(Path.home())))
+
+    # Linux/WSL path: if powershell is available, infer Windows profile path.
+    if shutil.which("powershell.exe"):
+        try:
+            username = subprocess.run(
+                ["powershell.exe", "Write-Host $env:USERNAME"],
+                capture_output=True,
+                text=True,
+                check=False,
+            ).stdout.strip()
+            if username:
+                candidate = Path(f"/mnt/c/Users/{username}")
+                if candidate.exists():
+                    return candidate
+        except Exception:
+            pass
+
+    # Container-safe fallback.
+    return Path.home()
 
 
-def convert_to_eng(value: int | float) -> str:
+def convert_to_eng(value: int | float | str) -> str:
     if not (type(value) is int or type(value) is float):
         try:
             logging.warning(

@@ -62,6 +62,8 @@ if __name__ == "__main__":
     # to Upper/Lower, and copy the files such that they match the following naming structure:
     #       D65files / <mac_id>_<folder_number>_<filename>.MF4
 
+    logging.info(f"Retrieving existing D65 log files from {src}...")
+
     d65_log_path = get_d65_log_path()
 
     # When downloading from S3, CANEdge appends a unique identifier to the filenames,
@@ -77,6 +79,7 @@ if __name__ == "__main__":
 
     mf4_files_iterator = src.rglob("*.MF4")
 
+    logging.info(f"Copying new log files to {d65_log_path}...")
     try:
         with ThreadPoolExecutor() as executor:
             futures = [

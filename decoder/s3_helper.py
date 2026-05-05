@@ -1,6 +1,7 @@
 import sys
 import time
 import logging
+import os
 
 from boto3 import client
 from botocore.config import Config
@@ -20,6 +21,43 @@ from decoder.config import *
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 
+def _resolve_s3_verify_setting() -> bool | str:
+    """
+    Resolve boto3/botocore 'verify' behavior from environment:
+    - AWS_S3_TLS_INSECURE=true  -> verify=False
+    - AWS_S3_CA_BUNDLE=/path    -> verify=/path (if file exists)
+    - default                   -> verify=True (botocore/certifi defaults)
+    """
+    insecure = os.getenv("AWS_S3_TLS_INSECURE", "").strip().lower()
+    if insecure in {"1", "true", "yes", "on"}:
+        logging.warning(
+            "⚠️ AWS_S3_TLS_INSECURE enabled; TLS certificate validation is disabled"
+        )
+        return False
+
+    ca_bundle = os.getenv("AWS_S3_CA_BUNDLE", "").strip()
+    if ca_bundle:
+        if Path(ca_bundle).exists():
+            return ca_bundle
+        logging.warning(
+            f"⚠️ AWS_S3_CA_BUNDLE was set but file not found: {ca_bundle}. Falling back to default CA trust."
+        )
+
+    return True
+
+
+def create_s3_client(max_pool_connections: int | None = None):
+    verify = _resolve_s3_verify_setting()
+    config = (
+        Config(max_pool_connections=max_pool_connections)
+        if max_pool_connections is not None
+        else None
+    )
+    if config is None:
+        return client("s3", verify=verify)
+    return client("s3", config=config, verify=verify)
+
+
 class EESBuckets(Enum):
     S3_BUCKET_LOCO = ("fvt-telematics", 0)
     S3_BUCKET_D65 = ("d65-telematics", 1)
@@ -34,7 +72,7 @@ def get_bucket_names() -> list[str]:
     """
 
     try:
-        s3 = client("s3")
+        s3 = create_s3_client()
         response = s3.list_buckets()
         buckets = [bucket["Name"] for bucket in response.get("Buckets", [])]
         return buckets
@@ -72,7 +110,7 @@ def download_files_from_s3(
         logging.error(f"❌ Invalid bucket name: {bucket_name}")
         return count
 
-    s3c = client("s3", config=Config(max_pool_connections=max_workers))
+    s3c = create_s3_client(max_pool_connections=max_workers)
     total_keys = len(keys)
 
     def processed_path(key: str) -> Path:
@@ -223,7 +261,7 @@ def get_mf4_files_list_from_s3(
             return None
 
     try:
-        s3c = client("s3")
+        s3c = create_s3_client()
         paginator = s3c.get_paginator("list_objects_v2")
         page_iterator = paginator.paginate(
             Bucket=bucket_name,
