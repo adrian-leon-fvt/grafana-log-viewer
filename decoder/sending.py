@@ -24,7 +24,9 @@ from decoder.livelogger.DBCDecoder import DBCDecoder
 
 def _extend_no_proxy(entries: list[str]) -> None:
     # Preserve existing NO_PROXY/no_proxy values and append entries needed for local/tailnet VM access.
-    existing_raw = os.environ.get("NO_PROXY") or os.environ.get("no_proxy") or ""
+    existing_raw = (
+        os.environ.get("NO_PROXY") or os.environ.get("no_proxy") or ""
+    )
     existing = [e.strip() for e in existing_raw.split(",") if e.strip()]
     merged: list[str] = []
 
@@ -74,7 +76,8 @@ def get_mf4_files(
         files = [
             f
             for f in files
-            if datetime.fromtimestamp(f.stat().st_mtime, tz=end_date.tzinfo) < end_date
+            if datetime.fromtimestamp(f.stat().st_mtime, tz=end_date.tzinfo)
+            < end_date
         ]
     return files
 
@@ -117,7 +120,9 @@ def check_signal_range(
 
     # Query VictoriaMetrics to check if data for this signal exists in the given time range
     message, metric_name = get_channel_data(signal)
-    start_ts = (start_time + timedelta(seconds=signal.timestamps[0])).timestamp()
+    start_ts = (
+        start_time + timedelta(seconds=signal.timestamps[0])
+    ).timestamp()
     end_ts = (start_time + timedelta(seconds=signal.timestamps[-1])).timestamp()
 
     params: dict[str, str] = {
@@ -209,7 +214,9 @@ def send_signal(
     start = time.time()
     batch: list[str] = []
     for sample, ts in zip(_signal.samples, _signal.timestamps):
-        if not is_valid_sample(sample):  # Check if sample is not float (e.g. string)
+        if not is_valid_sample(
+            sample
+        ):  # Check if sample is not float (e.g. string)
             continue  # Skip this sample
         data = make_metric_line(
             metric_name,
@@ -226,7 +233,9 @@ def send_signal(
                 if print_metric_line:
                     logger.info("".join(batch))
                 if send_signal:
-                    requests.post(server + vmapi_import_prometheus, data="".join(batch))
+                    requests.post(
+                        server + vmapi_import_prometheus, data="".join(batch)
+                    )
             except Exception as e:
                 logger.error(f"‼️ Error sending batch: {e}")
             batch = []
@@ -292,14 +301,20 @@ def send_signal_using_json_lines(
     values: list[float] = []
     timestamps: list[int] = []
     for sample, ts in zip(_signal.samples, _signal.timestamps):
-        if not is_valid_sample(sample):  # Check if sample is not float (e.g. string)
+        if not is_valid_sample(
+            sample
+        ):  # Check if sample is not float (e.g. string)
             continue  # Skip this sample
         values.append(float(sample))
-        timestamps.append(int((start_time + timedelta(seconds=ts)).timestamp() * 1e3))
+        timestamps.append(
+            int((start_time + timedelta(seconds=ts)).timestamp() * 1e3)
+        )
     _time_str = f"{_sig_start_str.isoformat()} - {_sig_end_str.isoformat()}, {len(timestamps)} samples"
 
     if len(values) < 1 or len(timestamps) < 1:
-        logger.info(f"  ℹ️ No valid numeric data for {metric_name}, skipping ...")
+        logger.info(
+            f"  ℹ️ No valid numeric data for {metric_name}, skipping ..."
+        )
         return num_of_samples_sent
 
     logger.info(f"  📨 Sending {metric_name} [{_time_str}] ...")
@@ -466,7 +481,9 @@ def send_decoded(
                 except Exception as e:
                     logger.error(f"❌ Error sending signal {sig.name}: {e}")
     else:
-        logger.warning("⚠️ Invalid decoded input type. Must be Path or MDF instance.")
+        logger.warning(
+            "⚠️ Invalid decoded input type. Must be Path or MDF instance."
+        )
 
     return signals_sample_count
 
@@ -514,7 +531,9 @@ def decode_and_send(
                 decoded = mdf.extract_bus_logging(
                     database_files, ignore_value2text_conversion=True
                 )
-                logger.info(f" ✅ {stack_msg}: Decoded in {get_time_str(start)}s")
+                logger.info(
+                    f" ✅ {stack_msg}: Decoded in {get_time_str(start)}s"
+                )
                 if list(decoded.iter_channels()):
                     result = send_decoded(
                         decoded=decoded,
@@ -525,7 +544,9 @@ def decode_and_send(
                         server=server,
                     )
                     for k, v in result.items():
-                        signals_sample_count[k] = signals_sample_count.get(k, 0) + v
+                        signals_sample_count[k] = (
+                            signals_sample_count.get(k, 0) + v
+                        )
                 else:
                     logger.warning("⚠️ No signals found, skipping sending.")
 
@@ -550,7 +571,9 @@ def decode_and_send(
                 decoded = mdf.extract_bus_logging(
                     database_files, ignore_value2text_conversion=True
                 )
-                logger.info(f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s")
+                logger.info(
+                    f" ✅ Decoded ../{_dispname} in {time.time() - start:.3f}s"
+                )
                 if list(decoded.iter_channels()):
                     result = send_decoded(
                         decoded=decoded,
@@ -562,7 +585,9 @@ def decode_and_send(
                     )
 
                     for k, v in result.items():
-                        signals_sample_count[k] = signals_sample_count.get(k, 0) + v
+                        signals_sample_count[k] = (
+                            signals_sample_count.get(k, 0) + v
+                        )
                 else:
                     logger.warning(
                         f"⚠️ No signals found in {_dispname}, skipping sending."
