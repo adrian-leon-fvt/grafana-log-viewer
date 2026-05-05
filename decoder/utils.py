@@ -287,6 +287,27 @@ def is_victoriametrics_online(server: str, timeout: float = 3.0) -> bool:
                 f"⚠️ Could not connect to VictoriaMetrics server. Status code: {resp.status_code}"
             )
             return False
+    except requests.exceptions.ProxyError as e:
+        logger.warning(
+            "⚠️ Proxy error connecting to VictoriaMetrics. "
+            "Check HTTP(S)_PROXY and ensure NO_PROXY includes your VM host/domain (.ts.net). "
+            f"Details: {e}"
+        )
+        return False
+    except requests.exceptions.ConnectTimeout as e:
+        logger.warning(
+            "⚠️ Connect timeout to VictoriaMetrics. "
+            "This usually means the host is unreachable (VPN/Tailscale down, firewall, or route issue). "
+            f"Details: {e}"
+        )
+        return False
+    except requests.exceptions.ConnectionError as e:
+        logger.warning(
+            "⚠️ Connection error to VictoriaMetrics. "
+            "Check DNS, VPN/Tailscale connectivity, and the target port. "
+            f"Details: {e}"
+        )
+        return False
     except Exception as e:
         logger.warning(f"⚠️ Error connecting to VictoriaMetrics server: {e}")
         return False

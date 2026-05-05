@@ -21,7 +21,31 @@ from decoder.utils import *
 from decoder.livelogger.CANReader import CANReader
 from decoder.livelogger.DBCDecoder import DBCDecoder
 
-os.environ["NO_PROXY"] = "localhost"  # Bypass proxy for VictoriaMetrics
+
+def _extend_no_proxy(entries: list[str]) -> None:
+    # Preserve existing NO_PROXY/no_proxy values and append entries needed for local/tailnet VM access.
+    existing_raw = os.environ.get("NO_PROXY") or os.environ.get("no_proxy") or ""
+    existing = [e.strip() for e in existing_raw.split(",") if e.strip()]
+    merged: list[str] = []
+
+    for value in [*existing, *entries]:
+        if value and value not in merged:
+            merged.append(value)
+
+    no_proxy_value = ",".join(merged)
+    os.environ["NO_PROXY"] = no_proxy_value
+    os.environ["no_proxy"] = no_proxy_value
+
+
+_extend_no_proxy(
+    [
+        "localhost",
+        "127.0.0.1",
+        "::1",
+        ".ts.net",
+        ".tailnet",
+    ]
+)
 
 
 def get_mf4_files(
