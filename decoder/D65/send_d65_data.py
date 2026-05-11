@@ -77,6 +77,8 @@ def skip_signal(name: str) -> bool:
         "NSerial",
         "NChecksum",
         "NMultiplexer",
+        "S2C_sp_param_id",
+        "C2S_fp_param_id"
     ]
 
     if name in SIGNALS_TO_SKIP:
