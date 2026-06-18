@@ -8,6 +8,7 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 from enum import Enum
 from zoneinfo import ZoneInfo
+from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -79,6 +80,12 @@ def get_bucket_names() -> list[str]:
     except ClientError as e:
         logging.error(f"Error fetching buckets: {e}")
         return []
+
+
+def _normalize_bucket_names(bucket_names: EESBuckets | str | Iterable[EESBuckets | str]) -> list[EESBuckets | str]:
+    if isinstance(bucket_names, (str, EESBuckets)):
+        return [bucket_names]
+    return list(bucket_names)
 
 
 def download_files_from_s3(
@@ -399,6 +406,48 @@ def get_mf4_files_list_from_s3(
         )
 
     return []
+
+
+def get_new_mf4_files_summary_from_s3(
+    bucket_names: EESBuckets | str | Iterable[EESBuckets | str],
+    start_time: datetime | str = "",
+    end_time: datetime | str = "",
+    **kwargs,
+) -> dict:
+    """
+    Check one or more buckets for new MF4 files in a window.
+    """
+    summary: dict = {
+        "has_new_files": False,
+        "total_count": 0,
+        "buckets": {},
+    }
+
+    for bucket_name in _normalize_bucket_names(bucket_names):
+        files = get_mf4_files_list_from_s3(
+            bucket_name=bucket_name,
+            start_time=start_time,
+            end_time=end_time,
+            **kwargs,
+        )
+        bucket_key = (
+            bucket_name.value[0]
+            if isinstance(bucket_name, EESBuckets)
+            else str(bucket_name)
+        )
+        summary["buckets"][bucket_key] = {
+            "count": len(files),
+            "keys": [
+                item["Key"]
+                for item in files
+                if isinstance(item, dict) and "Key" in item
+            ],
+            "files": files,
+        }
+        summary["total_count"] += len(files)
+
+    summary["has_new_files"] = summary["total_count"] > 0
+    return summary
 
 
 def main():

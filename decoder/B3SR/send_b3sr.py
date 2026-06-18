@@ -261,13 +261,14 @@ def main_post_s3_streaming_to_victoriametrics(
         end_date = datetime.now(tz=timezone.utc)
 
     if s3_info_list is None:
-        s3_info_list = get_mf4_files_list_from_s3(
-            bucket_name=s3_bucket,
+        summary = get_new_mf4_files_summary_from_s3(
+            bucket_names=s3_bucket,
             start_time=start_date,
             end_time=end_date,
             Prefix=s3_prefix,
             posted_after=posted_after,
         )
+        s3_info_list = summary["buckets"].get(s3_bucket, {}).get("files", [])
 
     if not s3_info_list:
         logging.warning("⚠️ No B3SR S3 files found to stream.")

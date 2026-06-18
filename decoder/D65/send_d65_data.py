@@ -702,8 +702,8 @@ def get_d65_file_list_from_s3(
         prefix = MAC_LOWER
     elif ignore_lower and not ignore_upper:
         prefix = MAC_UPPER
-    files = get_mf4_files_list_from_s3(
-        bucket_name=EESBuckets.S3_BUCKET_D65,
+    summary = get_new_mf4_files_summary_from_s3(
+        bucket_names=EESBuckets.S3_BUCKET_D65,
         start_time=start,
         end_time=end,
         max_workers=max_workers,
@@ -711,6 +711,7 @@ def get_d65_file_list_from_s3(
         Prefix=prefix,
         **kwargs,
     )
+    files = summary["buckets"][EESBuckets.S3_BUCKET_D65.value[0]]["files"]
 
     posted_str = (
         f" | posted_after={posted_after.astimezone().isoformat()}"
