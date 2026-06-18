@@ -6,10 +6,6 @@ STATE_DIR="${STATE_DIR:-/home/ubuntu/ingest/cursor}"
 RUNNER_IMAGE="${RUNNER_IMAGE:-ingest-runner:current}"
 ENV_FILE="${ENV_FILE:-/etc/ingest/ingest.env}"
 
-if [[ -f "$ENV_FILE" ]]; then
-  source "$ENV_FILE"
-fi
-
 mkdir -p "$STATE_DIR"
 cd "$ROOT_DIR"
 docker_args=(--rm --network host -v "$ROOT_DIR:/app" -v "$STATE_DIR:/state" -w /app)
@@ -19,6 +15,14 @@ fi
 if [[ -d "${HOME}/.aws" ]]; then
   docker_args+=(-v "${HOME}/.aws:/root/.aws:ro")
 fi
+for var in AWS_S3_TLS_INSECURE AWS_S3_CA_BUNDLE REQUESTS_CA_BUNDLE SSL_CERT_FILE CURL_CA_BUNDLE; do
+  if [[ -n "${!var:-}" ]]; then
+    docker_args+=(-e "$var=${!var}")
+    if [[ "$var" == *_BUNDLE ]] && [[ -f "${!var}" ]]; then
+      docker_args+=(-v "${!var}:${!var}:ro")
+    fi
+  fi
+done
 exec docker run "${docker_args[@]}" \
   "$RUNNER_IMAGE" \
   python deploy/bin/run_with_cursor.py \
