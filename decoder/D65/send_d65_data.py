@@ -1116,9 +1116,9 @@ def main_post_s3_streaming_to_victoriametrics(
         total_lower_counts.values()
     )
     backfill_span = ""
-    if files:
-        start_span = min(files, key=lambda x: x[2])[2]
-        end_span = max(files, key=lambda x: x[2])[2]
+    if s3_info_list:
+        start_span = min(s3_info_list, key=lambda x: x[2])[2]
+        end_span = max(s3_info_list, key=lambda x: x[2])[2]
         backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
     logging.info(
         "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s)%s.",
