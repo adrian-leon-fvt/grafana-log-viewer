@@ -402,7 +402,7 @@ def main_post_s3_streaming_to_victoriametrics(
     total_signals_sent = len(total_counts.keys())
     total_samples_sent = sum(total_counts.values())
     backfill_span = ""
-    if skip_signal_range_check and files:
+    if files:
         start_span = min(files, key=lambda x: x[1])[1]
         end_span = max(files, key=lambda x: x[1])[1]
         backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
@@ -507,7 +507,7 @@ def main_post_to_victoriametrics(
     total_signals_sent = len(total_counts.keys())
     total_samples_sent = sum(total_counts.values())
     backfill_span = ""
-    if skip_signal_range_check and files:
+    if files:
         start_span = min(files, key=lambda x: x[1])[1]
         end_span = max(files, key=lambda x: x[1])[1]
         backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
