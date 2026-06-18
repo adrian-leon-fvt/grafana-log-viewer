@@ -4,10 +4,21 @@ from unittest.mock import patch
 from decoder.s3_helper import (
     EESBuckets,
     get_new_mf4_files_summary_from_s3,
+    _parse_s3_timestamp,
 )
 
 
 class NewMf4FilesSummaryTest(unittest.TestCase):
+    def test_parse_timestamp_with_and_without_z(self) -> None:
+        self.assertEqual(
+            _parse_s3_timestamp("20240724T173516").isoformat(),
+            "2024-07-24T10:35:16-07:00",
+        )
+        self.assertEqual(
+            _parse_s3_timestamp("2024-07-24T17:35:16Z").isoformat(),
+            "2024-07-24T10:35:16-07:00",
+        )
+
     def test_multibucket_summary_passthrough(self) -> None:
         calls: list[tuple[object, dict[str, str]]] = []
 

@@ -88,6 +88,21 @@ def _normalize_bucket_names(bucket_names: EESBuckets | str | Iterable[EESBuckets
     return list(bucket_names)
 
 
+def _parse_s3_timestamp(timestamp: str) -> datetime:
+    normalized = timestamp.strip()
+    if normalized.endswith("Z"):
+        normalized = normalized[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(normalized).astimezone(
+            ZoneInfo("America/Vancouver")
+        )
+    except (ValueError, TypeError):
+        parsed = datetime.strptime(timestamp.strip("Z"), "%Y%m%dT%H%M%S")
+        return parsed.replace(tzinfo=timezone.utc).astimezone(
+            ZoneInfo("America/Vancouver")
+        )
+
+
 def download_files_from_s3(
     bucket_name: EESBuckets | str,
     keys: list[str],
@@ -306,29 +321,12 @@ def get_mf4_files_list_from_s3(
                 logging.warning(f"⚠️ No timestamp metadata for {key}")
                 return None
 
-            timestamp = resp["Metadata"]["timestamp"]
-            try:
-                # Try parsing with timezone info first
-                timestamp = datetime.fromisoformat(timestamp).astimezone(
-                    ZoneInfo("America/Vancouver")
-                )
-            except (ValueError, TypeError):
-                try:
-                    # Fall back to parsing without timezone
-                    timestamp = (
-                        datetime.strptime(timestamp.strip("Z"), "%Y%m%dT%H%M%S")
-                        .replace(tzinfo=timezone.utc)
-                        .astimezone(ZoneInfo("America/Vancouver"))
-                    )
-                except ValueError as e:
-                    logging.error(
-                        f"❌ Failed to parse timestamp '{timestamp}': {e}"
-                    )
-                    return None
-
-            return timestamp
+            return _parse_s3_timestamp(resp["Metadata"]["timestamp"])
         except KeyError:
             logging.warning(f"⚠️ No metadata for {key}")
+            return None
+        except ValueError as e:
+            logging.error(f"❌ Failed to parse timestamp '{resp.get('Metadata', {}).get('timestamp')}': {e}")
             return None
 
     try:
