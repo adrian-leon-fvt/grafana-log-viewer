@@ -383,6 +383,28 @@ def parse_include_arg(raw_values: list[str] | None) -> list[str]:
     return list(dict.fromkeys(parsed))
 
 
+def parse_time_offset(offset_str: str) -> timedelta:
+    """
+    Parses a time offset string like '10m', '2h', '1d' and returns a timedelta.
+    Only supports negative offsets.
+    """
+    match = re.match(r"(\d+)([smhd])", offset_str)
+    if not match:
+        raise ValueError(f"Invalid offset format: {offset_str}")
+    value, unit = match.groups()
+    value = int(value)
+    if unit == "s":
+        return timedelta(seconds=value)
+    elif unit == "m":
+        return timedelta(minutes=value)
+    elif unit == "h":
+        return timedelta(hours=value)
+    elif unit == "d":
+        return timedelta(days=value)
+    else:
+        raise ValueError(f"Unknown time unit: {unit}")
+
+
 def get_upper_dbc_files() -> Iterable[DbcFileType]:
     dbc_files = get_d65_dbc_files()
     return [(dbc, 0) for dbc in dbc_files["Upper"]]
@@ -1462,11 +1484,12 @@ def main_post_to_victoriametrics(
             exit(1)
 
     logging.info(f" -> ✅ {server} is online. Sending files...")
+    skip_signal_range_check = kwargs.pop("skip_signal_range_check", False)
     total_lower_counts, total_upper_counts = send_files_to_victoriametrics(
         server=server,
         files=files,
         stack_size=20,
-        skip_signal_range_check=False,
+        skip_signal_range_check=skip_signal_range_check,
         **kwargs,
     )
     end_ts = time.time()
@@ -1559,28 +1582,6 @@ def main_delete_all_series(server: str):
         )
 
 
-def parse_time_offset(offset_str: str) -> timedelta:
-    """
-    Parses a time offset string like '10m', '2h', '1d' and returns a timedelta.
-    Only supports negative offsets.
-    """
-    match = re.match(r"(\d+)([smhd])", offset_str)
-    if not match:
-        raise ValueError(f"Invalid offset format: {offset_str}")
-    value, unit = match.groups()
-    value = int(value)
-    if unit == "s":
-        return timedelta(seconds=value)
-    elif unit == "m":
-        return timedelta(minutes=value)
-    elif unit == "h":
-        return timedelta(hours=value)
-    elif unit == "d":
-        return timedelta(days=value)
-    else:
-        raise ValueError(f"Unknown time unit: {unit}")
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Send D65 data to VictoriaMetrics"
@@ -1618,6 +1619,11 @@ if __name__ == "__main__":
         "--skip_post",
         action="store_true",
         help="Don't post signals to VictoriaMetrics",
+    )
+    parser.add_argument(
+        "--backfill",
+        action="store_true",
+        help="Send all data without checking VictoriaMetrics for existing samples.",
     )
     parser.add_argument(
         "--posted-within",
@@ -1846,7 +1852,7 @@ if __name__ == "__main__":
                 decode_overhead_factor=args.s3_streaming_decode_overhead,
                 max_active_files=args.s3_streaming_max_active_files,
                 max_batch_size=10_000,
-                skip_signal_range_check=False,
+                skip_signal_range_check=args.backfill,
                 send_newest_first=True,
                 dbc_files_override=dbc_files_override,
             )
@@ -1860,6 +1866,7 @@ if __name__ == "__main__":
                 s3_info_list=s3_info_list_for_post,
                 send_newest_first=True,
                 dbc_files_override=dbc_files_override,
+                skip_signal_range_check=args.backfill,
                 # dbc_files_override={
                 #     "Upper": [],
                 #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],

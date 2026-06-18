@@ -458,6 +458,7 @@ def main_post_to_victoriametrics(
     start_date: datetime | None = None,
     end_date: datetime | None = None,
     newest_first: bool = True,
+    skip_signal_range_check: bool = False,
 ):
     start_ts = time.time()
 
@@ -494,7 +495,7 @@ def main_post_to_victoriametrics(
         server=server,
         files=files,
         stack_size=20,
-        skip_signal_range_check=False,
+        skip_signal_range_check=skip_signal_range_check,
     )
     total_signals_sent = len(total_counts.keys())
     total_samples_sent = sum(total_counts.values())
@@ -503,28 +504,6 @@ def main_post_to_victoriametrics(
     logging.info(
         f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
     )
-
-
-def parse_time_offset(offset_str: str) -> timedelta:
-    """
-    Parses a time offset string like '10m', '2h', '1d' and returns a timedelta.
-    Only supports negative offsets.
-    """
-    match = re.match(r"(\d+)([smhd])", offset_str)
-    if not match:
-        raise ValueError(f"Invalid offset format: {offset_str}")
-    value, unit = match.groups()
-    value = int(value)
-    if unit == "s":
-        return timedelta(seconds=value)
-    elif unit == "m":
-        return timedelta(minutes=value)
-    elif unit == "h":
-        return timedelta(hours=value)
-    elif unit == "d":
-        return timedelta(days=value)
-    else:
-        raise ValueError(f"Unknown time unit: {unit}")
 
 
 def _get_available_ram_bytes() -> int | None:
@@ -646,6 +625,28 @@ def _decode_and_send_b3sr_mdf(
     )
 
 
+def parse_time_offset(offset_str: str) -> timedelta:
+    """
+    Parses a time offset string like '10m', '2h', '1d' and returns a timedelta.
+    Only supports negative offsets.
+    """
+    match = re.match(r"(\d+)([smhd])", offset_str)
+    if not match:
+        raise ValueError(f"Invalid offset format: {offset_str}")
+    value, unit = match.groups()
+    value = int(value)
+    if unit == "s":
+        return timedelta(seconds=value)
+    elif unit == "m":
+        return timedelta(minutes=value)
+    elif unit == "h":
+        return timedelta(hours=value)
+    elif unit == "d":
+        return timedelta(days=value)
+    else:
+        raise ValueError(f"Unknown time unit: {unit}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Send B3SR MF4 files from CANEdge folder to VictoriaMetrics server."
@@ -727,6 +728,11 @@ if __name__ == "__main__":
         help="Skip signal range checks while sending decoded data.",
     )
     parser.add_argument(
+        "--backfill",
+        action="store_true",
+        help="Send all data without checking VictoriaMetrics for existing samples.",
+    )
+    parser.add_argument(
         "--dbc-folder",
         type=str,
         default="",
@@ -735,6 +741,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     DBC_FOLDER_OVERRIDE = args.dbc_folder
+    skip_signal_range_check = args.backfill or args.skip_signal_range_check
 
     server = server_vm_test_dump if args.test else server_vm_b3sr
 
@@ -765,7 +772,7 @@ if __name__ == "__main__":
             memory_fraction=args.memory_fraction,
             decode_overhead_factor=args.decode_overhead_factor,
             max_active_files=args.max_active_files,
-            skip_signal_range_check=args.skip_signal_range_check,
+            skip_signal_range_check=skip_signal_range_check,
         )
     else:
         main_post_to_victoriametrics(
@@ -773,4 +780,5 @@ if __name__ == "__main__":
             start_date=start_date,
             end_date=end_date,
             newest_first=args.oldest_first is False,
+            skip_signal_range_check=skip_signal_range_check,
         )

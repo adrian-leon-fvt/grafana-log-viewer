@@ -178,6 +178,54 @@ def check_signal_range(
     return signal
 
 
+def _resolve_job_watermark(
+    server: str, job: str, skip_signal_range_check: bool
+) -> datetime | None:
+    if skip_signal_range_check or not job:
+        return None
+
+    result = get_latest_vm_job_timestamp(server=server, job=job)
+    watermark = result.get("timestamp")
+    if result.get("has_data") and isinstance(watermark, datetime):
+        return watermark
+    return None
+
+
+def _apply_job_watermark(
+    signal: Signal,
+    start_time: datetime,
+    job_watermark: datetime | None,
+) -> Signal | None:
+    if job_watermark is None or len(signal.timestamps) == 0:
+        return signal
+
+    signal_start = start_time + timedelta(seconds=signal.timestamps[0])
+    signal_end = start_time + timedelta(seconds=signal.timestamps[-1])
+
+    if signal_end <= job_watermark:
+        return None
+
+    if signal_start >= job_watermark:
+        return signal
+
+    cutoff = (job_watermark - start_time).total_seconds()
+    first_sample_idx = next(
+        (
+            idx
+            for idx, timestamp in enumerate(signal.timestamps)
+            if timestamp > cutoff
+        ),
+        None,
+    )
+    if first_sample_idx is None:
+        return None
+
+    trimmed = signal.cut(
+        signal.timestamps[first_sample_idx], signal.timestamps[-1]
+    )
+    return trimmed if len(trimmed.timestamps) > 0 else None
+
+
 def send_signal(
     signal: Signal,
     start_time: datetime,
@@ -186,6 +234,7 @@ def send_signal(
     print_metric_line: bool = False,
     send_signal: bool = True,
     skip_signal_range_check: bool = False,
+    job_watermark: datetime | None = None,
     batch_size: int = 250_000,
 ) -> int:
     """
@@ -207,13 +256,14 @@ def send_signal(
 
     num_of_samples_sent = 0
 
+    if job_watermark is None and not skip_signal_range_check:
+        job_watermark = _resolve_job_watermark(
+            server=server, job=job, skip_signal_range_check=skip_signal_range_check
+        )
+
     _signal: Signal | None = signal
     if not skip_signal_range_check:
-        _signal = check_signal_range(
-            signal=signal,
-            start_time=start_time,
-            server=server,
-        )
+        _signal = _apply_job_watermark(signal, start_time, job_watermark)
 
     if _signal is None or len(_signal.timestamps) < 1:
         logger.info(f"  ☑️ No new data for {signal.name}, skipping ...")
@@ -276,6 +326,7 @@ def send_signal_using_json_lines(
     print_metric_line: bool = False,
     send_signal: bool = True,
     skip_signal_range_check: bool = False,
+    job_watermark: datetime | None = None,
     batch_size: int = 10_000,
 ) -> int:
     """
@@ -297,13 +348,14 @@ def send_signal_using_json_lines(
 
     num_of_samples_sent = 0
 
+    if job_watermark is None and not skip_signal_range_check:
+        job_watermark = _resolve_job_watermark(
+            server=server, job=job, skip_signal_range_check=skip_signal_range_check
+        )
+
     _signal: Signal | None = signal
     if not skip_signal_range_check:
-        _signal = check_signal_range(
-            signal=signal,
-            start_time=start_time,
-            server=server,
-        )
+        _signal = _apply_job_watermark(signal, start_time, job_watermark)
 
     if _signal is None or len(_signal.timestamps) < 1:
         logger.info(f"  ☑️ No new data for {metric_name}, skipping ...")
@@ -391,6 +443,7 @@ def send_file(
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
     batch_size: int = 10_000,
     max_thread_workers=10,
+    job_watermark: datetime | None = None,
 ) -> dict[str, int]:
     logger = logging.getLogger("send_file")
     setup_simple_logger(logger, format=LOG_FORMAT)
@@ -410,6 +463,13 @@ def send_file(
         return signals_sample_count
 
     try:
+        resolved_job = job if job else filename.stem
+        if job_watermark is None and not skip_signal_range_check:
+            job_watermark = _resolve_job_watermark(
+                server=server,
+                job=resolved_job,
+                skip_signal_range_check=skip_signal_range_check,
+            )
         with MDF(filename) as mdf:
             with ThreadPoolExecutor(max_workers=max_thread_workers) as executor:
                 future_to_signal = {
@@ -417,8 +477,9 @@ def send_file(
                         send_signal_using_json_lines,
                         signal=sig,
                         start_time=mdf.start_time,
-                        job=job if job else filename.stem,
+                        job=resolved_job,
                         skip_signal_range_check=skip_signal_range_check,
+                        job_watermark=job_watermark,
                         batch_size=batch_size,
                         server=server,
                     ): sig
@@ -452,6 +513,7 @@ def send_decoded(
     skip_signal_fn: Optional[Callable[[str], bool]] = None,
     batch_size: int = 10_000,
     max_thread_workers: int = 10,
+    job_watermark: datetime | None = None,
 ) -> dict[str, int]:
     """
     Send a decoded MDF4 file to VictoriaMetrics.
@@ -462,20 +524,33 @@ def send_decoded(
     signals_sample_count: dict[str, int] = {}
 
     if isinstance(decoded, Path):
-        send_file(
+        return send_file(
             filename=decoded,
             job=job,
             server=server,
+            skip_signal_range_check=skip_signal_range_check,
+            skip_signal_fn=skip_signal_fn,
+            batch_size=batch_size,
+            max_thread_workers=max_thread_workers,
+            job_watermark=job_watermark,
         )
     elif isinstance(decoded, MDF):
+        resolved_job = job if job else "-".join(decoded.name.parts)
+        if job_watermark is None and not skip_signal_range_check:
+            job_watermark = _resolve_job_watermark(
+                server=server,
+                job=resolved_job,
+                skip_signal_range_check=skip_signal_range_check,
+            )
         with ThreadPoolExecutor(max_workers=max_thread_workers) as executor:
             future_to_signal = {
                 executor.submit(
                     send_signal_using_json_lines,
                     signal=sig,
                     start_time=decoded.start_time,
-                    job=job if job else "-".join(decoded.name.parts),
+                    job=resolved_job,
                     skip_signal_range_check=skip_signal_range_check,
+                    job_watermark=job_watermark,
                     batch_size=batch_size,
                     server=server,
                 ): sig
