@@ -27,6 +27,7 @@ from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
     LOG_FORMAT,
     server_vm_b3sr,
+    server_vm_test_dump,
 )
 from decoder.s3_helper import *
 import argparse
@@ -360,8 +361,15 @@ if __name__ == "__main__":
         action="store_true",
         help="Process oldest files first.",
     )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Send to test node (server_vm_test_dump) instead of main B3SR node.",
+    )
 
     args = parser.parse_args()
+
+    server = server_vm_test_dump if args.test else server_vm_b3sr
 
     # Parse start time
     now = datetime.now().astimezone(ZoneInfo("America/Vancouver"))
@@ -377,7 +385,7 @@ if __name__ == "__main__":
         end_date = now - parse_time_offset(args.end)
 
     main_post_to_victoriametrics(
-        server=args.server,
+        server=server,
         start_date=start_date,
         end_date=end_date,
         newest_first=args.oldest_first is False,
