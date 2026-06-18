@@ -31,6 +31,7 @@ from decoder.utils import (
     get_time_str,
     convert_to_eng,
     is_victoriametrics_online,
+    parse_time_arg,
 )
 from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
@@ -1724,16 +1725,10 @@ if __name__ == "__main__":
 
     # Parse start time
     now = datetime.now().astimezone(ZoneInfo("America/Vancouver"))
-    if args.start == "today":
-        start_date = datetime.today().astimezone(now.tzinfo)
-    else:
-        start_date = now - parse_time_offset(args.start)
+    start_date = parse_time_arg(args.start, now)
 
     # Parse end time
-    if args.end == "now":
-        end_date = now
-    else:
-        end_date = now - parse_time_offset(args.end)
+    end_date = parse_time_arg(args.end, now, allow_today=False)
 
     posted_after: datetime | None = None
     if args.posted_within:

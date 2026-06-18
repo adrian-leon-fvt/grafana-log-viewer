@@ -61,6 +61,30 @@ def get_time_str(start_time: float, end_ts: float | None = None) -> str:
     return "".join(parts)
 
 
+def parse_time_arg(value: str, now: datetime, allow_today: bool = True) -> datetime:
+    value = value.strip()
+    if value == "now":
+        return now
+    if allow_today and value == "today":
+        return datetime.today().astimezone(now.tzinfo)
+
+    offset_match = re.fullmatch(r"(\d+)([smhd])", value)
+    if offset_match:
+        amount, unit = offset_match.groups()
+        delta = {
+            "s": timedelta(seconds=int(amount)),
+            "m": timedelta(minutes=int(amount)),
+            "h": timedelta(hours=int(amount)),
+            "d": timedelta(days=int(amount)),
+        }[unit]
+        return now - delta
+
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=now.tzinfo)
+    return parsed.astimezone(now.tzinfo)
+
+
 def get_files(
     directory: Path | str, extension: str | list[str]
 ) -> list[StrPath]:
