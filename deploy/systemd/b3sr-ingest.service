@@ -1,0 +1,18 @@
+[Unit]
+Description=B3SR ingest from S3 to VictoriaMetrics
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/ingest/current
+EnvironmentFile=-/etc/ingest/ingest.env
+ExecStart=/home/ubuntu/ingest/current/deploy/bin/run_b3sr_ingest.sh
+StandardOutput=append:/var/log/ingest/b3sr.log
+StandardError=append:/var/log/ingest/b3sr.log
+Nice=10
+
+[Install]
+WantedBy=multi-user.target
