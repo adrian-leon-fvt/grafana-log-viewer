@@ -1,0 +1,973 @@
+VERSION "created by Mattheas Jamieson"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: TTC PUMP COMPRESSOR DCDC HEATER EPISPHERE MEB DESKTOPSIMULATION DESKTOP_SIMULATION
+VAL_TABLE_ OperatingStatus 3 "Not Available" 2 "Not Operable" 1 "Derated Operation" 0 "Normal Operation" ;
+VAL_TABLE_ ServiceIndicator 3 "Not Available" 2 "Reserved" 1 "Service Required" 0 "Service Not Required" ;
+VAL_TABLE_ CommandStatus 3 "Not Available" 2 "Default Command" 1 "External Command" 0 "Internal Command" ;
+VAL_TABLE_ StatusReasonLegacy 12 "Operating at Max Control Effort" 11 "Operating at Amp Limit" 10 "Unused" 9 "Over-Temp Protection Shutdown" 8 "Unused" 7 "Under-Voltage Protection Shutdn" 6 "Over Voltage Protection Shutdown" 5 "Unused" 4 "Unable to Start" 3 "Unused" 2 "Unused" 1 "Unused" 0 "OK/ Normal Operation" ;
+VAL_TABLE_ StatusReason 6 "Speed Limit due to max cap" 5 "Speed Limit due to Amp Limit" 4 "Over-Temp Protection Shutdown" 3 "Under-Voltage Protection Shutdwn" 2 "Over-Voltage Protection Shutdown" 1 "Unable to Start" 0 "Normal Operation" ;
+VAL_TABLE_ PowerHold 3 "Not Used" 2 "Reserved" 1 "Power On" 0 "Power Off" ;
+VAL_TABLE_ OnOffDir 3 "Not Used" 2 "Motor On: Reverse" 1 "Motor On: Normal/Default Dir" 0 "Motor Off" ;
+
+
+BO_ 2558198015 SPAL_PUMP_Motor_Command: 8 TTC
+ SG_ OnOffDirection : 0|2@1+ (1,0) [0|3] ""  PUMP
+ SG_ MotorSpeed : 24|8@1+ (0.5,0) [0|100] "%"  PUMP
+
+BO_ 2566651648 SPAL_PUMP_STATUS: 8 PUMP
+ SG_ Status : 0|2@1+ (1,0) [0|3] ""  TTC
+ SG_ StatusReason : 2|4@1+ (1,0) [0|15] ""  TTC
+ SG_ CommandStatus : 6|2@1+ (1,0) [0|3] ""  TTC
+ SG_ Speed : 8|16@1+ (0.5,0) [0|32127.5] "RPM"  TTC
+ SG_ Temperature : 24|16@1+ (0.03125,-273) [-273|1734.96875] "°C"  TTC
+ SG_ Power : 40|16@1+ (0.5,0) [0|32127.5] "W"  TTC
+ SG_ ServiceIndicator : 56|2@1+ (1,0) [0|3] ""  TTC
+ SG_ OperatingStatus : 58|2@1+ (1,0) [0|3] ""  TTC
+
+BO_ 2683239947 TTC_DEVICE: 8 TTC
+
+BO_ 2683177982 EPISPHERE_DEVICE: 8 EPISPHERE
+ SG_ HEADER_paramater_id : 0|16@1+ (1,0) [0|65535] ""  TTC
+ SG_ HEADER_command_type : 16|8@1+ (1,0) [0|255] ""  TTC
+
+BO_ 2683240203 TTC_BROADCAST: 8 TTC
+ SG_ ttc_episphere_device_type : 0|8@1- (1,0) [0|255] ""  EPISPHERE
+
+BO_ 2683240446 EPISPHERE_BROADCAST: 8 EPISPHERE
+
+BO_ 2365528155 HVES1PROP5: 8 MEB
+ SG_ ThermalSystemEnable : 0|2@1+ (1,0) [0|3] "State"  TTC
+ SG_ CoolingAllowed : 2|2@1+ (1,0) [0|3] "State"  TTC
+ SG_ HeatingAllowed : 4|2@1+ (1,0) [0|3] "State"  TTC
+ SG_ ServiceModeEnable : 6|2@1+ (1,0) [0|3] "State"  TTC
+ SG_ SetpointCoolingControlTemp : 8|8@1+ (0.2,0) [0|51] "°C"  TTC
+ SG_ SetpointHeaterControlTemp : 16|8@1+ (0.26,-15) [-15|51.3] "°C"  TTC
+ SG_ MaxAllowedTemperatureGradient : 24|8@1+ (0.08,0) [0|20.4] "°C"  TTC
+ SG_ MeasuredControlTemperature : 32|12@1+ (0.067,-40) [-40|234.365] "°C"  TTC
+ SG_ MeasuredTemperatureGradient : 44|12@1+ (0.005,0) [0|20.475] "°C"  TTC
+ SG_ IdlePumpSpeedPercent : 56|8@1+ (0.4,0) [0|100] "%"  TTC
+
+BO_ 2365545936 TMSHVES1D6: 8 TTC
+ SG_ HVES1_Bus_Voltage : 0|16@1+ (0.05,0) [0|3276.75] "V"  MEB
+ SG_ HVES1_Ignition_Voltage : 16|16@1+ (0.01,0) [0|655.35] "V"  MEB
+ SG_ HVES1_Intake_Coolant_Temperature : 32|8@1+ (1,-40) [-40|215] "°C"  MEB
+ SG_ HVES1_Outlet_Coolant_Temperature : 40|8@1+ (1,-40) [-40|215] "°C"  MEB
+ SG_ HVES1_Electronics_Temperature : 48|8@1+ (1,-40) [-40|215] "°C"  MEB
+
+BO_ 2365528528 TMSPROP1: 8 TTC
+ SG_ Cooling_system_readiness : 0|4@1+ (1,0) [0|15] "State"  MEB
+ SG_ Cooling_system_state : 4|4@1+ (1,0) [0|15] "State"  MEB
+ SG_ PumpActualSpeedPct : 8|8@1+ (0.4,0) [0|102] "%"  MEB
+ SG_ FanActualSpeedPct : 16|8@1+ (0.4,0) [0|102] "%"  MEB
+ SG_ HeaterTemperature : 24|8@1+ (1,-40) [-40|215] "°C"  MEB
+ SG_ AmbientTemperature : 32|8@1+ (0.5,-40) [-40|87.5] "°C"  MEB
+ SG_ ValveState : 40|2@1+ (1,0) [0|3] "State"  MEB
+
+BO_ 2365545680 HVES1TS1: 8 TTC
+ SG_ SLI_Input_Power : 0|16@1+ (0.5,0) [0|32767.5] "W"  MEB
+ SG_ High_Voltage_Input_Power : 16|16@1+ (0.5,0) [0|32767.5] "W"  MEB
+ SG_ Compressor_Speed : 32|8@1+ (32,0) [0|10000] "rpm"  MEB
+ SG_ Heater_Status : 48|3@1+ (1,0) [0|7] "bit"  MEB
+
+BO_ 2365528411 VersionMessage: 8 TTC
+ SG_ TTC_Application_Major_Version : 0|8@1+ (1,0) [0|255] ""  MEB
+ SG_ TTC_Application_Minor_Version : 8|8@1+ (1,0) [0|255] ""  MEB
+ SG_ TTC_Application_Revision_Version : 16|16@1+ (1,0) [0|255] ""  MEB
+ SG_ SPAL_Pump_Version : 32|8@1+ (1,0) [0|255] ""  MEB
+ SG_ TCCI_Compressor_Version : 40|8@1+ (1,0) [0|255] ""  MEB
+ SG_ Webasto_Heater_Version : 48|8@1+ (1,0) [0|255] ""  MEB
+ SG_ Foripower_DCDC_Version : 56|8@1+ (1,0) [0|255] ""  MEB
+
+BO_ 2583681129 TCCI_COMPRESSOR_command: 8 TTC
+ SG_ ECEnable : 24|2@1+ (1,0) [0|3] ""  COMPRESSOR
+ SG_ ECPowerPermit : 40|8@1+ (0.2,0) [0|50.8] ""  COMPRESSOR
+ SG_ ECSpeedReq : 0|16@1+ (1,0) [0|65535] "rpm"  COMPRESSOR
+ SG_ ECHVShutdown : 32|2@1+ (1,0) [0|3] ""  COMPRESSOR
+
+BO_ 2583680152 TCCI_COMPRESSOR_status: 8 COMPRESSOR
+ SG_ ECTrnstrTemp : 40|8@1+ (1,-60) [-60|194] "°C"  TTC
+ SG_ ECFaultBitmap : 28|12@1+ (1,0) [0|2047] ""  TTC
+ SG_ ECSpeedFdbk : 0|16@1+ (1,0) [0|65534] "rpm"  TTC
+ SG_ ECPhaseCurrent : 16|8@1+ (0.5,0) [0|127] "A"  TTC
+ SG_ ECOpStatus : 24|4@1+ (1,0) [0|13] ""  TTC
+ SG_ ECDCVoltage : 56|8@1+ (5,0) [0|1270] "V"  TTC
+ SG_ ECDCCurrent : 48|8@1+ (0.2,0) [0|50.8] "A"  TTC
+
+BO_ 2565817377 WEBASTO_HEATER_command: 8 TTC
+ SG_ HVH_ActiveDischarge : 28|1@1+ (1,0) [0|1] ""  HEATER
+ SG_ HVH_HeaterEnable : 27|1@1+ (1,0) [0|1] ""  HEATER
+ SG_ HVH_TargetCoolantTemp : 8|8@1+ (1,-50) [-50|205] "°C"  HEATER
+ SG_ HVH_MaxPower : 0|8@1+ (100,0) [0|25500] "W"  HEATER
+
+BO_ 2566889540 WEBASTO_HEATER_status1: 8 HEATER
+ SG_ HVH_ActualPower : 48|16@1+ (1,0) [0|65535] "W"  TTC
+ SG_ HVH_HVIL_Status : 3|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_ActiveDis_Status : 5|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_HV_Current : 24|8@1+ (0.25,0) [0|63.25] "A"  TTC
+ SG_ HVH_Status : 0|3@1+ (1,0) [0|7] ""  TTC
+ SG_ HVH_HV_Voltage : 32|10@1+ (1,0) [0|1021] "V"  TTC
+ SG_ HVH_Coolant_Out_Temp : 16|8@1+ (1,-50) [-50|203] "°C"  TTC
+ SG_ HVH_Coolant_In_Temp : 8|8@1+ (1,-50) [-50|203] "°C"  TTC
+
+BO_ 2566889796 WEBASTO_HEATER_status2: 8 HEATER
+ SG_ HVH_FailDCDCConverter : 30|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_FailMemory_InterCom : 28|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_FailHighCurrent : 26|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_FailDriver : 24|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_FailTempSensor : 22|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_FailHotspot : 16|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_WarnOverheat : 14|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_WarnULoOutOfRang : 5|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_WarnHVOutOfRng : 3|2@1+ (1,0) [0|3] ""  TTC
+ SG_ HVH_ProtocolError : 0|1@1+ (1,0) [0|1] ""  TTC
+ SG_ HVH_ComponentProtection : 1|2@1+ (1,0) [0|3] ""  TTC
+
+BO_ 2550190223 FORIPOWER_DCDC_status1: 8 DCDC
+ SG_ DCDC_Output_Voltage : 0|16@1+ (0.1,0) [0|1000] "V"  TTC
+ SG_ DCDC_Output_Current : 16|16@1+ (0.1,0) [0|1000] "A"  TTC
+ SG_ DCDC_Input_Voltage : 32|16@1+ (0.1,0) [0|1000] "V"  TTC
+ SG_ DCDC_Temperature : 48|8@1+ (1,-40) [-40|215] "°C"  TTC
+
+BO_ 2550255759 FORIPOWER_DCDC_status2: 8 DCDC
+ SG_ DCDC_State : 0|4@1+ (1,0) [0|6] ""  TTC
+ SG_ DCDC_Fault_Level : 4|2@1+ (1,0) [0|3] ""  TTC
+ SG_ DCDC_Input_OverVolt : 8|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_Input_UnderVolt : 9|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_Output_OverVolt : 10|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_Output_Short : 11|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_Output_UnderVolt : 12|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_OverTemp : 13|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_Output_OverCurr : 14|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_SciCommFault : 15|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_HwFault : 16|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_CanCommFault : 17|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_BoostFault : 18|1@1+ (1,0) [0|1] ""  TTC
+ SG_ DCDC_Hw_Version : 48|8@1+ (1,0) [0|255] ""  TTC
+ SG_ DCDC_Sw_Version : 56|8@1+ (1,0) [0|255] ""  TTC
+
+BO_ 2684354464 Z_INPUTS: 8 DESKTOPSIMULATION
+ SG_ Z_DI_72 m36 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_DI_74 m38 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_DI_78 m42 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_DI_73 m37 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_DI_75 m39 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_DI_77 m41 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_DI_79 m43 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_AI_00 m0 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_10 m10 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_12 m12 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_14 m14 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_11 m11 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_01 m1 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_02 m2 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_04 m4 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_05 m5 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_AI_06 m6 : 32|32@1+ (1,0) [0|4294967295] ""  TTC
+ SG_ Z_DI_56 m8 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_DI_57 m9 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_DI_61 m13 : 16|8@1+ (1,0) [0|255] ""  TTC
+ SG_ Z_pin_id M : 0|8@1+ (1,0) [0|255] ""  TTC
+
+BO_ 2684354480 Z_OUTPUTS: 8 TTC
+ SG_ Z_DO_16 m52 : 16|8@1+ (1,0) [0|255] ""  DESKTOPSIMULATION
+ SG_ Z_DO_30 m66 : 16|8@1+ (1,0) [0|255] ""  DESKTOPSIMULATION
+ SG_ Z_DO_04 m40 : 16|8@1+ (1,0) [0|255] ""  DESKTOPSIMULATION
+ SG_ Z_DO_23 m59 : 16|8@1+ (1,0) [0|255] ""  DESKTOPSIMULATION
+ SG_ Z_PWM_04 m56 : 16|16@1+ (1,0) [0|65535] ""  DESKTOPSIMULATION
+ SG_ Z_DO_34 m70 : 16|8@1+ (1,0) [0|255] ""  DESKTOPSIMULATION
+ SG_ Z_PWM_09 m61 : 16|16@1+ (1,0) [0|65535] ""  DESKTOPSIMULATION
+ SG_ Z_pin_outputs M : 0|8@1+ (1,0) [0|255] ""  DESKTOPSIMULATION
+
+BO_ 2181033632 COMMON_WARNINGS_DIAG: 8 TTC
+ SG_ Coolant_LevelSwitch : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ EEPROM_ReadFailed : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ EEPROM_ValidationFailed : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterStatus : 3|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterComponentProtection : 4|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterOverheat : 5|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ AmbientTemperatureSensor : 6|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolingDisabled : 7|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeatingDisabled : 8|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolantTempInSensor : 9|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolantTempOutSensor : 10|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolantPressureInSensor : 11|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolantPressureOutSensor : 12|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ TankTemperatureSensor : 13|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_FaultLevel2 : 14|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_FaultLevel3 : 15|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_InputOvervoltage : 16|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_InputUndervoltage : 17|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_OutputOvervoltage : 18|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_OutputUndervoltage : 19|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_OutputShortCircuit : 20|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_OverTemperature : 21|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_OutputOvercurrent : 22|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_SciCommTimeout : 23|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_HardwareFault : 24|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_CanCommTimeout : 25|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_BoostFault : 26|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+
+BO_ 2181033633 LOOP_WARNINGS_DIAG: 8 TTC
+ SG_ PumpGenericStatus : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PumpDryRun : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PumpCurrentProtection : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PumpPhysicalProtection : 3|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PumpTorqueLimit : 4|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PumpOvertempProtection : 5|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolingLoopLimpMode : 6|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Fan_1_DriveStatus : 7|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Fan_2_DriveStatus : 8|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Fan_3_DriveStatus : 9|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Fan_4_DriveStatus : 10|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+
+BO_ 2181033634 COMMON_ERRORS_DIAG: 8 TTC
+ SG_ Controller_Supply_Overvoltage : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Controller_Supply_Undervoltage : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CAN_CH_1 : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CAN_CH_2 : 3|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterContactorOpen : 4|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterContactorWelded : 5|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_PcgTimeoutErr : 6|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_Status : 7|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_CANTimeout : 8|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_InternalHVIL : 9|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_PermanentLock : 10|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_Protocol : 11|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_HV_Overvoltage : 12|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_HV_Undervoltage : 13|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_LV_Overvoltage : 14|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_LV_Undervoltage : 15|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailHotspot : 16|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailTemp_sensor : 17|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailDriver : 18|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailHigh_current : 19|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailMem_comm : 20|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailDcdc_convert : 21|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ MEB_CANTimeout : 22|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ SetpointOverlap : 23|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_FaultLevel1 : 24|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_CANTimeout : 25|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Coolant_LevelSwitch : 26|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PermanentLockout : 27|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+
+BO_ 2181033635 COMMON_ERRORS_LATCHED_DIAG: 8 TTC
+ SG_ Controller_Supply_Overvoltage : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Controller_Supply_Undervoltage : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CAN_CH_1 : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CAN_CH_2 : 3|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterContactorOpen : 4|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterContactorWelded : 5|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_PcgTimeoutErr : 6|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_Status : 7|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_CANTimeout : 8|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_InternalHVIL : 9|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_PermanentLock : 10|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_Protocol : 11|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_HV_Overvoltage : 12|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_HV_Undervoltage : 13|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_LV_Overvoltage : 14|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Heater_LV_Undervoltage : 15|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailHotspot : 16|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailTemp_sensor : 17|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailDriver : 18|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailHigh_current : 19|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailMem_comm : 20|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterFailDcdc_convert : 21|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ MEB_CANTimeout : 22|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ SetpointOverlap : 23|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_FaultLevel1 : 24|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDC_CANTimeout : 25|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Coolant_LevelSwitch : 26|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PermanentLockout : 27|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+
+BO_ 2181033636 LOOP_ERRORS_DIAG: 8 TTC
+ SG_ Pump_Status : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Pump_CanTimeout : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Pump_Overvoltage : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Pump_Undervoltage : 3|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Pump_Overtemp : 4|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Status : 5|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_CanTimeout : 6|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Overvoltage : 7|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Undervoltage : 8|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_CurrImbalanceErr : 9|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Overcurrent : 10|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Overtemp : 11|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Electronic : 12|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_LostPhase : 13|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Lockout : 14|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ FanCoverSwitchOpen : 15|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ AllFansDriveStatus : 16|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HighSidePressureSwitch : 17|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HighSidePressureSensor : 18|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ LowSidePressureSensor : 19|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ LowSideLowPressure : 20|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+
+BO_ 2181033637 LOOP_ERRORS_LATCHED_DIAG: 8 TTC
+ SG_ Pump_Status : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Pump_CanTimeout : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Pump_Overvoltage : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Pump_Undervoltage : 3|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Pump_Overtemp : 4|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Status : 5|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_CanTimeout : 6|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Overvoltage : 7|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Undervoltage : 8|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_CurrImbalanceErr : 9|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Overcurrent : 10|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Overtemp : 11|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Electronic : 12|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_LostPhase : 13|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Cmprsr_Lockout : 14|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ FanCoverSwitchOpen : 15|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ AllFansDriveStatus : 16|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HighSidePressureSwitch : 17|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HighSidePressureSensor : 18|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ LowSidePressureSensor : 19|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ LowSideLowPressure : 20|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+
+BO_ 2181033638 COMMON_INPUTS_1_DIAG: 8 TTC
+ SG_ ReservoirWarningLevelSensor : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ ReservoirCriticalLevelSensor : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterContactorFb : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolantPressureIn : 8|16@1+ (0.01,0) [0|655.35] "bar"  DESKTOPSIMULATION
+ SG_ CoolantPressureOut : 24|16@1+ (0.01,0) [0|655.35] "bar"  DESKTOPSIMULATION
+ SG_ TTCInputVoltage : 40|16@1+ (0.001,0) [0|32] "V"  DESKTOPSIMULATION
+
+BO_ 2181033639 COMMON_INPUTS_2_DIAG: 8 TTC
+ SG_ AmbientTemperature : 0|16@1+ (0.1,-40) [-40|6513.5] "°C"  DESKTOPSIMULATION
+ SG_ CoolantTemperatureIn : 16|16@1+ (0.1,-40) [-40|6513.5] "°C"  DESKTOPSIMULATION
+ SG_ CoolantTemperatureOut : 32|16@1+ (0.1,-40) [-40|6513.5] "°C"  DESKTOPSIMULATION
+ SG_ TankCoolantTemperature : 48|16@1+ (0.1,-40) [-40|6513.5] "°C"  DESKTOPSIMULATION
+
+BO_ 2181033640 LOOP_SPECIFIC_INPUTS_DIAG: 8 TTC
+ SG_ Fan1_DriveStatusFb : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Fan2_DriveStatusFb : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Fan3_DriveStatusFb : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ Fan4_DriveStatusFb : 3|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ FanCoverSwitchFb : 4|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ SuperheatControllerAlarmRelay : 5|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HighSidePressureSwitch : 6|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HighSidePressureSens : 8|16@1- (0.1,0) [-3276|3276] "PSIG"  DESKTOPSIMULATION
+ SG_ HighSideTemperature : 24|16@1+ (0.1,-40) [-40|65495] "°C"  DESKTOPSIMULATION
+ SG_ LowSidePressureSens : 40|16@1- (0.1,0) [-3276|3276] "PSIG"  DESKTOPSIMULATION
+
+BO_ 2181033641 COMMON_OUTPUTS_DIAG: 8 TTC
+ SG_ HeaterCANEnable : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDCAuxSupply : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterContactorControl : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterMaxPower : 8|8@1+ (100,0) [0|25500] "kW"  DESKTOPSIMULATION
+ SG_ HeaterTargetTemp : 16|8@1+ (1,-50) [-50|205] "°C"  DESKTOPSIMULATION
+ SG_ CirculationPumpSpeed : 24|8@1+ (1,0) [0|255] "%"  DESKTOPSIMULATION
+ SG_ CalculatedFlowRate : 32|16@1+ (0.1,0) [0|6553.5] "litres/min"  DESKTOPSIMULATION
+
+BO_ 2181033642 LOOP_SPECIFIC_OUTPUTS: 8 TTC
+ SG_ SuperheatControllerEnable : 0|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CompressorEnable : 1|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CompressorShutdown : 2|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PumpDirectionRequest : 4|2@1+ (1,0) [0|3] ""  DESKTOPSIMULATION
+ SG_ CompressorPowerLimit : 8|8@1+ (0.2,0) [0|51] "kW"  DESKTOPSIMULATION
+ SG_ PumpSpeedRequest : 16|16@1+ (1,0) [0|65535] "rpm"  DESKTOPSIMULATION
+ SG_ CompressorSpeedRequest : 32|16@1+ (1,0) [0|65535] "rpm"  DESKTOPSIMULATION
+ SG_ FanPwmSpeedRequest : 48|16@1+ (1,0) [0|65535] "%"  DESKTOPSIMULATION
+
+BO_ 2181033643 INTERNAL_VARIABLES_DIAG: 8 TTC
+ SG_ SystemLoad : 0|32@1+ (0.1,0) [0|429496729.6] "kW"  DESKTOPSIMULATION
+ SG_ MainHSMState : 32|8@1+ (1,0) [0|255] ""  DESKTOPSIMULATION
+ SG_ AmberLampIndicator : 40|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolingDisabled : 41|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeatingDisabled : 42|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CoolingLoopLimpMode : 43|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ PumpRxOk : 44|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ CompressorRxOk : 45|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ HeaterRxOk : 46|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ DCDCRxOk : 47|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+ SG_ MebRxOk : 48|1@1+ (1,0) [0|1] ""  DESKTOPSIMULATION
+
+BO_ 2181033644 PID_COEFFS_FB_DIAG: 8 TTC
+ SG_ k_p : 0|16@1- (0.1,0) [0|3276] ""  DESKTOPSIMULATION
+ SG_ k_i : 16|16@1- (0.01,0) [0|327] ""  DESKTOPSIMULATION
+ SG_ k_d : 32|16@1- (0.01,0) [0|327] ""  DESKTOPSIMULATION
+
+BO_ 2181033645 PID_COEFFS_EPISPHERE_PARAM_DIAG: 8 TTC
+ SG_ k_p : 0|16@1- (0.1,0) [0|3276] ""  DESKTOPSIMULATION
+ SG_ k_i : 16|16@1- (0.01,0) [0|327] ""  DESKTOPSIMULATION
+ SG_ k_d : 32|16@1- (0.01,0) [0|327] ""  DESKTOPSIMULATION
+
+BO_ 2181033646 DEBUG_PID_DIAG: 8 TTC
+ SG_ PID_Error : 0|16@1- (0.1,0) [-32768|32767] ""  DESKTOPSIMULATION
+ SG_ PID_Pterm : 16|16@1- (1,0) [-32768|32767] ""  DESKTOPSIMULATION
+ SG_ PID_Iterm : 32|16@1- (1,0) [-32768|32767] ""  DESKTOPSIMULATION
+ SG_ PID_Iterm_c : 48|16@1- (0.01,0) [-327.68|327.67] ""  DESKTOPSIMULATION
+
+BO_ 2181033648 FAN_CONTROL_SERVICE: 8 DESKTOPSIMULATION
+ SG_ FanEnable : 0|1@1+ (1,0) [0|1] ""  TTC
+ SG_ FanSpeedRequest : 8|16@1+ (1,0) [0|100] "%"  TTC
+
+BO_ 2181033649 COMPRESSOR_CONTROL_SERVICE: 8 DESKTOPSIMULATION
+ SG_ CompressorEnable : 0|1@1+ (1,0) [0|1] ""  TTC
+ SG_ CompressorSpeedRequest : 8|16@1+ (1,0) [1000|8500] "rpm"  TTC
+
+BO_ 2181033650 PUMPS_CONTROL_SERVICE: 8 DESKTOPSIMULATION
+ SG_ PumpEnable : 0|1@1+ (1,0) [0|1] ""  TTC
+ SG_ PumpSpeedRequest : 8|16@1+ (1,0) [1500|5350] "rpm"  TTC
+
+BO_ 2181033651 HEATER_CONTROL_SERVICE: 8 DESKTOPSIMULATION
+ SG_ HeaterEnable : 0|1@1+ (1,0) [0|1] ""  TTC
+ SG_ HeaterContactorControl : 1|1@1+ (1,0) [0|1] ""  TTC
+ SG_ HeaterTargetTemp : 8|8@1+ (1,-50) [0|100] "°C"  TTC
+ SG_ HeaterTargetTempOverride : 16|1@1+ (1,0) [0|1] ""  TTC
+ SG_ HeaterMaxPower : 24|16@1+ (1,0) [0|12000] "W"  TTC
+ SG_ HeaterMaxPowerOverride : 40|1@1+ (1,0) [0|1] ""  TTC
+
+BO_ 2181033652 COMMON_OTHER_CONTROL_SERVICE: 8 DESKTOPSIMULATION
+ SG_ DCDCAuxSupply : 0|1@1+ (1,0) [0|1] ""  TTC
+ SG_ CirculationPumpEnable : 1|1@1+ (1,0) [0|1] ""  TTC
+
+BO_ 2181033653 LOOP_OTHER_CONTROL_SERVICE: 8 DESKTOPSIMULATION
+ SG_ SuperheatControllerEnable : 0|1@1+ (1,0) [0|1] ""  TTC
+
+BO_ 2181033654 PID_TUNING_SERVICE: 8 DESKTOP_SIMULATION
+ SG_ k_p : 0|16@1- (0.05,0) [0|1638.35] ""  TTC
+ SG_ k_i : 16|16@1- (0.005,0) [0|163.835] ""  TTC
+ SG_ k_d : 32|16@1- (0.5,0) [0|32767.5] ""  TTC
+ SG_ use_custom_gains : 48|1@1+ (1,0) [0|1] ""  TTC
+ SG_ overwrite_episphere_gains : 49|1@1+ (1,0) [0|1] ""  TTC
+
+BO_ 2181033655 FAULT_RESET_MESSAGE_SERVICE: 8 DESKTOP_SIMULATION
+ SG_ Reset_Lockout : 0|1@1+ (1,0) [0|1] ""  TTC
+ SG_ Reset_Cooling_Disabled : 1|1@1+ (1,0) [0|1] ""  TTC
+ SG_ Reset_Heating_Disabled : 2|1@1+ (1,0) [0|1] ""  TTC
+
+
+
+CM_ SG_ 2683240203 ttc_episphere_device_type "Device type of TTC that is set via EpiSphereConfig in application to identify it in Episphere";
+CM_ SG_ 2583681129 ECPowerPermit "Requested upper limit for the power consumption of the compressor. If no limit is set (value of zero), then there is no limit requested from the vehicle.";
+CM_ SG_ 2583681129 ECSpeedReq "Speed command from vehicle or system to compressor. Compresor will not run if EC_Enable is 'compressor off' or EC_HV_Shutdown is 'True'. Compressor actual speed may not match commanded speed for many reasons.";
+CM_ SG_ 2583681129 ECHVShutdown "If true, initiate an immediate fast stop of the compressor motor.";
+CM_ SG_ 2583680152 ECTrnstrTemp "Transistor temperature sensor measured value";
+CM_ SG_ 2583680152 ECPhaseCurrent "Motor phase current sensor measured value (highest value among three phases)";
+CM_ SG_ 2684354464 Z_DI_72 "0 indicates normal operation, 1 indicates switch is tripped";
+CM_ SG_ 2684354464 Z_DI_74 "0 indicates normal operation, 1 indicates switch is tripped";
+CM_ SG_ 2684354464 Z_DI_78 "0 indicates normal operation, 1 indicates switch is tripped";
+CM_ SG_ 2684354464 Z_DI_73 "Fan1 DIN value";
+CM_ SG_ 2684354464 Z_DI_75 "Fan2 DIN value";
+CM_ SG_ 2684354464 Z_DI_77 "Fan3 DIN value";
+CM_ SG_ 2684354464 Z_DI_79 "Fan4 DIN value";
+CM_ SG_ 2684354464 Z_AI_00 "milli-voltage value corresponds to psig (pressure per square inch guage pressre). 1000mV is 62.5psig and 1500mV is 125psig";
+CM_ SG_ 2684354464 Z_AI_10 "milli-voltage value corresponds to psig (pressure per square inch guage pressre). 1000mV is 62.5psig and 1500mV is 125psig";
+CM_ SG_ 2684354464 Z_AI_12 "Current value corresponds to pressure, 4ma is 0 bar, and 20ma is 10 bar";
+CM_ SG_ 2684354464 Z_AI_14 "Current value corresponds to pressure, 4ma is 0 bar, and 20ma is 10 bar";
+CM_ SG_ 2684354464 Z_AI_11 "Voltage value corresponding to temperature";
+CM_ SG_ 2684354464 Z_AI_01 "Resistance value corresponds to temperature, 10000 is 25°C and 1000 is 87°C";
+CM_ SG_ 2684354464 Z_AI_02 "Resistance value corresponds to temperature, 10000 is 25°C and 1000 is 87°C";
+CM_ SG_ 2684354464 Z_AI_04 "Resistance value corresponds to temperature, 10000 is 25°C and 1000 is 87°C";
+CM_ SG_ 2684354464 Z_AI_05 "Voltage value corresponding to temperature";
+CM_ SG_ 2684354464 Z_AI_06 "Resistance value corresponds to temperature, 10000 is 25°C and 1000 is 87°C";
+BA_DEF_ SG_  "CanDootHidden" ENUM  "No","Yes";
+BA_DEF_ SG_  "CanDootGroup" ENUM  "None","g1","g2","g3","g4","g5","g6","g7","g8","g9","gA","gB","gC","gD","gE","gF";
+BA_DEF_ SG_  "GenSigStartValue" FLOAT 0 100000000000;
+BA_DEF_ SG_  "CanDootBroadcast" ENUM  "No","Yes";
+BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType";
+BA_DEF_ SG_  "GenSigInactiveValue" INT 0 100000;
+BA_DEF_ SG_  "SPN" INT 0 524287;
+BA_DEF_ SG_  "SignalName" STRING ;
+BA_DEF_ SG_  "SigType" STRING ;
+BA_DEF_ SG_  "SigBroadcasted" ENUM  "No","Yes";
+BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 65535;
+BA_DEF_ BO_  "GenMsgNrOfRepetition" INT 0 999999;
+BA_DEF_ BO_  "GenMsgILSupport" ENUM  "No","Yes";
+BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 0 50000;
+BA_DEF_ BO_  "MessageName" STRING ;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "Cyclic","Reserved","Reserved","Reserved","Reserved","Reserved","Reserved","IfActive","NoMsgSendType";
+BA_DEF_ BO_  "GenMsgRequestable" INT 0 1;
+BA_DEF_ BO_  "GenMsgDelayTime" INT 0 1000;
+BA_DEF_ BO_  "PGN" HEX 0 65535;
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 65535;
+BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","J1939PG";
+BA_DEF_ BO_  "CanDootDecode" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulateBus" INT 0 6;
+BA_DEF_ BO_  "CanDootDecodeBus" INT 0 6;
+BA_DEF_ BO_  "CanDootPaused" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulate" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulateCycleTime" INT 0 50000;
+BA_DEF_  "ProtocolType" STRING ;
+BA_DEF_DEF_  "CanDootHidden" "No";
+BA_DEF_DEF_  "CanDootGroup" "None";
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "CanDootBroadcast" "";
+BA_DEF_DEF_  "GenSigSendType" "";
+BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "SPN" 0;
+BA_DEF_DEF_  "SignalName" "";
+BA_DEF_DEF_  "SigType" "";
+BA_DEF_DEF_  "SigBroadcasted" "";
+BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
+BA_DEF_DEF_  "GenMsgNrOfRepetition" 0;
+BA_DEF_DEF_  "GenMsgILSupport" "";
+BA_DEF_DEF_  "GenMsgCycleTimeFast" 0;
+BA_DEF_DEF_  "MessageName" "";
+BA_DEF_DEF_  "GenMsgSendType" "";
+BA_DEF_DEF_  "GenMsgRequestable" 0;
+BA_DEF_DEF_  "GenMsgDelayTime" 0;
+BA_DEF_DEF_  "PGN" 0;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "VFrameFormat" "";
+BA_DEF_DEF_  "CanDootDecode" "Yes";
+BA_DEF_DEF_  "CanDootSimulateBus" 0;
+BA_DEF_DEF_  "CanDootDecodeBus" 0;
+BA_DEF_DEF_  "CanDootPaused" "No";
+BA_DEF_DEF_  "CanDootSimulate" "No";
+BA_DEF_DEF_  "CanDootSimulateCycleTime" 1500;
+BA_DEF_DEF_  "ProtocolType" "";
+BA_ "GenMsgSendType" BO_ 2558198015 0;
+BA_ "GenMsgCycleTime" BO_ 2558198015 1000;
+BA_ "CanDootDecode" BO_ 2558198015 1;
+BA_ "CanDootSimulateBus" BO_ 2558198015 3;
+BA_ "CanDootSimulateCycleTime" BO_ 2558198015 100;
+BA_ "CanDootDecodeBus" BO_ 2558198015 3;
+BA_ "CanDootSimulate" BO_ 2558198015 0;
+BA_ "VFrameFormat" BO_ 2558198015 3;
+BA_ "GenMsgSendType" BO_ 2566651648 0;
+BA_ "GenMsgCycleTime" BO_ 2566651648 1000;
+BA_ "CanDootDecode" BO_ 2566651648 1;
+BA_ "CanDootDecodeBus" BO_ 2566651648 2;
+BA_ "CanDootSimulate" BO_ 2566651648 0;
+BA_ "CanDootSimulateBus" BO_ 2566651648 2;
+BA_ "CanDootSimulateCycleTime" BO_ 2566651648 500;
+BA_ "VFrameFormat" BO_ 2566651648 3;
+BA_ "CanDootDecodeBus" BO_ 2683239947 1;
+BA_ "CanDootSimulateBus" BO_ 2683239947 0;
+BA_ "GenMsgCycleTimeFast" BO_ 2683239947 100;
+BA_ "MessageName" BO_ 2683239947 "EVCA command";
+BA_ "GenMsgSendType" BO_ 2683239947 0;
+BA_ "GenMsgDelayTime" BO_ 2683239947 0;
+BA_ "GenMsgCycleTime" BO_ 2683239947 100;
+BA_ "CanDootSimulate" BO_ 2683239947 0;
+BA_ "CanDootDecode" BO_ 2683239947 1;
+BA_ "VFrameFormat" BO_ 2683239947 3;
+BA_ "CanDootDecodeBus" BO_ 2683177982 1;
+BA_ "CanDootSimulateBus" BO_ 2683177982 0;
+BA_ "GenMsgCycleTimeFast" BO_ 2683177982 100;
+BA_ "MessageName" BO_ 2683177982 "EVCA command";
+BA_ "GenMsgSendType" BO_ 2683177982 0;
+BA_ "GenMsgDelayTime" BO_ 2683177982 0;
+BA_ "GenMsgCycleTime" BO_ 2683177982 100;
+BA_ "CanDootSimulate" BO_ 2683177982 0;
+BA_ "CanDootDecode" BO_ 2683177982 1;
+BA_ "VFrameFormat" BO_ 2683177982 3;
+BA_ "CanDootDecodeBus" BO_ 2683240203 1;
+BA_ "CanDootSimulateBus" BO_ 2683240203 0;
+BA_ "GenMsgCycleTime" BO_ 2683240203 100;
+BA_ "GenMsgDelayTime" BO_ 2683240203 0;
+BA_ "GenMsgSendType" BO_ 2683240203 0;
+BA_ "MessageName" BO_ 2683240203 "EVCA command";
+BA_ "GenMsgCycleTimeFast" BO_ 2683240203 100;
+BA_ "CanDootSimulate" BO_ 2683240203 0;
+BA_ "CanDootDecode" BO_ 2683240203 1;
+BA_ "VFrameFormat" BO_ 2683240203 3;
+BA_ "CanDootDecodeBus" BO_ 2683240446 1;
+BA_ "CanDootSimulateBus" BO_ 2683240446 0;
+BA_ "GenMsgCycleTimeFast" BO_ 2683240446 100;
+BA_ "MessageName" BO_ 2683240446 "EVCA command";
+BA_ "GenMsgSendType" BO_ 2683240446 0;
+BA_ "GenMsgDelayTime" BO_ 2683240446 0;
+BA_ "GenMsgCycleTime" BO_ 2683240446 100;
+BA_ "CanDootSimulate" BO_ 2683240446 0;
+BA_ "CanDootDecode" BO_ 2683240446 1;
+BA_ "VFrameFormat" BO_ 2683240446 3;
+BA_ "GenMsgCycleTime" BO_ 2365528155 100;
+BA_ "CanDootSimulateBus" BO_ 2365528155 1;
+BA_ "CanDootDecodeBus" BO_ 2365528155 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2365528155 100;
+BA_ "CanDootSimulate" BO_ 2365528155 0;
+BA_ "CanDootDecode" BO_ 2365528155 1;
+BA_ "VFrameFormat" BO_ 2365528155 3;
+BA_ "CanDootDecodeBus" BO_ 2365545936 1;
+BA_ "CanDootSimulateBus" BO_ 2365545936 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2365545936 200;
+BA_ "CanDootSimulate" BO_ 2365545936 0;
+BA_ "GenMsgCycleTime" BO_ 2365545936 100;
+BA_ "CanDootDecode" BO_ 2365545936 1;
+BA_ "VFrameFormat" BO_ 2365545936 3;
+BA_ "CanDootSimulate" BO_ 2365528528 0;
+BA_ "GenMsgCycleTime" BO_ 2365528528 100;
+BA_ "CanDootSimulateBus" BO_ 2365528528 1;
+BA_ "CanDootDecodeBus" BO_ 2365528528 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2365528528 100;
+BA_ "CanDootDecode" BO_ 2365528528 1;
+BA_ "VFrameFormat" BO_ 2365528528 3;
+BA_ "CanDootSimulate" BO_ 2365545680 0;
+BA_ "GenMsgCycleTime" BO_ 2365545680 100;
+BA_ "CanDootSimulateBus" BO_ 2365545680 1;
+BA_ "CanDootDecodeBus" BO_ 2365545680 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2365545680 100;
+BA_ "CanDootDecode" BO_ 2365545680 1;
+BA_ "VFrameFormat" BO_ 2365545680 3;
+BA_ "CanDootSimulate" BO_ 2365528411 0;
+BA_ "GenMsgCycleTime" BO_ 2365528411 100;
+BA_ "CanDootSimulateBus" BO_ 2365528411 0;
+BA_ "CanDootDecodeBus" BO_ 2365528411 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2365528411 100;
+BA_ "CanDootDecode" BO_ 2365528411 1;
+BA_ "VFrameFormat" BO_ 2365528411 3;
+BA_ "CanDootSimulate" BO_ 2583681129 0;
+BA_ "GenMsgCycleTime" BO_ 2583681129 100;
+BA_ "GenMsgCycleTimeFast" BO_ 2583681129 100;
+BA_ "GenMsgDelayTime" BO_ 2583681129 0;
+BA_ "GenMsgSendType" BO_ 2583681129 0;
+BA_ "MessageName" BO_ 2583681129 "EVCA command";
+BA_ "CanDootDecode" BO_ 2583681129 1;
+BA_ "CanDootDecodeBus" BO_ 2583681129 3;
+BA_ "CanDootSimulateBus" BO_ 2583681129 3;
+BA_ "VFrameFormat" BO_ 2583681129 3;
+BA_ "CanDootSimulateCycleTime" BO_ 2583680152 100;
+BA_ "VFrameFormat" BO_ 2583680152 1;
+BA_ "CanDootDecode" BO_ 2583680152 1;
+BA_ "CanDootDecodeBus" BO_ 2583680152 2;
+BA_ "CanDootSimulate" BO_ 2583680152 0;
+BA_ "CanDootSimulateBus" BO_ 2583680152 2;
+BA_ "CanDootSimulate" BO_ 2565817377 0;
+BA_ "CanDootSimulateBus" BO_ 2565817377 3;
+BA_ "GenMsgDelayTime" BO_ 2565817377 0;
+BA_ "GenMsgSendType" BO_ 2565817377 0;
+BA_ "GenMsgCycleTime" BO_ 2565817377 1000;
+BA_ "GenMsgCycleTimeFast" BO_ 2565817377 0;
+BA_ "CanDootDecodeBus" BO_ 2565817377 3;
+BA_ "MessageName" BO_ 2565817377 "";
+BA_ "CanDootDecode" BO_ 2565817377 1;
+BA_ "VFrameFormat" BO_ 2565817377 3;
+BA_ "GenMsgSendType" BO_ 2566889540 0;
+BA_ "GenMsgCycleTime" BO_ 2566889540 1000;
+BA_ "CanDootDecode" BO_ 2566889540 1;
+BA_ "CanDootSimulateBus" BO_ 2566889540 2;
+BA_ "CanDootSimulateCycleTime" BO_ 2566889540 500;
+BA_ "CanDootSimulate" BO_ 2566889540 0;
+BA_ "CanDootDecodeBus" BO_ 2566889540 1;
+BA_ "VFrameFormat" BO_ 2566889540 3;
+BA_ "GenMsgSendType" BO_ 2566889796 0;
+BA_ "GenMsgCycleTime" BO_ 2566889796 1000;
+BA_ "CanDootDecode" BO_ 2566889796 1;
+BA_ "CanDootSimulateBus" BO_ 2566889796 2;
+BA_ "CanDootSimulateCycleTime" BO_ 2566889796 500;
+BA_ "CanDootSimulate" BO_ 2566889796 0;
+BA_ "CanDootDecodeBus" BO_ 2566889796 1;
+BA_ "VFrameFormat" BO_ 2566889796 3;
+BA_ "GenMsgSendType" BO_ 2550190223 0;
+BA_ "GenMsgCycleTime" BO_ 2550190223 500;
+BA_ "CanDootDecode" BO_ 2550190223 1;
+BA_ "CanDootSimulateBus" BO_ 2550190223 3;
+BA_ "CanDootSimulateCycleTime" BO_ 2550190223 500;
+BA_ "CanDootSimulate" BO_ 2550190223 0;
+BA_ "CanDootDecodeBus" BO_ 2550190223 3;
+BA_ "VFrameFormat" BO_ 2550190223 3;
+BA_ "GenMsgSendType" BO_ 2550255759 0;
+BA_ "GenMsgCycleTime" BO_ 2550255759 500;
+BA_ "CanDootDecode" BO_ 2550255759 1;
+BA_ "CanDootSimulateBus" BO_ 2550255759 3;
+BA_ "CanDootSimulateCycleTime" BO_ 2550255759 500;
+BA_ "CanDootSimulate" BO_ 2550255759 0;
+BA_ "CanDootDecodeBus" BO_ 2550255759 3;
+BA_ "VFrameFormat" BO_ 2550255759 3;
+BA_ "CanDootDecodeBus" BO_ 2684354464 0;
+BA_ "CanDootSimulateBus" BO_ 2684354464 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2684354464 500;
+BA_ "CanDootSimulate" BO_ 2684354464 0;
+BA_ "CanDootDecode" BO_ 2684354464 0;
+BA_ "CanDootPaused" BO_ 2684354464 0;
+BA_ "VFrameFormat" BO_ 2684354464 3;
+BA_ "CanDootDecodeBus" BO_ 2684354480 0;
+BA_ "CanDootSimulateBus" BO_ 2684354480 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2684354480 500;
+BA_ "CanDootPaused" BO_ 2684354480 0;
+BA_ "CanDootSimulate" BO_ 2684354480 0;
+BA_ "CanDootDecode" BO_ 2684354480 1;
+BA_ "VFrameFormat" BO_ 2684354480 3;
+BA_ "CanDootDecode" BO_ 2181033632 1;
+BA_ "CanDootSimulateBus" BO_ 2181033632 0;
+BA_ "CanDootDecodeBus" BO_ 2181033632 1;
+BA_ "CanDootSimulate" BO_ 2181033632 0;
+BA_ "CanDootDecode" BO_ 2181033633 1;
+BA_ "CanDootSimulateBus" BO_ 2181033633 0;
+BA_ "CanDootDecodeBus" BO_ 2181033633 1;
+BA_ "CanDootSimulate" BO_ 2181033633 0;
+BA_ "CanDootDecode" BO_ 2181033634 1;
+BA_ "CanDootSimulateBus" BO_ 2181033634 0;
+BA_ "CanDootDecodeBus" BO_ 2181033634 1;
+BA_ "CanDootSimulate" BO_ 2181033634 0;
+BA_ "CanDootDecode" BO_ 2181033635 1;
+BA_ "CanDootSimulateBus" BO_ 2181033635 0;
+BA_ "CanDootDecodeBus" BO_ 2181033635 1;
+BA_ "CanDootSimulate" BO_ 2181033635 0;
+BA_ "CanDootDecode" BO_ 2181033636 1;
+BA_ "CanDootSimulateBus" BO_ 2181033636 0;
+BA_ "CanDootDecodeBus" BO_ 2181033636 1;
+BA_ "CanDootSimulate" BO_ 2181033636 0;
+BA_ "CanDootDecode" BO_ 2181033637 1;
+BA_ "CanDootSimulateBus" BO_ 2181033637 0;
+BA_ "CanDootDecodeBus" BO_ 2181033637 1;
+BA_ "CanDootSimulate" BO_ 2181033637 0;
+BA_ "CanDootDecode" BO_ 2181033638 1;
+BA_ "CanDootSimulateBus" BO_ 2181033638 0;
+BA_ "CanDootDecodeBus" BO_ 2181033638 1;
+BA_ "CanDootSimulate" BO_ 2181033638 0;
+BA_ "CanDootDecode" BO_ 2181033639 1;
+BA_ "CanDootSimulateBus" BO_ 2181033639 0;
+BA_ "CanDootDecodeBus" BO_ 2181033639 1;
+BA_ "CanDootSimulate" BO_ 2181033639 0;
+BA_ "CanDootDecode" BO_ 2181033640 1;
+BA_ "CanDootSimulateBus" BO_ 2181033640 0;
+BA_ "CanDootDecodeBus" BO_ 2181033640 1;
+BA_ "CanDootSimulate" BO_ 2181033640 0;
+BA_ "CanDootDecode" BO_ 2181033641 1;
+BA_ "CanDootSimulateBus" BO_ 2181033641 0;
+BA_ "CanDootDecodeBus" BO_ 2181033641 1;
+BA_ "CanDootSimulate" BO_ 2181033641 0;
+BA_ "CanDootDecode" BO_ 2181033642 1;
+BA_ "CanDootSimulateBus" BO_ 2181033642 0;
+BA_ "CanDootDecodeBus" BO_ 2181033642 1;
+BA_ "CanDootSimulate" BO_ 2181033642 0;
+BA_ "CanDootDecode" BO_ 2181033643 1;
+BA_ "CanDootSimulateBus" BO_ 2181033643 0;
+BA_ "CanDootDecodeBus" BO_ 2181033643 1;
+BA_ "CanDootSimulate" BO_ 2181033643 0;
+BA_ "CanDootDecode" BO_ 2181033644 1;
+BA_ "CanDootSimulateBus" BO_ 2181033644 0;
+BA_ "CanDootDecodeBus" BO_ 2181033644 1;
+BA_ "CanDootSimulate" BO_ 2181033644 0;
+BA_ "CanDootDecode" BO_ 2181033645 1;
+BA_ "CanDootSimulateBus" BO_ 2181033645 0;
+BA_ "CanDootDecodeBus" BO_ 2181033645 1;
+BA_ "CanDootSimulate" BO_ 2181033645 0;
+BA_ "VFrameFormat" BO_ 2181033646 1;
+BA_ "CanDootDecodeBus" BO_ 2181033646 1;
+BA_ "GenMsgCycleTime" BO_ 2181033648 100;
+BA_ "CanDootSimulateBus" BO_ 2181033648 1;
+BA_ "CanDootDecodeBus" BO_ 2181033648 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2181033648 100;
+BA_ "CanDootDecode" BO_ 2181033648 0;
+BA_ "CanDootSimulate" BO_ 2181033648 1;
+BA_ "VFrameFormat" BO_ 2181033648 3;
+BA_ "GenMsgCycleTime" BO_ 2181033649 100;
+BA_ "CanDootSimulateBus" BO_ 2181033649 1;
+BA_ "CanDootDecodeBus" BO_ 2181033649 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2181033649 100;
+BA_ "CanDootDecode" BO_ 2181033649 0;
+BA_ "CanDootSimulate" BO_ 2181033649 1;
+BA_ "VFrameFormat" BO_ 2181033649 3;
+BA_ "GenMsgCycleTime" BO_ 2181033650 100;
+BA_ "CanDootSimulateBus" BO_ 2181033650 1;
+BA_ "CanDootDecodeBus" BO_ 2181033650 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2181033650 100;
+BA_ "CanDootDecode" BO_ 2181033650 0;
+BA_ "CanDootSimulate" BO_ 2181033650 1;
+BA_ "VFrameFormat" BO_ 2181033650 3;
+BA_ "GenMsgCycleTime" BO_ 2181033651 100;
+BA_ "CanDootSimulateBus" BO_ 2181033651 1;
+BA_ "CanDootDecodeBus" BO_ 2181033651 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2181033651 100;
+BA_ "CanDootDecode" BO_ 2181033651 0;
+BA_ "CanDootSimulate" BO_ 2181033651 1;
+BA_ "VFrameFormat" BO_ 2181033651 3;
+BA_ "GenMsgCycleTime" BO_ 2181033652 100;
+BA_ "CanDootSimulateBus" BO_ 2181033652 1;
+BA_ "CanDootDecodeBus" BO_ 2181033652 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2181033652 100;
+BA_ "CanDootDecode" BO_ 2181033652 0;
+BA_ "CanDootSimulate" BO_ 2181033652 1;
+BA_ "VFrameFormat" BO_ 2181033652 3;
+BA_ "GenMsgCycleTime" BO_ 2181033653 100;
+BA_ "CanDootSimulateBus" BO_ 2181033653 1;
+BA_ "CanDootDecodeBus" BO_ 2181033653 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2181033653 100;
+BA_ "CanDootDecode" BO_ 2181033653 0;
+BA_ "CanDootSimulate" BO_ 2181033653 1;
+BA_ "VFrameFormat" BO_ 2181033653 3;
+BA_ "MessageName" BO_ 2181033654 "";
+BA_ "VFrameFormat" BO_ 2181033654 1;
+BA_ "CanDootDecode" BO_ 2181033654 0;
+BA_ "CanDootSimulateBus" BO_ 2181033654 1;
+BA_ "CanDootDecodeBus" BO_ 2181033654 0;
+BA_ "CanDootSimulate" BO_ 2181033654 1;
+BA_ "CanDootSimulate" BO_ 2181033655 1;
+BA_ "CanDootDecodeBus" BO_ 2181033655 1;
+BA_ "CanDootSimulateBus" BO_ 2181033655 1;
+BA_ "VFrameFormat" BO_ 2181033655 1;
+BA_ "GenSigStartValue" SG_ 2365528155 SetpointHeaterControlTemp 57;
+BA_ "GenSigStartValue" SG_ 2365528155 MeasuredControlTemperature 597;
+BA_ "GenSigStartValue" SG_ 2365545936 HVES1_Intake_Coolant_Temperature 40;
+BA_ "GenSigStartValue" SG_ 2365545936 HVES1_Outlet_Coolant_Temperature 40;
+BA_ "GenSigStartValue" SG_ 2365545936 HVES1_Electronics_Temperature 40;
+BA_ "GenSigStartValue" SG_ 2365528528 HeaterTemperature 40;
+BA_ "GenSigStartValue" SG_ 2365528528 AmbientTemperature 80;
+BA_ "GenSigSendType" SG_ 2583681129 ECEnable 0;
+BA_ "SigBroadcasted" SG_ 2583681129 ECEnable 1;
+BA_ "SPN" SG_ 2583681129 ECEnable 0;
+BA_ "GenSigInactiveValue" SG_ 2583681129 ECEnable 0;
+BA_ "GenSigStartValue" SG_ 2583681129 ECEnable 3;
+BA_ "SigType" SG_ 2583681129 ECEnable "DEFAULT";
+BA_ "SignalName" SG_ 2583681129 ECEnable "ECEnable";
+BA_ "GenSigSendType" SG_ 2583681129 ECPowerPermit 0;
+BA_ "SigBroadcasted" SG_ 2583681129 ECPowerPermit 1;
+BA_ "SPN" SG_ 2583681129 ECPowerPermit 0;
+BA_ "GenSigInactiveValue" SG_ 2583681129 ECPowerPermit 0;
+BA_ "GenSigStartValue" SG_ 2583681129 ECPowerPermit 0;
+BA_ "SigType" SG_ 2583681129 ECPowerPermit "DEFAULT";
+BA_ "SignalName" SG_ 2583681129 ECPowerPermit "EC Power Permit";
+BA_ "GenSigSendType" SG_ 2583681129 ECSpeedReq 0;
+BA_ "SigBroadcasted" SG_ 2583681129 ECSpeedReq 1;
+BA_ "SPN" SG_ 2583681129 ECSpeedReq 0;
+BA_ "GenSigInactiveValue" SG_ 2583681129 ECSpeedReq 0;
+BA_ "GenSigStartValue" SG_ 2583681129 ECSpeedReq 0;
+BA_ "SigType" SG_ 2583681129 ECSpeedReq "DEFAULT";
+BA_ "SignalName" SG_ 2583681129 ECSpeedReq "EC Speed Req";
+BA_ "GenSigSendType" SG_ 2583681129 ECHVShutdown 0;
+BA_ "SigBroadcasted" SG_ 2583681129 ECHVShutdown 1;
+BA_ "SPN" SG_ 2583681129 ECHVShutdown 0;
+BA_ "GenSigInactiveValue" SG_ 2583681129 ECHVShutdown 0;
+BA_ "GenSigStartValue" SG_ 2583681129 ECHVShutdown 3;
+BA_ "SigType" SG_ 2583681129 ECHVShutdown "DEFAULT";
+BA_ "SignalName" SG_ 2583681129 ECHVShutdown "ECHVShutdown";
+BA_ "SignalName" SG_ 2583680152 ECTrnstrTemp "EC Trnstr Temp";
+BA_ "SigType" SG_ 2583680152 ECTrnstrTemp "DEFAULT";
+BA_ "GenSigStartValue" SG_ 2583680152 ECTrnstrTemp 255;
+BA_ "GenSigInactiveValue" SG_ 2583680152 ECTrnstrTemp 0;
+BA_ "SPN" SG_ 2583680152 ECTrnstrTemp 0;
+BA_ "SigBroadcasted" SG_ 2583680152 ECTrnstrTemp 1;
+BA_ "GenSigSendType" SG_ 2583680152 ECTrnstrTemp 0;
+BA_ "SignalName" SG_ 2583680152 ECFaultBitmap "EC Fault indication Bitmap";
+BA_ "SigType" SG_ 2583680152 ECFaultBitmap "DEFAULT";
+BA_ "GenSigStartValue" SG_ 2583680152 ECFaultBitmap 0;
+BA_ "GenSigInactiveValue" SG_ 2583680152 ECFaultBitmap 0;
+BA_ "SPN" SG_ 2583680152 ECFaultBitmap 0;
+BA_ "SigBroadcasted" SG_ 2583680152 ECFaultBitmap 1;
+BA_ "GenSigSendType" SG_ 2583680152 ECFaultBitmap 0;
+BA_ "SignalName" SG_ 2583680152 ECSpeedFdbk "EC Speed Feedback";
+BA_ "SigType" SG_ 2583680152 ECSpeedFdbk "DEFAULT";
+BA_ "GenSigStartValue" SG_ 2583680152 ECSpeedFdbk 1000;
+BA_ "GenSigInactiveValue" SG_ 2583680152 ECSpeedFdbk 0;
+BA_ "SPN" SG_ 2583680152 ECSpeedFdbk 0;
+BA_ "SigBroadcasted" SG_ 2583680152 ECSpeedFdbk 1;
+BA_ "GenSigSendType" SG_ 2583680152 ECSpeedFdbk 0;
+BA_ "SignalName" SG_ 2583680152 ECPhaseCurrent "ECPhaseCurrent";
+BA_ "SigType" SG_ 2583680152 ECPhaseCurrent "DEFAULT";
+BA_ "GenSigStartValue" SG_ 2583680152 ECPhaseCurrent 0;
+BA_ "GenSigInactiveValue" SG_ 2583680152 ECPhaseCurrent 0;
+BA_ "SPN" SG_ 2583680152 ECPhaseCurrent 0;
+BA_ "SigBroadcasted" SG_ 2583680152 ECPhaseCurrent 1;
+BA_ "GenSigSendType" SG_ 2583680152 ECPhaseCurrent 0;
+BA_ "SignalName" SG_ 2583680152 ECOpStatus "ECOpStatus";
+BA_ "SigType" SG_ 2583680152 ECOpStatus "DEFAULT";
+BA_ "GenSigStartValue" SG_ 2583680152 ECOpStatus 0;
+BA_ "GenSigInactiveValue" SG_ 2583680152 ECOpStatus 0;
+BA_ "SPN" SG_ 2583680152 ECOpStatus 0;
+BA_ "SigBroadcasted" SG_ 2583680152 ECOpStatus 1;
+BA_ "GenSigSendType" SG_ 2583680152 ECOpStatus 0;
+BA_ "SignalName" SG_ 2583680152 ECDCVoltage "EC DC Voltage";
+BA_ "SigType" SG_ 2583680152 ECDCVoltage "DEFAULT";
+BA_ "GenSigStartValue" SG_ 2583680152 ECDCVoltage 0;
+BA_ "GenSigInactiveValue" SG_ 2583680152 ECDCVoltage 0;
+BA_ "SPN" SG_ 2583680152 ECDCVoltage 0;
+BA_ "SigBroadcasted" SG_ 2583680152 ECDCVoltage 1;
+BA_ "GenSigSendType" SG_ 2583680152 ECDCVoltage 0;
+BA_ "SignalName" SG_ 2583680152 ECDCCurrent "ECDCCurrent";
+BA_ "SigType" SG_ 2583680152 ECDCCurrent "DEFAULT";
+BA_ "GenSigStartValue" SG_ 2583680152 ECDCCurrent 0;
+BA_ "GenSigInactiveValue" SG_ 2583680152 ECDCCurrent 0;
+BA_ "SPN" SG_ 2583680152 ECDCCurrent 0;
+BA_ "SigBroadcasted" SG_ 2583680152 ECDCCurrent 1;
+BA_ "GenSigSendType" SG_ 2583680152 ECDCCurrent 0;
+BA_ "GenSigStartValue" SG_ 2565817377 HVH_TargetCoolantTemp 85;
+BA_ "GenSigStartValue" SG_ 2565817377 HVH_MaxPower 254;
+BA_ "GenSigStartValue" SG_ 2566889540 HVH_ActualPower 0;
+BA_ "GenSigStartValue" SG_ 2566889540 HVH_HVIL_Status 0;
+BA_ "GenSigStartValue" SG_ 2566889540 HVH_HV_Current 0;
+BA_ "GenSigStartValue" SG_ 2566889540 HVH_HV_Voltage 0;
+BA_ "GenSigStartValue" SG_ 2566889540 HVH_Coolant_Out_Temp 50;
+BA_ "GenSigStartValue" SG_ 2566889540 HVH_Coolant_In_Temp 50;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_DI_72 1;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_DI_74 1;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_DI_78 0;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_DI_73 0;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_DI_75 0;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_DI_77 0;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_DI_79 0;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_00 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_10 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_12 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_14 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_11 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_01 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_02 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_04 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_05 10000;
+BA_ "GenSigStartValue" SG_ 2684354464 Z_AI_06 10000;
+BA_ "CanDootHidden" SG_ 2684354464 Z_pin_id 1;
+BA_ "CanDootBroadcast" SG_ 2684354464 Z_pin_id 0;
+BA_ "GenSigStartValue" SG_ 2684354480 Z_PWM_04 32767;
+BA_ "CanDootHidden" SG_ 2684354480 Z_pin_outputs 1;
+BA_ "CanDootBroadcast" SG_ 2684354480 Z_pin_outputs 0;
+BA_ "GenSigStartValue" SG_ 2181033649 CompressorSpeedRequest 1000;
+BA_ "GenSigStartValue" SG_ 2181033650 PumpSpeedRequest 4500;
+BA_ "GenSigStartValue" SG_ 2181033651 HeaterTargetTemp 50;
+SIG_GROUP_ 2684354464 Z_RESERVOIR_WARNING_SWITCH 1 : Z_DI_72;
+SIG_GROUP_ 2684354464 Z_RESERVOIR_CRITICAL_SWITCH 1 : Z_DI_74;
+SIG_GROUP_ 2684354464 Z_SUPERHEAT_ALARM 1 : Z_DI_78;
+SIG_GROUP_ 2684354464 Z_FAN_1_DIN 1 : Z_DI_73;
+SIG_GROUP_ 2684354464 Z_FAN_2_DIN 1 : Z_DI_75;
+SIG_GROUP_ 2684354464 Z_FAN_3_DIN 1 : Z_DI_77;
+SIG_GROUP_ 2684354464 Z_FAN_4_DIN 1 : Z_DI_79;
+SIG_GROUP_ 2684354464 Z_HS_P_SENSOR 1 : Z_AI_10;
+SIG_GROUP_ 2684354464 Z_LS_P_SENSOR 1 : Z_AI_00;
+SIG_GROUP_ 2684354464 Z_COOLANT_PRESSURE_OUT 1 : Z_AI_14;
+SIG_GROUP_ 2684354464 Z_LOW_SIDE_TEMP 1 : Z_AI_11;
+SIG_GROUP_ 2684354464 Z_HIGH_SIDE_TEMP 1 : Z_AI_05;
+SIG_GROUP_ 2684354464 Z_COOLANT_PRESSURE_IN 1 : Z_AI_12;
+SIG_GROUP_ 2684354464 Z_AMBIENT_TEMP 1 : Z_AI_01;
+SIG_GROUP_ 2684354464 Z_COOLANT_TEMP_IN 1 : Z_AI_02;
+SIG_GROUP_ 2684354464 Z_COOLANT_TEMP_OUT 1 : Z_AI_04;
+SIG_GROUP_ 2684354464 Z_TEST_COOLANT_TEMP 1 : Z_AI_06;
+SIG_GROUP_ 2684354464 Z_HEATER_CONTACTOR_FB 1 : Z_DI_56;
+SIG_GROUP_ 2684354464 Z_HIGH_SIDE_PRESSURE_SWITCH 1 : Z_DI_57;
+SIG_GROUP_ 2684354464 Z_FAN_COVER_SW_FB 1 : Z_DI_61;
+SIG_GROUP_ 2684354480 Z_SUPERHEAT_CONTROLLER_ENABLE 1 : Z_DO_16;
+SIG_GROUP_ 2684354480 Z_HEATER_ENABLE 1 : Z_DO_30;
+SIG_GROUP_ 2684354480 Z_DCDC_AUX_SUPPLY_PIN 1 : Z_DO_04;
+SIG_GROUP_ 2684354480 Z_HEATER_CONTACTOR_CTRL 1 : Z_DO_23;
+SIG_GROUP_ 2684354480 Z_CIRCULATION_PUMP_PWM 1 : Z_PWM_04;
+SIG_GROUP_ 2684354480 Z_AUX_CIRCUIT_DIGITAL_OUTPUT 1 : Z_DO_34;
+SIG_GROUP_ 2684354480 Z_FAN_PWM_OUTPUT 1 : Z_PWM_09;
+

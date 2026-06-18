@@ -46,6 +46,7 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 CSVContent = tuple[Path, Literal["Upper", "Lower"], datetime]
 DBCSource = str | os.PathLike[str] | CanMatrix
+DBC_FOLDER_OVERRIDE: str | None = None
 
 MAC_UPPER = "6C1D6B77"
 MAC_LOWER = "5A72CE4C"
@@ -101,17 +102,31 @@ def skip_signal(name: str) -> bool:
     return False
 
 
-def get_d65_dbc_base_path() -> Path:
-    # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
-    _d65_loc = Path.joinpath(
+def resolve_dbc_folder(dbc_folder: str | None = None) -> Path:
+    value = DBC_FOLDER_OVERRIDE if dbc_folder is None else dbc_folder
+    default_folder = Path(__file__).resolve().parent / "dbc"
+    legacy_folder = Path.joinpath(
         Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
     )
-    if os.name == "nt":  # Override if on windows
-        _d65_loc = Path(
+    if os.name == "nt":
+        legacy_folder = Path(
             r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
         )
 
-    return _d65_loc
+    if value is None or not str(value).strip():
+        return default_folder
+
+    if str(value).strip().lower() in {"old", "compatibility"}:
+        return legacy_folder
+
+    resolved = Path(os.path.expanduser(os.path.expandvars(str(value).strip())))
+    if not resolved.is_absolute():
+        resolved = Path.cwd() / resolved
+    return resolved
+
+
+def get_d65_dbc_base_path(dbc_folder: str | None = None) -> Path:
+    return resolve_dbc_folder(dbc_folder)
 
 
 def get_d65_dbc_file(
@@ -130,7 +145,7 @@ def get_d65_dbc_file(
     _d65_loc = get_d65_dbc_base_path()
 
     if job == "Upper" or job == "Lower":
-        get_d65_dbc_files()[job]
+        return get_d65_dbc_files()[job]
     elif job == "Brightloop":
         return [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
     elif job == "NV":
@@ -149,9 +164,10 @@ def get_d65_dbc_file(
     return []
 
 
-def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
-    # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
-    _d65_loc = get_d65_dbc_base_path()
+def get_d65_dbc_files(
+    dbc_folder: str | None = None,
+) -> dict[Literal["Upper", "Lower"], list[Path]]:
+    _d65_loc = get_d65_dbc_base_path(dbc_folder)
 
     d65_dbc_files = {
         "Lower": [
@@ -1675,7 +1691,15 @@ if __name__ == "__main__":
         action="store_true",
         help="Send to test node (server_vm_test_dump) instead of main D65 node.",
     )
+    parser.add_argument(
+        "--dbc-folder",
+        type=str,
+        default="",
+        help="DBC folder path, or 'old'/'compatibility' for workstation lookup. Defaults to decoder/D65/dbc.",
+    )
+
     args = parser.parse_args()
+    DBC_FOLDER_OVERRIDE = args.dbc_folder
 
     if args.s3_streaming_memory_fraction <= 0 or args.s3_streaming_memory_fraction > 1:
         parser.error("--s3-streaming-memory-fraction must be in (0, 1].")

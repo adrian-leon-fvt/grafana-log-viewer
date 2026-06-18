@@ -1,0 +1,1597 @@
+VERSION "created by canmatrix"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: HYD COMP1 COMP2 FAN EVCU RCS
+
+
+BO_ 2147485197 FAN_Modulation_And_Flux_Info: 8 FAN
+ SG_ FAN_Iq_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ FAN_Id_Command : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ FAN_Flux_Weakening_Output : 16|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ FAN_Modulation_Index : 0|16@1- (0.0001,0) [-3.2768|3.2767] ""  EVCU
+
+BO_ 2147485196 FAN_Torque_And_Timer_Info: 8 FAN
+ SG_ FAN_Power_On_Timer : 32|32@1+ (0.003,0) [0|12884800] "time:second"  EVCU
+ SG_ FAN_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ FAN_Commanded_Torque : 0|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+
+BO_ 2147485218 FAN_Read_Write_Param_Response: 8 FAN
+ SG_ FAN_Parameter_Response_Write_OK : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Parameter_Response_Data : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ FAN_Parameter_Response_Addr : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147485217 FAN_Read_Write_Param_Command: 8 EVCU
+ SG_ VCU_FAN_Parameter_Data : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ VCU_FAN_Parameter_RW_Command : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ VCU_FAN_Parameter_Address : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147485216 FAN_Command_Message: 8 EVCU
+ SG_ VCU_FAN_Inverter_Enable : 40|1@1+ (1,0) [0|1] ""  FAN
+ SG_ VCU_FAN_Direction_Command : 32|1@1+ (1,0) [0|1] ""  FAN
+ SG_ VCU_FAN_Speed_Command : 16|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  FAN
+ SG_ VCU_FAN_Torque_Command : 0|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  FAN
+ SG_ VCU_FAN_Inverter_Discharge : 41|1@1+ (1,0) [0|1] ""  FAN
+ SG_ VCU_FAN_Torque_Limit_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  FAN
+ SG_ VCU_FAN_Speed_Mode_Enable : 42|1@1+ (1,0) [0|1] ""  FAN
+
+BO_ 2147485195 FAN_Fault_Codes: 8 FAN
+ SG_ FAN_Run_Fault_Hi : 48|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ FAN_Post_Fault_Hi : 16|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ FAN_Run_Fault_Lo : 32|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ FAN_Post_Fault_Lo : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147485194 FAN_Internal_States: 8 FAN
+ SG_ FAN_Direction_Command : 56|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Inverter_Enable_State : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Relay_3_Status : 26|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Relay_4_Status : 27|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Relay_2_Status : 25|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Inverter_Run_Mode : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Inverter_Command_Mode : 40|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Relay_1_Status : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Inverter_State : 16|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ FAN_VSM_State : 0|8@1+ (1,0) [0|15] ""  EVCU
+ SG_ FAN_Inverter_Enable_Lockout : 55|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Inverter_Discharge_State : 37|3@1+ (1,0) [0|7] ""  EVCU
+ SG_ FAN_Relay_5_Status : 28|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Relay_6_Status : 29|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_BMS_Active : 57|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_BMS_Torque_Limiting : 58|1@1+ (1,0) [0|0] ""  EVCU
+ SG_ FAN_PWM_Frequency : 8|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ FAN_Limit_Max_Speed : 59|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Limit_Hot_Spot : 60|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Low_Speed_Limiting : 61|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Rolling_Counter : 44|4@1+ (1,0) [0|15] ""  EVCU
+ SG_ FAN_Limit_Coolant_Derating : 62|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2147485193 FAN_Internal_Voltages: 8 FAN
+ SG_ FAN_Ref_Voltage_12_0 : 48|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ FAN_Ref_Voltage_5_0 : 32|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ FAN_Ref_Voltage_2_5 : 16|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ FAN_Ref_Voltage_1_5 : 0|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+
+BO_ 2147485192 FAN_Flux_ID_IQ_Info: 8 FAN
+ SG_ FAN_Iq : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ FAN_Id : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ FAN_Flux_Feedback : 16|16@1- (0.001,0) [-32.768|32.767] "flux:Wb"  EVCU
+ SG_ FAN_Flux_Command : 0|16@1- (0.001,0) [-32.768|32.767] "flux:Wb"  EVCU
+
+BO_ 2147485191 FAN_Voltage_Info: 8 FAN
+ SG_ FAN_VBC_Vq_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ FAN_VAB_Vd_Voltage : 32|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ FAN_Output_Voltage : 16|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ FAN_DC_Bus_Voltage : 0|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+
+BO_ 2147485190 FAN_Current_Info: 8 FAN
+ SG_ FAN_DC_Bus_Current : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ FAN_Phase_C_Current : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ FAN_Phase_B_Current : 16|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ FAN_Phase_A_Current : 0|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+
+BO_ 2147485189 FAN_Motor_Position_Info: 8 FAN
+ SG_ FAN_Delta_Resolver_Filtered : 48|16@1- (0.1,0) [-3276.8|3276.7] "angle:deg"  EVCU
+ SG_ FAN_Electrical_Output_Frequency : 32|16@1- (0.1,0) [-3276.8|3276.7] "frequency:Hz"  EVCU
+ SG_ FAN_Motor_Speed : 16|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  EVCU
+ SG_ FAN_Motor_Angle_Electrical : 0|16@1+ (0.1,0) [0|6553.5] "angle:deg"  EVCU
+
+BO_ 2147485188 FAN_Digital_Input_Status: 8 FAN
+ SG_ FAN_Digital_Input_5 : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Digital_Input_4 : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Digital_Input_3 : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Digital_Input_2 : 8|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Digital_Input_1 : 0|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Digital_Input_6 : 40|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Digital_Input_7 : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ FAN_Digital_Input_8 : 56|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2147485187 FAN_Analog_Input_Voltages: 8 FAN
+ SG_ FAN_Analog_Input_4 : 32|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ FAN_Analog_Input_1 : 0|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ FAN_Analog_Input_2 : 10|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ FAN_Analog_Input_5 : 42|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ FAN_Analog_Input_6 : 52|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ FAN_Analog_Input_3 : 20|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+
+BO_ 2147485186 FAN_Temperature_Set_3: 8 FAN
+ SG_ FAN_Torque_Shudder : 48|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ FAN_Motor_Temp : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ FAN_Hot_Spot_Temp : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ FAN_Coolant_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147485185 FAN_Temperature_Set_2: 8 FAN
+ SG_ FAN_RTD2_Temperature : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ FAN_RTD1_Temperature : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ FAN_Control_Board_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147485184 FAN_Temperature_Set_1: 8 FAN
+ SG_ FAN_Gate_Driver_Board_Temp : 48|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ FAN_Module_C_Temp : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ FAN_Module_B_Temp : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ FAN_Module_A_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147485198 FAN_Firmware_Info: 8 FAN
+ SG_ FAN_Project_Code_EEP_Ver : 0|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ FAN_SW_Version : 16|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ FAN_DateCode_MMDD : 32|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ FAN_DateCode_YYYY : 48|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147485199 FAN_Diag_Data: 8 FAN
+ SG_ FAN_Diag_Buffer_Record : 0|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ FAN_Diag_Buffer_Segment : 8|8@1+ (1,0) [0|5] ""  EVCU
+ SG_ FAN_Diag_Data_1 : 16|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ FAN_Diag_Data_2 : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ FAN_Diag_Data_3 : 48|16@1- (1,0) [-32768|32767] ""  EVCU
+
+BO_ 2147485200 FAN_Fast_Info: 8 FAN
+ SG_ FAN_Fast_Torque_Command : 0|16@1- (0.1,0) [-3276.8|32767.7] "torque:N.m"  EVCU
+ SG_ FAN_Fast_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ FAN_Fast_Motor_Speed : 32|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  EVCU
+ SG_ FAN_Fast_DC_Bus_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+
+BO_ 2147483915 CP2_Voltage_Info: 8 COMP2
+ SG_ CP2_VBC_Vq_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ CP2_VAB_Vd_Voltage : 32|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ CP2_Output_Voltage : 16|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ CP2_DC_Bus_Voltage : 0|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+
+BO_ 2147483920 CP2_Torque_And_Timer_Info: 8 COMP2
+ SG_ CP2_Power_On_Timer : 32|32@1+ (0.003,0) [0|12884800] "time:second"  EVCU
+ SG_ CP2_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ CP2_Commanded_Torque : 0|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+
+BO_ 2147483910 CP2_Temperature_Set_3: 8 COMP2
+ SG_ CP2_Torque_Shudder : 48|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ CP2_Motor_Temp : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP2_Hot_Spot_Temp : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP2_Coolant_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483909 CP2_Temperature_Set_2: 8 COMP2
+ SG_ CP2_RTD2_Temperature : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP2_RTD1_Temperature : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP2_Control_Board_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483908 CP2_Temperature_Set_1: 8 COMP2
+ SG_ CP2_Gate_Driver_Board_Temp : 48|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP2_Module_C_Temp : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP2_Module_B_Temp : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP2_Module_A_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483942 CP2_Read_Write_Param_Response: 8 COMP2
+ SG_ CP2_Parameter_Response_Write_OK : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Parameter_Response_Data : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ CP2_Parameter_Response_Addr : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483941 CP2_Read_Write_Param_Command: 8 EVCU
+ SG_ VCU_CP2_Parameter_Data : 32|16@1- (1,0) [-32768|32767] ""  COMP2
+ SG_ VCU_CP2_Parameter_RW_Command : 16|1@1+ (1,0) [0|1] ""  COMP2
+ SG_ VCU_CP2_Parameter_Address : 0|16@1+ (1,0) [0|65535] ""  COMP2
+
+BO_ 2147483913 CP2_Motor_Position_Info: 8 COMP2
+ SG_ CP2_Delta_Resolver_Filtered : 48|16@1- (0.1,0) [-3276.8|3276.7] "angle:deg"  EVCU
+ SG_ CP2_Electrical_Output_Frequency : 32|16@1- (0.1,0) [-3276.8|3276.7] "frequency:Hz"  EVCU
+ SG_ CP2_Motor_Speed : 16|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  EVCU
+ SG_ CP2_Motor_Angle_Electrical : 0|16@1+ (0.1,0) [0|6553.5] "angle:deg"  EVCU
+
+BO_ 2147483921 CP2_Modulation_And_Flux_Info: 8 COMP2
+ SG_ CP2_Iq_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP2_Id_Command : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP2_Flux_Weakening_Output : 16|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP2_Modulation_Index : 0|16@1- (0.0001,0) [-3.2768|3.2767] ""  EVCU
+
+BO_ 2147483917 CP2_Internal_Voltages: 8 COMP2
+ SG_ CP2_Ref_Voltage_12_0 : 48|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ CP2_Ref_Voltage_5_0 : 32|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ CP2_Ref_Voltage_2_5 : 16|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ CP2_Ref_Voltage_1_5 : 0|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+
+BO_ 2147483918 CP2_Internal_States: 8 COMP2
+ SG_ CP2_Direction_Command : 56|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Inverter_Enable_State : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Relay_3_Status : 26|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Relay_4_Status : 27|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Relay_2_Status : 25|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Inverter_Run_Mode : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Inverter_Command_Mode : 40|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Relay_1_Status : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Inverter_State : 16|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ CP2_VSM_State : 0|8@1+ (1,0) [0|15] ""  EVCU
+ SG_ CP2_Inverter_Enable_Lockout : 55|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Inverter_Discharge_State : 37|3@1+ (1,0) [0|7] ""  EVCU
+ SG_ CP2_Relay_5_Status : 28|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Relay_6_Status : 29|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_BMS_Active : 57|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_BMS_Torque_Limiting : 58|1@1+ (1,0) [0|0] ""  EVCU
+ SG_ CP2_PWM_Frequency : 8|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ CP2_Limit_Max_Speed : 59|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Limit_Hot_Spot : 60|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Low_Speed_Limiting : 61|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Rolling_Counter : 44|4@1+ (1,0) [0|15] ""  EVCU
+ SG_ CP2_Limit_Coolant_Derating : 62|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2147483916 CP2_Flux_ID_IQ_Info: 8 COMP2
+ SG_ CP2_Iq : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP2_Id : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP2_Flux_Feedback : 16|16@1- (0.001,0) [-32.768|32.767] "flux:Wb"  EVCU
+ SG_ CP2_Flux_Command : 0|16@1- (0.001,0) [-32.768|32.767] "flux:Wb"  EVCU
+
+BO_ 2147483922 CP2_Firmware_Info: 8 COMP2
+ SG_ CP2_Project_Code_EEP_Ver : 0|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP2_SW_Version : 16|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP2_DateCode_MMDD : 32|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP2_DateCode_YYYY : 48|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483919 CP2_Fault_Codes: 8 COMP2
+ SG_ CP2_Run_Fault_Hi : 48|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP2_Post_Fault_Hi : 16|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP2_Run_Fault_Lo : 32|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP2_Post_Fault_Lo : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483924 CP2_Fast_Info: 8 COMP2
+ SG_ CP2_Fast_Torque_Command : 0|16@1- (0.1,0) [-3276.8|32767.7] "torque:N.m"  EVCU
+ SG_ CP2_Fast_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ CP2_Fast_Motor_Speed : 32|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  EVCU
+ SG_ CP2_Fast_DC_Bus_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+
+BO_ 2147483912 CP2_Digital_Input_Status: 8 COMP2
+ SG_ CP2_Digital_Input_5 : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Digital_Input_4 : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Digital_Input_3 : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Digital_Input_2 : 8|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Digital_Input_1 : 0|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Digital_Input_6 : 40|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Digital_Input_7 : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP2_Digital_Input_8 : 56|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2147483923 CP2_Diag_Data: 8 COMP2
+ SG_ CP2_Diag_Buffer_Record : 0|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ CP2_Diag_Buffer_Segment : 8|8@1+ (1,0) [0|5] ""  EVCU
+ SG_ CP2_Diag_Data_1 : 16|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ CP2_Diag_Data_2 : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ CP2_Diag_Data_3 : 48|16@1- (1,0) [-32768|32767] ""  EVCU
+
+BO_ 2147483914 CP2_Current_Info: 8 COMP2
+ SG_ CP2_DC_Bus_Current : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP2_Phase_C_Current : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP2_Phase_B_Current : 16|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP2_Phase_A_Current : 0|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+
+BO_ 2147483940 CP2_Command_Message: 8 COMP1
+ SG_ VCU_CP2_Inverter_Enable : 40|1@1+ (1,0) [0|1] ""  COMP2
+ SG_ VCU_CP2_Direction_Command : 32|1@1+ (1,0) [0|1] ""  COMP2
+ SG_ VCU_CP2_Speed_Command : 16|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  COMP2
+ SG_ VCU_CP2_Torque_Command : 0|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  COMP2
+ SG_ VCU_CP2_Inverter_Discharge : 41|1@1+ (1,0) [0|1] ""  COMP2
+ SG_ VCU_CP2_Torque_Limit_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  COMP2
+ SG_ VCU_CP2_Speed_Mode_Enable : 42|1@1+ (1,0) [0|1] ""  COMP2
+
+BO_ 2147483911 CP2_Analog_Input_Voltages: 8 COMP2
+ SG_ CP2_Analog_Input_4 : 32|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP2_Analog_Input_1 : 0|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP2_Analog_Input_2 : 10|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP2_Analog_Input_5 : 42|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP2_Analog_Input_6 : 52|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP2_Analog_Input_3 : 20|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+
+BO_ 2147483892 CP1_Read_Write_Param_Response: 8 COMP1
+ SG_ CP1_Parameter_Response_Write_OK : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Parameter_Response_Data : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ CP1_Parameter_Response_Addr : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483891 CP1_Read_Write_Param_Command: 8 EVCU
+ SG_ VCU_CP1_Parameter_Data : 32|16@1- (1,0) [-32768|32767] ""  COMP1
+ SG_ VCU_CP1_Parameter_RW_Command : 16|1@1+ (1,0) [0|1] ""  COMP1
+ SG_ VCU_CP1_Parameter_Address : 0|16@1+ (1,0) [0|65535] ""  COMP1
+
+BO_ 2147483890 CP1_Command_Message: 8 EVCU
+ SG_ VCU_CP1_Inverter_Enable : 40|1@1+ (1,0) [0|1] ""  COMP1
+ SG_ VCU_CP1_Direction_Command : 32|1@1+ (1,0) [0|1] ""  COMP1
+ SG_ VCU_CP1_Speed_Command : 16|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  COMP1
+ SG_ VCU_CP1_Torque_Command : 0|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  COMP1
+ SG_ VCU_CP1_Inverter_Discharge : 41|1@1+ (1,0) [0|1] ""  COMP1
+ SG_ VCU_CP1_Torque_Limit_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  COMP1
+ SG_ VCU_CP1_Speed_Mode_Enable : 42|1@1+ (1,0) [0|1] ""  COMP1
+
+BO_ 2147483874 CP1_Fast_Info: 8 COMP1
+ SG_ CP1_Fast_Torque_Command : 0|16@1- (0.1,0) [-3276.8|32767.7] "torque:N.m"  EVCU
+ SG_ CP1_Fast_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ CP1_Fast_Motor_Speed : 32|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  EVCU
+ SG_ CP1_Fast_DC_Bus_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+
+BO_ 2147483873 CP1_Diag_Data: 8 COMP1
+ SG_ CP1_Diag_Buffer_Record : 0|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ CP1_Diag_Buffer_Segment : 8|8@1+ (1,0) [0|5] ""  EVCU
+ SG_ CP1_Diag_Data_1 : 16|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ CP1_Diag_Data_2 : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ CP1_Diag_Data_3 : 48|16@1- (1,0) [-32768|32767] ""  EVCU
+
+BO_ 2147483872 CP1_Firmware_Info: 8 COMP1
+ SG_ CP1_Project_Code_EEP_Ver : 0|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP1_SW_Version : 16|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP1_DateCode_MMDD : 32|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP1_DateCode_YYYY : 48|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483871 CP1_Modulation_And_Flux_Info: 8 COMP1
+ SG_ CP1_Iq_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP1_Id_Command : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP1_Flux_Weakening_Output : 16|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP1_Modulation_Index : 0|16@1- (0.0001,0) [-3.2768|3.2767] ""  EVCU
+
+BO_ 2147483870 CP1_Torque_And_Timer_Info: 8 COMP1
+ SG_ CP1_Power_On_Timer : 32|32@1+ (0.003,0) [0|12884800] "time:second"  EVCU
+ SG_ CP1_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ CP1_Commanded_Torque : 0|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+
+BO_ 2147483869 CP1_Fault_Codes: 8 COMP1
+ SG_ CP1_Run_Fault_Hi : 48|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP1_Post_Fault_Hi : 16|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP1_Run_Fault_Lo : 32|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ CP1_Post_Fault_Lo : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483868 CP1_Internal_States: 8 COMP1
+ SG_ CP1_Direction_Command : 56|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Inverter_Enable_State : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Relay_3_Status : 26|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Relay_4_Status : 27|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Relay_2_Status : 25|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Inverter_Run_Mode : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Inverter_Command_Mode : 40|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Relay_1_Status : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Inverter_State : 16|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ CP1_VSM_State : 0|8@1+ (1,0) [0|15] ""  EVCU
+ SG_ CP1_Inverter_Enable_Lockout : 55|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Inverter_Discharge_State : 37|3@1+ (1,0) [0|7] ""  EVCU
+ SG_ CP1_Relay_5_Status : 28|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Relay_6_Status : 29|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_BMS_Active : 57|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_BMS_Torque_Limiting : 58|1@1+ (1,0) [0|0] ""  EVCU
+ SG_ CP1_PWM_Frequency : 8|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ CP1_Limit_Max_Speed : 59|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Limit_Hot_Spot : 60|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Low_Speed_Limiting : 61|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Rolling_Counter : 44|4@1+ (1,0) [0|15] ""  EVCU
+ SG_ CP1_Limit_Coolant_Derating : 62|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2147483867 CP1_Internal_Voltages: 8 COMP1
+ SG_ CP1_Ref_Voltage_12_0 : 48|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ CP1_Ref_Voltage_5_0 : 32|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ CP1_Ref_Voltage_2_5 : 16|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ CP1_Ref_Voltage_1_5 : 0|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+
+BO_ 2147483866 CP1_Flux_ID_IQ_Info: 8 COMP1
+ SG_ CP1_Iq : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP1_Id : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP1_Flux_Feedback : 16|16@1- (0.001,0) [-32.768|32.767] "flux:Wb"  EVCU
+ SG_ CP1_Flux_Command : 0|16@1- (0.001,0) [-32.768|32.767] "flux:Wb"  EVCU
+
+BO_ 2147483865 CP1_Voltage_Info: 8 COMP1
+ SG_ CP1_VBC_Vq_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ CP1_VAB_Vd_Voltage : 32|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ CP1_Output_Voltage : 16|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ CP1_DC_Bus_Voltage : 0|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+
+BO_ 2147483864 CP1_Current_Info: 8 COMP1
+ SG_ CP1_DC_Bus_Current : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP1_Phase_C_Current : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP1_Phase_B_Current : 16|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ CP1_Phase_A_Current : 0|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+
+BO_ 2147483863 CP1_Motor_Position_Info: 8 COMP1
+ SG_ CP1_Delta_Resolver_Filtered : 48|16@1- (0.1,0) [-3276.8|3276.7] "angle:deg"  EVCU
+ SG_ CP1_Electrical_Output_Frequency : 32|16@1- (0.1,0) [-3276.8|3276.7] "frequency:Hz"  EVCU
+ SG_ CP1_Motor_Speed : 16|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  EVCU
+ SG_ CP1_Motor_Angle_Electrical : 0|16@1+ (0.1,0) [0|6553.5] "angle:deg"  EVCU
+
+BO_ 2147483862 CP1_Digital_Input_Status: 8 COMP1
+ SG_ CP1_Digital_Input_5 : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Digital_Input_4 : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Digital_Input_3 : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Digital_Input_2 : 8|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Digital_Input_1 : 0|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Digital_Input_6 : 40|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Digital_Input_7 : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ CP1_Digital_Input_8 : 56|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2147483861 CP1_Analog_Input_Voltages: 8 COMP1
+ SG_ CP1_Analog_Input_4 : 32|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP1_Analog_Input_1 : 0|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP1_Analog_Input_2 : 10|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP1_Analog_Input_5 : 42|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP1_Analog_Input_6 : 52|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ CP1_Analog_Input_3 : 20|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+
+BO_ 2147483860 CP1_Temperature_Set_3: 8 COMP1
+ SG_ CP1_Torque_Shudder : 48|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ CP1_Motor_Temp : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP1_Hot_Spot_Temp : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP1_Coolant_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483859 CP1_Temperature_Set_2: 8 COMP1
+ SG_ CP1_RTD2_Temperature : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP1_RTD1_Temperature : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP1_Control_Board_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483858 CP1_Temperature_Set_1: 8 COMP1
+ SG_ CP1_Gate_Driver_Board_Temp : 48|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP1_Module_C_Temp : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP1_Module_B_Temp : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ CP1_Module_A_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483821 HYD_Modulation_And_Flux_Info: 8 HYD
+ SG_ HYD_Iq_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ HYD_Id_Command : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ HYD_Flux_Weakening_Output : 16|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ HYD_Modulation_Index : 0|16@1- (0.0001,0) [-3.2768|3.2767] ""  EVCU
+
+BO_ 2147483820 HYD_Torque_And_Timer_Info: 8 HYD
+ SG_ HYD_Power_On_Timer : 32|32@1+ (0.003,0) [0|12884800] "time:second"  EVCU
+ SG_ HYD_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ HYD_Commanded_Torque : 0|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+
+BO_ 2147483842 HYD_Read_Write_Param_Response: 8 HYD
+ SG_ HYD_Parameter_Response_Write_OK : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Parameter_Response_Data : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ HYD_Parameter_Response_Addr : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483841 HYD_Read_Write_Param_Command: 8 EVCU
+ SG_ VCU_HYD_Parameter_Data : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ VCU_HYD_Parameter_RW_Command : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ VCU_HYD_Parameter_Address : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483840 HYD_Command_Message: 8 EVCU
+ SG_ VCU_HYD_Inverter_Enable : 40|1@1+ (1,0) [0|1] ""  HYD
+ SG_ VCU_HYD_Direction_Command : 32|1@1+ (1,0) [0|1] ""  HYD
+ SG_ VCU_HYD_Speed_Command : 16|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  HYD
+ SG_ VCU_HYD_Torque_Command : 0|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  HYD
+ SG_ VCU_HYD_Inverter_Discharge : 41|1@1+ (1,0) [0|1] ""  HYD
+ SG_ VCU_HYD_Torque_Limit_Command : 48|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  HYD
+ SG_ VCU_HYD_Speed_Mode_Enable : 42|1@1+ (1,0) [0|1] ""  HYD
+
+BO_ 2147483819 HYD_Fault_Codes: 8 HYD
+ SG_ HYD_Run_Fault_Hi : 48|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ HYD_Post_Fault_Hi : 16|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ HYD_Run_Fault_Lo : 32|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ HYD_Post_Fault_Lo : 0|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483818 HYD_Internal_States: 8 HYD
+ SG_ HYD_Direction_Command : 56|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Inverter_Enable_State : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Relay_3_Status : 26|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Relay_4_Status : 27|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Relay_2_Status : 25|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Inverter_Run_Mode : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Inverter_Command_Mode : 40|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Relay_1_Status : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Inverter_State : 16|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ HYD_VSM_State : 0|8@1+ (1,0) [0|15] ""  EVCU
+ SG_ HYD_Inverter_Enable_Lockout : 55|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Inverter_Discharge_State : 37|3@1+ (1,0) [0|7] ""  EVCU
+ SG_ HYD_Relay_5_Status : 28|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Relay_6_Status : 29|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_BMS_Active : 57|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_BMS_Torque_Limiting : 58|1@1+ (1,0) [0|0] ""  EVCU
+ SG_ HYD_PWM_Frequency : 8|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ HYD_Limit_Max_Speed : 59|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Limit_Hot_Spot : 60|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Low_Speed_Limiting : 61|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Rolling_Counter : 44|4@1+ (1,0) [0|15] ""  EVCU
+ SG_ HYD_Limit_Coolant_Derating : 62|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2147483817 HYD_Internal_Voltages: 8 HYD
+ SG_ HYD_Ref_Voltage_12_0 : 48|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ HYD_Ref_Voltage_5_0 : 32|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ HYD_Ref_Voltage_2_5 : 16|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+ SG_ HYD_Ref_Voltage_1_5 : 0|16@1- (0.01,0) [-327.68|327.67] "voltage:V"  EVCU
+
+BO_ 2147483816 HYD_Flux_ID_IQ_Info: 8 HYD
+ SG_ HYD_Iq : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ HYD_Id : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ HYD_Flux_Feedback : 16|16@1- (0.001,0) [-32.768|32.767] "flux:Wb"  EVCU
+ SG_ HYD_Flux_Command : 0|16@1- (0.001,0) [-32.768|32.767] "flux:Wb"  EVCU
+
+BO_ 2147483815 HYD_Voltage_Info: 8 HYD
+ SG_ HYD_VBC_Vq_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ HYD_VAB_Vd_Voltage : 32|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ HYD_Output_Voltage : 16|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+ SG_ HYD_DC_Bus_Voltage : 0|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+
+BO_ 2147483814 HYD_Current_Info: 8 HYD
+ SG_ HYD_DC_Bus_Current : 48|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ HYD_Phase_C_Current : 32|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ HYD_Phase_B_Current : 16|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+ SG_ HYD_Phase_A_Current : 0|16@1- (0.1,0) [-3276.8|3276.7] "current:A"  EVCU
+
+BO_ 2147483813 HYD_Motor_Position_Info: 8 HYD
+ SG_ HYD_Delta_Resolver_Filtered : 48|16@1- (0.1,0) [-3276.8|3276.7] "angle:deg"  EVCU
+ SG_ HYD_Electrical_Output_Frequency : 32|16@1- (0.1,0) [-3276.8|3276.7] "frequency:Hz"  EVCU
+ SG_ HYD_Motor_Speed : 16|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  EVCU
+ SG_ HYD_Motor_Angle_Electrical : 0|16@1+ (0.1,0) [0|6553.5] "angle:deg"  EVCU
+
+BO_ 2147483812 HYD_Digital_Input_Status: 8 HYD
+ SG_ HYD_Digital_Input_5 : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Digital_Input_4 : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Digital_Input_3 : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Digital_Input_2 : 8|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Digital_Input_1 : 0|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Digital_Input_6 : 40|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Digital_Input_7 : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ HYD_Digital_Input_8 : 56|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2147483811 HYD_Analog_Input_Voltages: 8 HYD
+ SG_ HYD_Analog_Input_4 : 32|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ HYD_Analog_Input_1 : 0|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ HYD_Analog_Input_2 : 10|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ HYD_Analog_Input_5 : 42|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ HYD_Analog_Input_6 : 52|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+ SG_ HYD_Analog_Input_3 : 20|10@1+ (0.01,0) [0|10.23] "voltage:V"  EVCU
+
+BO_ 2147483810 HYD_Temperature_Set_3: 8 HYD
+ SG_ HYD_Torque_Shudder : 48|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ HYD_Motor_Temp : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ HYD_Hot_Spot_Temp : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ HYD_Coolant_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483809 HYD_Temperature_Set_2: 8 HYD
+ SG_ HYD_RTD2_Temperature : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ HYD_RTD1_Temperature : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ HYD_Control_Board_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483808 HYD_Temperature_Set_1: 8 HYD
+ SG_ HYD_Gate_Driver_Board_Temp : 48|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ HYD_Module_C_Temp : 32|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ HYD_Module_B_Temp : 16|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+ SG_ HYD_Module_A_Temp : 0|16@1- (0.1,0) [-3276.8|3276.7] "temperature:C"  EVCU
+
+BO_ 2147483822 HYD_Firmware_Info: 8 HYD
+ SG_ HYD_Project_Code_EEP_Ver : 0|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ HYD_SW_Version : 16|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ HYD_DateCode_MMDD : 32|16@1+ (1,0) [0|65535] ""  EVCU
+ SG_ HYD_DateCode_YYYY : 48|16@1+ (1,0) [0|65535] ""  EVCU
+
+BO_ 2147483823 HYD_Diag_Data: 8 HYD
+ SG_ HYD_Diag_Buffer_Record : 0|8@1+ (1,0) [0|255] ""  EVCU
+ SG_ HYD_Diag_Buffer_Segment : 8|8@1+ (1,0) [0|5] ""  EVCU
+ SG_ HYD_Diag_Data_1 : 16|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ HYD_Diag_Data_2 : 32|16@1- (1,0) [-32768|32767] ""  EVCU
+ SG_ HYD_Diag_Data_3 : 48|16@1- (1,0) [-32768|32767] ""  EVCU
+
+BO_ 2147483824 HYD_Fast_Info: 8 HYD
+ SG_ HYD_Fast_Torque_Command : 0|16@1- (0.1,0) [-3276.8|32767.7] "torque:N.m"  EVCU
+ SG_ HYD_Fast_Torque_Feedback : 16|16@1- (0.1,0) [-3276.8|3276.7] "torque:N.m"  EVCU
+ SG_ HYD_Fast_Motor_Speed : 32|16@1- (1,0) [-32768|32767] "angular_speed:rpm"  EVCU
+ SG_ HYD_Fast_DC_Bus_Voltage : 48|16@1- (0.1,0) [-3276.8|3276.7] "voltage:V"  EVCU
+
+BO_ 2348810288 C15_TSC1: 8 RCS
+ SG_ EngRequestedSpeed_SpeedLimit : 8|16@1+ (0.125,0) [0|8031.875] "rpm"  EVCU
+
+
+
+CM_ SG_ 2147485197 FAN_Iq_Command "The commanded Q-axis current";
+CM_ SG_ 2147485197 FAN_Id_Command "The commanded D-axis current";
+CM_ SG_ 2147485197 FAN_Flux_Weakening_Output "This is the current output of the flux regulator.";
+CM_ SG_ 2147485197 FAN_Modulation_Index "This is the modulation index. The scale factor is x100. To get the actual modulation index divide the value by 100.";
+CM_ SG_ 2147485196 FAN_Power_On_Timer "Updated every 3 msec. This will roll over in approximately 150 days!";
+CM_ SG_ 2147485196 FAN_Torque_Feedback "Estimated motor torque feedback";
+CM_ SG_ 2147485196 FAN_Commanded_Torque "The commanded Torque";
+CM_ BO_ 2147485218 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write).
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 2147485218 FAN_Parameter_Response_Write_OK "0=Write failure, 1=Success";
+CM_ SG_ 2147485218 FAN_Parameter_Response_Data "Data from parameter message.  All data is 16 bits and is contained in bytes 4 and 5. Bytes 6 and 7 should be ignored.";
+CM_ SG_ 2147485218 FAN_Parameter_Response_Addr "Address of parameter response message data.";
+CM_ BO_ 2147485217 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write).
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 2147485217 VCU_FAN_Parameter_Data "Data to be written.  All data is 16 bits and is contained in bytes 4 and 5.";
+CM_ SG_ 2147485217 VCU_FAN_Parameter_RW_Command "0=Read, 1=Write";
+CM_ SG_ 2147485217 VCU_FAN_Parameter_Address "Address of parameter to be written or read.";
+CM_ BO_ 2147485216 "The command message is used to transmit data to the controller. This message is sent from a user supplied external controller to the PMxxx controller.";
+CM_ SG_ 2147485216 VCU_FAN_Inverter_Enable "0=Inverter OFF, 1 = Inverter ON";
+CM_ SG_ 2147485216 VCU_FAN_Direction_Command "0=Reverse, 1=Forward.  Forward is positive motor speed.";
+CM_ SG_ 2147485216 VCU_FAN_Speed_Command "Speed command used when in speed mode";
+CM_ SG_ 2147485216 VCU_FAN_Torque_Command "Torque command when in torque mode";
+CM_ SG_ 2147485216 VCU_FAN_Inverter_Discharge "0=Discharge Disable,1=Discharge Enable";
+CM_ SG_ 2147485216 VCU_FAN_Torque_Limit_Command "Torque Limit, set to 0 to keep default";
+CM_ SG_ 2147485216 VCU_FAN_Speed_Mode_Enable "0 = No change to mode, 1 = change to speed mode from torque mode";
+CM_ SG_ 2147485195 FAN_Run_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147485195 FAN_Post_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147485195 FAN_Run_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147485195 FAN_Post_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147485194 FAN_Direction_Command "1 = Forward
+0 = 'Reverse' if inverter enabled  & 'Stopped' if inverter is disabled";
+CM_ SG_ 2147485194 FAN_Inverter_Enable_State "0=Inverter Disabled,
+1=Inverter Enabled";
+CM_ SG_ 2147485194 FAN_Relay_3_Status "0=OFF, 1=ON";
+CM_ SG_ 2147485194 FAN_Relay_4_Status "0=OFF, 1=ON";
+CM_ SG_ 2147485194 FAN_Relay_2_Status "0=OFF, 1=ON";
+CM_ SG_ 2147485194 FAN_Inverter_Run_Mode "0=Torque Mode, 1=Speed Mode";
+CM_ SG_ 2147485194 FAN_Inverter_Command_Mode "0=CAN mode, 1=VSM mode";
+CM_ SG_ 2147485194 FAN_Relay_1_Status "0=OFF, 1=ON";
+CM_ SG_ 2147485194 FAN_Inverter_State "Different states for the inverter state machine";
+CM_ SG_ 2147485194 FAN_VSM_State "Different states for the vehicle state machine";
+CM_ SG_ 2147485194 FAN_Inverter_Enable_Lockout "0=Lockout Disabled, 1=Lockout Enabled";
+CM_ SG_ 2147485194 FAN_Inverter_Discharge_State "0 = Disabled, 1 = Enabled, 2 = Speed Check, 3 = Active, 4 = Complete";
+CM_ SG_ 2147485194 FAN_Relay_5_Status "0=OFF, 1=ON";
+CM_ SG_ 2147485194 FAN_Relay_6_Status "0=OFF, 1=ON";
+CM_ SG_ 2147485194 FAN_BMS_Active "0 = BMS Not Active, 1 = BMS Active";
+CM_ SG_ 2147485194 FAN_BMS_Torque_Limiting "0 = Not Limiting, 1 = Limiting";
+CM_ SG_ 2147485194 FAN_PWM_Frequency "The current active PWM frequency";
+CM_ SG_ 2147485194 FAN_Limit_Max_Speed "Indicates that torque is being modified to limit the speed.";
+CM_ SG_ 2147485194 FAN_Limit_Hot_Spot "Indicates that torque is being limited to limit the hot spot temp";
+CM_ SG_ 2147485194 FAN_Low_Speed_Limiting "Indicates that motor current is being limited due to low motor electrical frequency.";
+CM_ SG_ 2147485194 FAN_Rolling_Counter "Rolling Counter value";
+CM_ SG_ 2147485194 FAN_Limit_Coolant_Derating "0 = Not limiting, 1 = Limiting";
+CM_ SG_ 2147485193 FAN_Ref_Voltage_12_0 "12V Input Voltage";
+CM_ SG_ 2147485193 FAN_Ref_Voltage_5_0 "Transducer voltage";
+CM_ SG_ 2147485193 FAN_Ref_Voltage_2_5 "Internal reference voltage";
+CM_ SG_ 2147485193 FAN_Ref_Voltage_1_5 "Internal reference voltage";
+CM_ SG_ 2147485192 FAN_Iq "The measured Iq current";
+CM_ SG_ 2147485192 FAN_Id "The measured Id current";
+CM_ SG_ 2147485192 FAN_Flux_Feedback "The estimated flux";
+CM_ SG_ 2147485192 FAN_Flux_Command "The commanded flux";
+CM_ SG_ 2147485191 FAN_VBC_Vq_Voltage "Measured value of the voltage between Phase B and Phase C";
+CM_ SG_ 2147485191 FAN_VAB_Vd_Voltage "Measured value of the voltage betwen phase A and Phase B";
+CM_ SG_ 2147485191 FAN_Output_Voltage "The calculated value of the output voltage, in peak line-neutral volts";
+CM_ SG_ 2147485191 FAN_DC_Bus_Voltage "The actual measured value of the DC bus voltage";
+CM_ SG_ 2147485190 FAN_DC_Bus_Current "The Calculated DC Bus Current";
+CM_ SG_ 2147485190 FAN_Phase_C_Current "The measured value of Phase C current";
+CM_ SG_ 2147485190 FAN_Phase_B_Current "The measured value of Phase B current";
+CM_ SG_ 2147485190 FAN_Phase_A_Current "The measured value of Phase A current";
+CM_ SG_ 2147485189 FAN_Delta_Resolver_Filtered "Used in calibration of resolver angle adjustment.";
+CM_ SG_ 2147485189 FAN_Electrical_Output_Frequency "The actual electrical frequency of the inverter";
+CM_ SG_ 2147485189 FAN_Motor_Speed "The measured speed of the motor";
+CM_ SG_ 2147485189 FAN_Motor_Angle_Electrical "The Electrical Angle of the motor as read by the encoder or resolver";
+CM_ SG_ 2147485188 FAN_Digital_Input_5 "Status of Digital Input #5";
+CM_ SG_ 2147485188 FAN_Digital_Input_4 "Status of Digital Input #4";
+CM_ SG_ 2147485188 FAN_Digital_Input_3 "Status of Digital Input #3";
+CM_ SG_ 2147485188 FAN_Digital_Input_2 "Status of Digital Input #2";
+CM_ SG_ 2147485188 FAN_Digital_Input_1 "Status of Digital Input #1";
+CM_ SG_ 2147485188 FAN_Digital_Input_6 "Status of Digital Input #6";
+CM_ SG_ 2147485188 FAN_Digital_Input_7 "Status of Digital Input #7";
+CM_ SG_ 2147485188 FAN_Digital_Input_8 "Status of Digital Input #8";
+CM_ SG_ 2147485187 FAN_Analog_Input_4 "Voltage on Analog Input #4";
+CM_ SG_ 2147485187 FAN_Analog_Input_1 "Voltage on Analog Input #1";
+CM_ SG_ 2147485187 FAN_Analog_Input_2 "Voltage on Analog Input #2";
+CM_ SG_ 2147485187 FAN_Analog_Input_5 "Voltage on Analog Input #5";
+CM_ SG_ 2147485187 FAN_Analog_Input_6 "Voltage on Analog Input #6";
+CM_ SG_ 2147485187 FAN_Analog_Input_3 "Voltage on Analog Input #3";
+CM_ SG_ 2147485186 FAN_Torque_Shudder "Shudder compensation value of torque";
+CM_ SG_ 2147485186 FAN_Motor_Temp "Motor Temperature Sensor";
+CM_ SG_ 2147485186 FAN_Hot_Spot_Temp "Estimated inverter hot spot temperature";
+CM_ SG_ 2147485186 FAN_Coolant_Temp "Estimated Coolant Temperature";
+CM_ SG_ 2147485185 FAN_RTD2_Temperature "RTD input 2 (PT1000) Temperature";
+CM_ SG_ 2147485185 FAN_RTD1_Temperature "RTD input 1 (PT1000) Temperature";
+CM_ SG_ 2147485185 FAN_Control_Board_Temp "Control Board Temperature";
+CM_ SG_ 2147485184 FAN_Gate_Driver_Board_Temp "Gate Driver Board Temperature";
+CM_ SG_ 2147485184 FAN_Module_C_Temp "IGBT Module C Temperature";
+CM_ SG_ 2147485184 FAN_Module_B_Temp "IGBT Module B Temperature";
+CM_ SG_ 2147485184 FAN_Module_A_Temp "IGBT Module A Temperature";
+CM_ SG_ 2147483915 CP2_VBC_Vq_Voltage "Measured value of the voltage between Phase B and Phase C";
+CM_ SG_ 2147483915 CP2_VAB_Vd_Voltage "Measured value of the voltage betwen phase A and Phase B";
+CM_ SG_ 2147483915 CP2_Output_Voltage "The calculated value of the output voltage, in peak line-neutral volts";
+CM_ SG_ 2147483915 CP2_DC_Bus_Voltage "The actual measured value of the DC bus voltage";
+CM_ SG_ 2147483920 CP2_Power_On_Timer "Updated every 3 msec. This will roll over in approximately 150 days!";
+CM_ SG_ 2147483920 CP2_Torque_Feedback "Estimated motor torque feedback";
+CM_ SG_ 2147483920 CP2_Commanded_Torque "The commanded Torque";
+CM_ SG_ 2147483910 CP2_Torque_Shudder "Shudder compensation value of torque";
+CM_ SG_ 2147483910 CP2_Motor_Temp "Motor Temperature Sensor";
+CM_ SG_ 2147483910 CP2_Hot_Spot_Temp "Estimated inverter hot spot temperature";
+CM_ SG_ 2147483910 CP2_Coolant_Temp "Estimated Coolant Temperature";
+CM_ SG_ 2147483909 CP2_RTD2_Temperature "RTD input 2 (PT1000) Temperature";
+CM_ SG_ 2147483909 CP2_RTD1_Temperature "RTD input 1 (PT1000) Temperature";
+CM_ SG_ 2147483909 CP2_Control_Board_Temp "Control Board Temperature";
+CM_ SG_ 2147483908 CP2_Gate_Driver_Board_Temp "Gate Driver Board Temperature";
+CM_ SG_ 2147483908 CP2_Module_C_Temp "IGBT Module C Temperature";
+CM_ SG_ 2147483908 CP2_Module_B_Temp "IGBT Module B Temperature";
+CM_ SG_ 2147483908 CP2_Module_A_Temp "IGBT Module A Temperature";
+CM_ BO_ 2147483942 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write).
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 2147483942 CP2_Parameter_Response_Write_OK "0=Write failure, 1=Success";
+CM_ SG_ 2147483942 CP2_Parameter_Response_Data "Data from parameter message.  All data is 16 bits and is contained in bytes 4 and 5. Bytes 6 and 7 should be ignored.";
+CM_ SG_ 2147483942 CP2_Parameter_Response_Addr "Address of parameter response message data.";
+CM_ BO_ 2147483941 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write).
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 2147483941 VCU_CP2_Parameter_Data "Data to be written.  All data is 16 bits and is contained in bytes 4 and 5.";
+CM_ SG_ 2147483941 VCU_CP2_Parameter_RW_Command "0=Read, 1=Write";
+CM_ SG_ 2147483941 VCU_CP2_Parameter_Address "Address of parameter to be written or read.";
+CM_ SG_ 2147483913 CP2_Delta_Resolver_Filtered "Used in calibration of resolver angle adjustment.";
+CM_ SG_ 2147483913 CP2_Electrical_Output_Frequency "The actual electrical frequency of the inverter";
+CM_ SG_ 2147483913 CP2_Motor_Speed "The measured speed of the motor";
+CM_ SG_ 2147483913 CP2_Motor_Angle_Electrical "The Electrical Angle of the motor as read by the encoder or resolver";
+CM_ SG_ 2147483921 CP2_Iq_Command "The commanded Q-axis current";
+CM_ SG_ 2147483921 CP2_Id_Command "The commanded D-axis current";
+CM_ SG_ 2147483921 CP2_Flux_Weakening_Output "This is the current output of the flux regulator.";
+CM_ SG_ 2147483921 CP2_Modulation_Index "This is the modulation index. The scale factor is x100. To get the actual modulation index divide the value by 100.";
+CM_ SG_ 2147483917 CP2_Ref_Voltage_12_0 "12V Input Voltage";
+CM_ SG_ 2147483917 CP2_Ref_Voltage_5_0 "Transducer voltage";
+CM_ SG_ 2147483917 CP2_Ref_Voltage_2_5 "Internal reference voltage";
+CM_ SG_ 2147483917 CP2_Ref_Voltage_1_5 "Internal reference voltage";
+CM_ SG_ 2147483918 CP2_Direction_Command "1 = Forward
+0 = 'Reverse' if inverter enabled  & 'Stopped' if inverter is disabled";
+CM_ SG_ 2147483918 CP2_Inverter_Enable_State "0=Inverter Disabled,
+1=Inverter Enabled";
+CM_ SG_ 2147483918 CP2_Relay_3_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483918 CP2_Relay_4_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483918 CP2_Relay_2_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483918 CP2_Inverter_Run_Mode "0=Torque Mode, 1=Speed Mode";
+CM_ SG_ 2147483918 CP2_Inverter_Command_Mode "0=CAN mode, 1=VSM mode";
+CM_ SG_ 2147483918 CP2_Relay_1_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483918 CP2_Inverter_State "Different states for the inverter state machine";
+CM_ SG_ 2147483918 CP2_VSM_State "Different states for the vehicle state machine";
+CM_ SG_ 2147483918 CP2_Inverter_Enable_Lockout "0=Lockout Disabled, 1=Lockout Enabled";
+CM_ SG_ 2147483918 CP2_Inverter_Discharge_State "0 = Disabled, 1 = Enabled, 2 = Speed Check, 3 = Active, 4 = Complete";
+CM_ SG_ 2147483918 CP2_Relay_5_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483918 CP2_Relay_6_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483918 CP2_BMS_Active "0 = BMS Not Active, 1 = BMS Active";
+CM_ SG_ 2147483918 CP2_BMS_Torque_Limiting "0 = Not Limiting, 1 = Limiting";
+CM_ SG_ 2147483918 CP2_PWM_Frequency "The current active PWM frequency";
+CM_ SG_ 2147483918 CP2_Limit_Max_Speed "Indicates that torque is being modified to limit the speed.";
+CM_ SG_ 2147483918 CP2_Limit_Hot_Spot "Indicates that torque is being limited to limit the hot spot temp";
+CM_ SG_ 2147483918 CP2_Low_Speed_Limiting "Indicates that motor current is being limited due to low motor electrical frequency.";
+CM_ SG_ 2147483918 CP2_Rolling_Counter "Rolling Counter value";
+CM_ SG_ 2147483918 CP2_Limit_Coolant_Derating "0 = Not limiting, 1 = Limiting";
+CM_ SG_ 2147483916 CP2_Iq "The measured Iq current";
+CM_ SG_ 2147483916 CP2_Id "The measured Id current";
+CM_ SG_ 2147483916 CP2_Flux_Feedback "The estimated flux";
+CM_ SG_ 2147483916 CP2_Flux_Command "The commanded flux";
+CM_ SG_ 2147483919 CP2_Run_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483919 CP2_Post_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483919 CP2_Run_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483919 CP2_Post_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483912 CP2_Digital_Input_5 "Status of Digital Input #5";
+CM_ SG_ 2147483912 CP2_Digital_Input_4 "Status of Digital Input #4";
+CM_ SG_ 2147483912 CP2_Digital_Input_3 "Status of Digital Input #3";
+CM_ SG_ 2147483912 CP2_Digital_Input_2 "Status of Digital Input #2";
+CM_ SG_ 2147483912 CP2_Digital_Input_1 "Status of Digital Input #1";
+CM_ SG_ 2147483912 CP2_Digital_Input_6 "Status of Digital Input #6";
+CM_ SG_ 2147483912 CP2_Digital_Input_7 "Status of Digital Input #7";
+CM_ SG_ 2147483912 CP2_Digital_Input_8 "Status of Digital Input #8";
+CM_ SG_ 2147483914 CP2_DC_Bus_Current "The Calculated DC Bus Current";
+CM_ SG_ 2147483914 CP2_Phase_C_Current "The measured value of Phase C current";
+CM_ SG_ 2147483914 CP2_Phase_B_Current "The measured value of Phase B current";
+CM_ SG_ 2147483914 CP2_Phase_A_Current "The measured value of Phase A current";
+CM_ BO_ 2147483940 "The command message is used to transmit data to the controller. This message is sent from a user supplied external controller to the PMxxx controller.";
+CM_ SG_ 2147483940 VCU_CP2_Inverter_Enable "0=Inverter OFF, 1 = Inverter ON";
+CM_ SG_ 2147483940 VCU_CP2_Direction_Command "0=Reverse, 1=Forward.  Forward is positive motor speed.";
+CM_ SG_ 2147483940 VCU_CP2_Speed_Command "Speed command used when in speed mode";
+CM_ SG_ 2147483940 VCU_CP2_Torque_Command "Torque command when in torque mode";
+CM_ SG_ 2147483940 VCU_CP2_Inverter_Discharge "0=Discharge Disable,1=Discharge Enable";
+CM_ SG_ 2147483940 VCU_CP2_Torque_Limit_Command "Torque Limit, set to 0 to keep default";
+CM_ SG_ 2147483940 VCU_CP2_Speed_Mode_Enable "0 = No change to mode, 1 = change to speed mode from torque mode";
+CM_ SG_ 2147483911 CP2_Analog_Input_4 "Voltage on Analog Input #4";
+CM_ SG_ 2147483911 CP2_Analog_Input_1 "Voltage on Analog Input #1";
+CM_ SG_ 2147483911 CP2_Analog_Input_2 "Voltage on Analog Input #2";
+CM_ SG_ 2147483911 CP2_Analog_Input_5 "Voltage on Analog Input #5";
+CM_ SG_ 2147483911 CP2_Analog_Input_6 "Voltage on Analog Input #6";
+CM_ SG_ 2147483911 CP2_Analog_Input_3 "Voltage on Analog Input #3";
+CM_ BO_ 2147483892 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write).
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 2147483892 CP1_Parameter_Response_Write_OK "0=Write failure, 1=Success";
+CM_ SG_ 2147483892 CP1_Parameter_Response_Data "Data from parameter message.  All data is 16 bits and is contained in bytes 4 and 5. Bytes 6 and 7 should be ignored.";
+CM_ SG_ 2147483892 CP1_Parameter_Response_Addr "Address of parameter response message data.";
+CM_ BO_ 2147483891 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write).
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 2147483891 VCU_CP1_Parameter_Data "Data to be written.  All data is 16 bits and is contained in bytes 4 and 5.";
+CM_ SG_ 2147483891 VCU_CP1_Parameter_RW_Command "0=Read, 1=Write";
+CM_ SG_ 2147483891 VCU_CP1_Parameter_Address "Address of parameter to be written or read.";
+CM_ BO_ 2147483890 "The command message is used to transmit data to the controller. This message is sent from a user supplied external controller to the PMxxx controller.";
+CM_ SG_ 2147483890 VCU_CP1_Inverter_Enable "0=Inverter OFF, 1 = Inverter ON";
+CM_ SG_ 2147483890 VCU_CP1_Direction_Command "0=Reverse, 1=Forward.  Forward is positive motor speed.";
+CM_ SG_ 2147483890 VCU_CP1_Speed_Command "Speed command used when in speed mode";
+CM_ SG_ 2147483890 VCU_CP1_Torque_Command "Torque command when in torque mode";
+CM_ SG_ 2147483890 VCU_CP1_Inverter_Discharge "0=Discharge Disable,1=Discharge Enable";
+CM_ SG_ 2147483890 VCU_CP1_Torque_Limit_Command "Torque Limit, set to 0 to keep default";
+CM_ SG_ 2147483890 VCU_CP1_Speed_Mode_Enable "0 = No change to mode, 1 = change to speed mode from torque mode";
+CM_ SG_ 2147483871 CP1_Iq_Command "The commanded Q-axis current";
+CM_ SG_ 2147483871 CP1_Id_Command "The commanded D-axis current";
+CM_ SG_ 2147483871 CP1_Flux_Weakening_Output "This is the current output of the flux regulator.";
+CM_ SG_ 2147483871 CP1_Modulation_Index "This is the modulation index. The scale factor is x100. To get the actual modulation index divide the value by 100.";
+CM_ SG_ 2147483870 CP1_Power_On_Timer "Updated every 3 msec. This will roll over in approximately 150 days!";
+CM_ SG_ 2147483870 CP1_Torque_Feedback "Estimated motor torque feedback";
+CM_ SG_ 2147483870 CP1_Commanded_Torque "The commanded Torque";
+CM_ SG_ 2147483869 CP1_Run_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483869 CP1_Post_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483869 CP1_Run_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483869 CP1_Post_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483868 CP1_Direction_Command "1 = Forward
+0 = 'Reverse' if inverter enabled  & 'Stopped' if inverter is disabled";
+CM_ SG_ 2147483868 CP1_Inverter_Enable_State "0=Inverter Disabled,
+1=Inverter Enabled";
+CM_ SG_ 2147483868 CP1_Relay_3_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483868 CP1_Relay_4_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483868 CP1_Relay_2_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483868 CP1_Inverter_Run_Mode "0=Torque Mode, 1=Speed Mode";
+CM_ SG_ 2147483868 CP1_Inverter_Command_Mode "0=CAN mode, 1=VSM mode";
+CM_ SG_ 2147483868 CP1_Relay_1_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483868 CP1_Inverter_State "Different states for the inverter state machine";
+CM_ SG_ 2147483868 CP1_VSM_State "Different states for the vehicle state machine";
+CM_ SG_ 2147483868 CP1_Inverter_Enable_Lockout "0=Lockout Disabled, 1=Lockout Enabled";
+CM_ SG_ 2147483868 CP1_Inverter_Discharge_State "0 = Disabled, 1 = Enabled, 2 = Speed Check, 3 = Active, 4 = Complete";
+CM_ SG_ 2147483868 CP1_Relay_5_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483868 CP1_Relay_6_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483868 CP1_BMS_Active "0 = BMS Not Active, 1 = BMS Active";
+CM_ SG_ 2147483868 CP1_BMS_Torque_Limiting "0 = Not Limiting, 1 = Limiting";
+CM_ SG_ 2147483868 CP1_PWM_Frequency "The current active PWM frequency";
+CM_ SG_ 2147483868 CP1_Limit_Max_Speed "Indicates that torque is being modified to limit the speed.";
+CM_ SG_ 2147483868 CP1_Limit_Hot_Spot "Indicates that torque is being limited to limit the hot spot temp";
+CM_ SG_ 2147483868 CP1_Low_Speed_Limiting "Indicates that motor current is being limited due to low motor electrical frequency.";
+CM_ SG_ 2147483868 CP1_Rolling_Counter "Rolling Counter value";
+CM_ SG_ 2147483868 CP1_Limit_Coolant_Derating "0 = Not limiting, 1 = Limiting";
+CM_ SG_ 2147483867 CP1_Ref_Voltage_12_0 "12V Input Voltage";
+CM_ SG_ 2147483867 CP1_Ref_Voltage_5_0 "Transducer voltage";
+CM_ SG_ 2147483867 CP1_Ref_Voltage_2_5 "Internal reference voltage";
+CM_ SG_ 2147483867 CP1_Ref_Voltage_1_5 "Internal reference voltage";
+CM_ SG_ 2147483866 CP1_Iq "The measured Iq current";
+CM_ SG_ 2147483866 CP1_Id "The measured Id current";
+CM_ SG_ 2147483866 CP1_Flux_Feedback "The estimated flux";
+CM_ SG_ 2147483866 CP1_Flux_Command "The commanded flux";
+CM_ SG_ 2147483865 CP1_VBC_Vq_Voltage "Measured value of the voltage between Phase B and Phase C";
+CM_ SG_ 2147483865 CP1_VAB_Vd_Voltage "Measured value of the voltage betwen phase A and Phase B";
+CM_ SG_ 2147483865 CP1_Output_Voltage "The calculated value of the output voltage, in peak line-neutral volts";
+CM_ SG_ 2147483865 CP1_DC_Bus_Voltage "The actual measured value of the DC bus voltage";
+CM_ SG_ 2147483864 CP1_DC_Bus_Current "The Calculated DC Bus Current";
+CM_ SG_ 2147483864 CP1_Phase_C_Current "The measured value of Phase C current";
+CM_ SG_ 2147483864 CP1_Phase_B_Current "The measured value of Phase B current";
+CM_ SG_ 2147483864 CP1_Phase_A_Current "The measured value of Phase A current";
+CM_ SG_ 2147483863 CP1_Delta_Resolver_Filtered "Used in calibration of resolver angle adjustment.";
+CM_ SG_ 2147483863 CP1_Electrical_Output_Frequency "The actual electrical frequency of the inverter";
+CM_ SG_ 2147483863 CP1_Motor_Speed "The measured speed of the motor";
+CM_ SG_ 2147483863 CP1_Motor_Angle_Electrical "The Electrical Angle of the motor as read by the encoder or resolver";
+CM_ SG_ 2147483862 CP1_Digital_Input_5 "Status of Digital Input #5";
+CM_ SG_ 2147483862 CP1_Digital_Input_4 "Status of Digital Input #4";
+CM_ SG_ 2147483862 CP1_Digital_Input_3 "Status of Digital Input #3";
+CM_ SG_ 2147483862 CP1_Digital_Input_2 "Status of Digital Input #2";
+CM_ SG_ 2147483862 CP1_Digital_Input_1 "Status of Digital Input #1";
+CM_ SG_ 2147483862 CP1_Digital_Input_6 "Status of Digital Input #6";
+CM_ SG_ 2147483862 CP1_Digital_Input_7 "Status of Digital Input #7";
+CM_ SG_ 2147483862 CP1_Digital_Input_8 "Status of Digital Input #8";
+CM_ SG_ 2147483861 CP1_Analog_Input_4 "Voltage on Analog Input #4";
+CM_ SG_ 2147483861 CP1_Analog_Input_1 "Voltage on Analog Input #1";
+CM_ SG_ 2147483861 CP1_Analog_Input_2 "Voltage on Analog Input #2";
+CM_ SG_ 2147483861 CP1_Analog_Input_5 "Voltage on Analog Input #5";
+CM_ SG_ 2147483861 CP1_Analog_Input_6 "Voltage on Analog Input #6";
+CM_ SG_ 2147483861 CP1_Analog_Input_3 "Voltage on Analog Input #3";
+CM_ SG_ 2147483860 CP1_Torque_Shudder "Shudder compensation value of torque";
+CM_ SG_ 2147483860 CP1_Motor_Temp "Motor Temperature Sensor";
+CM_ SG_ 2147483860 CP1_Hot_Spot_Temp "Estimated inverter hot spot temperature";
+CM_ SG_ 2147483860 CP1_Coolant_Temp "Estimated Coolant Temperature";
+CM_ SG_ 2147483859 CP1_RTD2_Temperature "RTD input 2 (PT1000) Temperature";
+CM_ SG_ 2147483859 CP1_RTD1_Temperature "RTD input 1 (PT1000) Temperature";
+CM_ SG_ 2147483859 CP1_Control_Board_Temp "Control Board Temperature";
+CM_ SG_ 2147483858 CP1_Gate_Driver_Board_Temp "Gate Driver Board Temperature";
+CM_ SG_ 2147483858 CP1_Module_C_Temp "IGBT Module C Temperature";
+CM_ SG_ 2147483858 CP1_Module_B_Temp "IGBT Module B Temperature";
+CM_ SG_ 2147483858 CP1_Module_A_Temp "IGBT Module A Temperature";
+CM_ SG_ 2147483821 HYD_Iq_Command "The commanded Q-axis current";
+CM_ SG_ 2147483821 HYD_Id_Command "The commanded D-axis current";
+CM_ SG_ 2147483821 HYD_Flux_Weakening_Output "This is the current output of the flux regulator.";
+CM_ SG_ 2147483821 HYD_Modulation_Index "This is the modulation index. The scale factor is x100. To get the actual modulation index divide the value by 100.";
+CM_ SG_ 2147483820 HYD_Power_On_Timer "Updated every 3 msec. This will roll over in approximately 150 days!";
+CM_ SG_ 2147483820 HYD_Torque_Feedback "Estimated motor torque feedback";
+CM_ SG_ 2147483820 HYD_Commanded_Torque "The commanded Torque";
+CM_ BO_ 2147483842 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write).
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 2147483842 HYD_Parameter_Response_Write_OK "0=Write failure, 1=Success";
+CM_ SG_ 2147483842 HYD_Parameter_Response_Data "Data from parameter message.  All data is 16 bits and is contained in bytes 4 and 5. Bytes 6 and 7 should be ignored.";
+CM_ SG_ 2147483842 HYD_Parameter_Response_Addr "Address of parameter response message data.";
+CM_ BO_ 2147483841 "To write a parameter use message 0x0C1 with byte #2 set to 1 (write).
+To read a parameter use message 0x0C1 with byte #2 to set 0 (read). ";
+CM_ SG_ 2147483841 VCU_HYD_Parameter_Data "Data to be written.  All data is 16 bits and is contained in bytes 4 and 5.";
+CM_ SG_ 2147483841 VCU_HYD_Parameter_RW_Command "0=Read, 1=Write";
+CM_ SG_ 2147483841 VCU_HYD_Parameter_Address "Address of parameter to be written or read.";
+CM_ BO_ 2147483840 "The command message is used to transmit data to the controller. This message is sent from a user supplied external controller to the PMxxx controller.";
+CM_ SG_ 2147483840 VCU_HYD_Inverter_Enable "0=Inverter OFF, 1 = Inverter ON";
+CM_ SG_ 2147483840 VCU_HYD_Direction_Command "0=Reverse, 1=Forward.  Forward is positive motor speed.";
+CM_ SG_ 2147483840 VCU_HYD_Speed_Command "Speed command used when in speed mode";
+CM_ SG_ 2147483840 VCU_HYD_Torque_Command "Torque command when in torque mode";
+CM_ SG_ 2147483840 VCU_HYD_Inverter_Discharge "0=Discharge Disable,1=Discharge Enable";
+CM_ SG_ 2147483840 VCU_HYD_Torque_Limit_Command "Torque Limit, set to 0 to keep default";
+CM_ SG_ 2147483840 VCU_HYD_Speed_Mode_Enable "0 = No change to mode, 1 = change to speed mode from torque mode";
+CM_ SG_ 2147483819 HYD_Run_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483819 HYD_Post_Fault_Hi "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483819 HYD_Run_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483819 HYD_Post_Fault_Lo "Each bit represents a fault. Please refer to PM100 Users Manual for details.";
+CM_ SG_ 2147483818 HYD_Direction_Command "1 = Forward
+0 = 'Reverse' if inverter enabled  & 'Stopped' if inverter is disabled";
+CM_ SG_ 2147483818 HYD_Inverter_Enable_State "0=Inverter Disabled,
+1=Inverter Enabled";
+CM_ SG_ 2147483818 HYD_Relay_3_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483818 HYD_Relay_4_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483818 HYD_Relay_2_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483818 HYD_Inverter_Run_Mode "0=Torque Mode, 1=Speed Mode";
+CM_ SG_ 2147483818 HYD_Inverter_Command_Mode "0=CAN mode, 1=VSM mode";
+CM_ SG_ 2147483818 HYD_Relay_1_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483818 HYD_Inverter_State "Different states for the inverter state machine";
+CM_ SG_ 2147483818 HYD_VSM_State "Different states for the vehicle state machine";
+CM_ SG_ 2147483818 HYD_Inverter_Enable_Lockout "0=Lockout Disabled, 1=Lockout Enabled";
+CM_ SG_ 2147483818 HYD_Inverter_Discharge_State "0 = Disabled, 1 = Enabled, 2 = Speed Check, 3 = Active, 4 = Complete";
+CM_ SG_ 2147483818 HYD_Relay_5_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483818 HYD_Relay_6_Status "0=OFF, 1=ON";
+CM_ SG_ 2147483818 HYD_BMS_Active "0 = BMS Not Active, 1 = BMS Active";
+CM_ SG_ 2147483818 HYD_BMS_Torque_Limiting "0 = Not Limiting, 1 = Limiting";
+CM_ SG_ 2147483818 HYD_PWM_Frequency "The current active PWM frequency";
+CM_ SG_ 2147483818 HYD_Limit_Max_Speed "Indicates that torque is being modified to limit the speed.";
+CM_ SG_ 2147483818 HYD_Limit_Hot_Spot "Indicates that torque is being limited to limit the hot spot temp";
+CM_ SG_ 2147483818 HYD_Low_Speed_Limiting "Indicates that motor current is being limited due to low motor electrical frequency.";
+CM_ SG_ 2147483818 HYD_Rolling_Counter "Rolling Counter value";
+CM_ SG_ 2147483818 HYD_Limit_Coolant_Derating "0 = Not limiting, 1 = Limiting";
+CM_ SG_ 2147483817 HYD_Ref_Voltage_12_0 "12V Input Voltage";
+CM_ SG_ 2147483817 HYD_Ref_Voltage_5_0 "Transducer voltage";
+CM_ SG_ 2147483817 HYD_Ref_Voltage_2_5 "Internal reference voltage";
+CM_ SG_ 2147483817 HYD_Ref_Voltage_1_5 "Internal reference voltage";
+CM_ SG_ 2147483816 HYD_Iq "The measured Iq current";
+CM_ SG_ 2147483816 HYD_Id "The measured Id current";
+CM_ SG_ 2147483816 HYD_Flux_Feedback "The estimated flux";
+CM_ SG_ 2147483816 HYD_Flux_Command "The commanded flux";
+CM_ SG_ 2147483815 HYD_VBC_Vq_Voltage "Measured value of the voltage between Phase B and Phase C";
+CM_ SG_ 2147483815 HYD_VAB_Vd_Voltage "Measured value of the voltage betwen phase A and Phase B";
+CM_ SG_ 2147483815 HYD_Output_Voltage "The calculated value of the output voltage, in peak line-neutral volts";
+CM_ SG_ 2147483815 HYD_DC_Bus_Voltage "The actual measured value of the DC bus voltage";
+CM_ SG_ 2147483814 HYD_DC_Bus_Current "The Calculated DC Bus Current";
+CM_ SG_ 2147483814 HYD_Phase_C_Current "The measured value of Phase C current";
+CM_ SG_ 2147483814 HYD_Phase_B_Current "The measured value of Phase B current";
+CM_ SG_ 2147483814 HYD_Phase_A_Current "The measured value of Phase A current";
+CM_ SG_ 2147483813 HYD_Delta_Resolver_Filtered "Used in calibration of resolver angle adjustment.";
+CM_ SG_ 2147483813 HYD_Electrical_Output_Frequency "The actual electrical frequency of the inverter";
+CM_ SG_ 2147483813 HYD_Motor_Speed "The measured speed of the motor";
+CM_ SG_ 2147483813 HYD_Motor_Angle_Electrical "The Electrical Angle of the motor as read by the encoder or resolver";
+CM_ SG_ 2147483812 HYD_Digital_Input_5 "Status of Digital Input #5";
+CM_ SG_ 2147483812 HYD_Digital_Input_4 "Status of Digital Input #4";
+CM_ SG_ 2147483812 HYD_Digital_Input_3 "Status of Digital Input #3";
+CM_ SG_ 2147483812 HYD_Digital_Input_2 "Status of Digital Input #2";
+CM_ SG_ 2147483812 HYD_Digital_Input_1 "Status of Digital Input #1";
+CM_ SG_ 2147483812 HYD_Digital_Input_6 "Status of Digital Input #6";
+CM_ SG_ 2147483812 HYD_Digital_Input_7 "Status of Digital Input #7";
+CM_ SG_ 2147483812 HYD_Digital_Input_8 "Status of Digital Input #8";
+CM_ SG_ 2147483811 HYD_Analog_Input_4 "Voltage on Analog Input #4";
+CM_ SG_ 2147483811 HYD_Analog_Input_1 "Voltage on Analog Input #1";
+CM_ SG_ 2147483811 HYD_Analog_Input_2 "Voltage on Analog Input #2";
+CM_ SG_ 2147483811 HYD_Analog_Input_5 "Voltage on Analog Input #5";
+CM_ SG_ 2147483811 HYD_Analog_Input_6 "Voltage on Analog Input #6";
+CM_ SG_ 2147483811 HYD_Analog_Input_3 "Voltage on Analog Input #3";
+CM_ SG_ 2147483810 HYD_Torque_Shudder "Shudder compensation value of torque";
+CM_ SG_ 2147483810 HYD_Motor_Temp "Motor Temperature Sensor";
+CM_ SG_ 2147483810 HYD_Hot_Spot_Temp "Estimated inverter hot spot temperature";
+CM_ SG_ 2147483810 HYD_Coolant_Temp "Estimated Coolant Temperature";
+CM_ SG_ 2147483809 HYD_RTD2_Temperature "RTD input 2 (PT1000) Temperature";
+CM_ SG_ 2147483809 HYD_RTD1_Temperature "RTD input 1 (PT1000) Temperature";
+CM_ SG_ 2147483809 HYD_Control_Board_Temp "Control Board Temperature";
+CM_ SG_ 2147483808 HYD_Gate_Driver_Board_Temp "Gate Driver Board Temperature";
+CM_ SG_ 2147483808 HYD_Module_C_Temp "IGBT Module C Temperature";
+CM_ SG_ 2147483808 HYD_Module_B_Temp "IGBT Module B Temperature";
+CM_ SG_ 2147483808 HYD_Module_A_Temp "IGBT Module A Temperature";
+BA_DEF_ BO_  "CANFD_BRS" ENUM  "0","1";
+BA_DEF_ BO_  "CanDootDecode" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootDecodeBus" INT 0 6;
+BA_DEF_ BO_  "CanDootHideAll" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootPaused" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulate" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulateBus" INT 0 6;
+BA_DEF_ BO_  "CanDootSimulateCycleTime" INT 0 50000;
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 100000;
+BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","J1939PG","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","StandardCAN_FD","ExtendedCAN_FD";
+BA_DEF_ SG_  "CanDootBroadcast" ENUM  "No","Yes";
+BA_DEF_ SG_  "CanDootGroup" ENUM  "None","g1","g2","g3","g4","g5","g6","g7","g8","g9","gA","gB","gC","gD","gE","gF";
+BA_DEF_ SG_  "CanDootHidden" ENUM  "No","Yes";
+BA_DEF_ SG_  "GenSigStartValue" INT 0 2147483647;
+BA_DEF_ BU_  "DeviceInfo" STRING ;
+BA_DEF_ BU_  "ECU" STRING ;
+BA_DEF_ BU_  "NmStationAddress" INT 0 255;
+BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_  "DBName" STRING ;
+BA_DEF_DEF_  "CANFD_BRS" "1";
+BA_DEF_DEF_  "CanDootDecode" "No";
+BA_DEF_DEF_  "CanDootDecodeBus" 1;
+BA_DEF_DEF_  "CanDootHideAll" "No";
+BA_DEF_DEF_  "CanDootPaused" "Yes";
+BA_DEF_DEF_  "CanDootSimulate" "No";
+BA_DEF_DEF_  "CanDootSimulateBus" 1;
+BA_DEF_DEF_  "CanDootSimulateCycleTime" 1500;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "VFrameFormat" "ExtendedCAN";
+BA_DEF_DEF_  "CanDootBroadcast" "No";
+BA_DEF_DEF_  "CanDootGroup" "None";
+BA_DEF_DEF_  "CanDootHidden" "No";
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "DeviceInfo" "";
+BA_DEF_DEF_  "ECU" "";
+BA_DEF_DEF_  "NmStationAddress" 254;
+BA_DEF_DEF_  "NodeLayerModules" "";
+BA_DEF_DEF_  "BusType" "CAN";
+BA_DEF_DEF_  "DBName" "";
+BA_ "DBName" "CAN_CM";
+BA_ "CanDootSimulateCycleTime" BO_ 2147485197 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485197 5;
+BA_ "CanDootSimulate" BO_ 2147485197 0;
+BA_ "CanDootPaused" BO_ 2147485197 1;
+BA_ "CanDootDecodeBus" BO_ 2147485197 5;
+BA_ "CanDootDecode" BO_ 2147485197 1;
+BA_ "GenMsgCycleTime" BO_ 2147485196 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485196 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485196 5;
+BA_ "CanDootSimulate" BO_ 2147485196 0;
+BA_ "CanDootPaused" BO_ 2147485196 0;
+BA_ "CanDootDecodeBus" BO_ 2147485196 5;
+BA_ "CanDootDecode" BO_ 2147485196 1;
+BA_ "GenMsgCycleTime" BO_ 2147485218 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485218 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485218 5;
+BA_ "CanDootSimulate" BO_ 2147485218 0;
+BA_ "CanDootPaused" BO_ 2147485218 1;
+BA_ "CanDootDecodeBus" BO_ 2147485218 5;
+BA_ "CanDootDecode" BO_ 2147485218 1;
+BA_ "GenMsgCycleTime" BO_ 2147485217 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485217 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485217 5;
+BA_ "CanDootSimulate" BO_ 2147485217 0;
+BA_ "CanDootPaused" BO_ 2147485217 1;
+BA_ "CanDootDecodeBus" BO_ 2147485217 5;
+BA_ "CanDootDecode" BO_ 2147485217 1;
+BA_ "CanDootDecode" BO_ 2147485216 1;
+BA_ "GenMsgCycleTime" BO_ 2147485216 5;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485216 250;
+BA_ "CanDootSimulateBus" BO_ 2147485216 5;
+BA_ "CanDootSimulate" BO_ 2147485216 0;
+BA_ "CanDootPaused" BO_ 2147485216 0;
+BA_ "CanDootDecodeBus" BO_ 2147485216 5;
+BA_ "GenMsgCycleTime" BO_ 2147485195 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485195 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485195 5;
+BA_ "CanDootSimulate" BO_ 2147485195 0;
+BA_ "CanDootPaused" BO_ 2147485195 0;
+BA_ "CanDootDecodeBus" BO_ 2147485195 5;
+BA_ "CanDootDecode" BO_ 2147485195 1;
+BA_ "GenMsgCycleTime" BO_ 2147485194 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485194 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485194 5;
+BA_ "CanDootSimulate" BO_ 2147485194 0;
+BA_ "CanDootPaused" BO_ 2147485194 0;
+BA_ "CanDootDecodeBus" BO_ 2147485194 5;
+BA_ "CanDootDecode" BO_ 2147485194 1;
+BA_ "GenMsgCycleTime" BO_ 2147485193 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485193 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485193 5;
+BA_ "CanDootSimulate" BO_ 2147485193 0;
+BA_ "CanDootPaused" BO_ 2147485193 1;
+BA_ "CanDootDecodeBus" BO_ 2147485193 5;
+BA_ "CanDootDecode" BO_ 2147485193 1;
+BA_ "GenMsgCycleTime" BO_ 2147485192 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485192 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485192 5;
+BA_ "CanDootSimulate" BO_ 2147485192 0;
+BA_ "CanDootPaused" BO_ 2147485192 1;
+BA_ "CanDootDecodeBus" BO_ 2147485192 5;
+BA_ "CanDootDecode" BO_ 2147485192 1;
+BA_ "GenMsgCycleTime" BO_ 2147485191 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485191 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485191 5;
+BA_ "CanDootSimulate" BO_ 2147485191 0;
+BA_ "CanDootPaused" BO_ 2147485191 0;
+BA_ "CanDootDecodeBus" BO_ 2147485191 5;
+BA_ "CanDootDecode" BO_ 2147485191 1;
+BA_ "GenMsgCycleTime" BO_ 2147485190 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485190 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485190 5;
+BA_ "CanDootSimulate" BO_ 2147485190 0;
+BA_ "CanDootPaused" BO_ 2147485190 0;
+BA_ "CanDootDecodeBus" BO_ 2147485190 5;
+BA_ "CanDootDecode" BO_ 2147485190 1;
+BA_ "GenMsgCycleTime" BO_ 2147485189 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485189 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485189 5;
+BA_ "CanDootSimulate" BO_ 2147485189 0;
+BA_ "CanDootPaused" BO_ 2147485189 0;
+BA_ "CanDootDecodeBus" BO_ 2147485189 5;
+BA_ "CanDootDecode" BO_ 2147485189 1;
+BA_ "GenMsgCycleTime" BO_ 2147485188 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485188 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485188 5;
+BA_ "CanDootSimulate" BO_ 2147485188 0;
+BA_ "CanDootPaused" BO_ 2147485188 1;
+BA_ "CanDootDecodeBus" BO_ 2147485188 5;
+BA_ "CanDootDecode" BO_ 2147485188 1;
+BA_ "GenMsgCycleTime" BO_ 2147485187 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485187 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485187 5;
+BA_ "CanDootSimulate" BO_ 2147485187 0;
+BA_ "CanDootPaused" BO_ 2147485187 1;
+BA_ "CanDootDecodeBus" BO_ 2147485187 5;
+BA_ "CanDootDecode" BO_ 2147485187 1;
+BA_ "GenMsgCycleTime" BO_ 2147485186 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485186 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485186 5;
+BA_ "CanDootSimulate" BO_ 2147485186 0;
+BA_ "CanDootPaused" BO_ 2147485186 0;
+BA_ "CanDootDecodeBus" BO_ 2147485186 5;
+BA_ "CanDootDecode" BO_ 2147485186 1;
+BA_ "GenMsgCycleTime" BO_ 2147485185 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485185 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485185 5;
+BA_ "CanDootSimulate" BO_ 2147485185 0;
+BA_ "CanDootPaused" BO_ 2147485185 1;
+BA_ "CanDootDecodeBus" BO_ 2147485185 5;
+BA_ "CanDootDecode" BO_ 2147485185 1;
+BA_ "GenMsgCycleTime" BO_ 2147485184 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485184 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485184 5;
+BA_ "CanDootSimulate" BO_ 2147485184 0;
+BA_ "CanDootPaused" BO_ 2147485184 1;
+BA_ "CanDootDecodeBus" BO_ 2147485184 5;
+BA_ "CanDootDecode" BO_ 2147485184 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485198 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485198 5;
+BA_ "CanDootSimulate" BO_ 2147485198 0;
+BA_ "CanDootPaused" BO_ 2147485198 1;
+BA_ "CanDootDecodeBus" BO_ 2147485198 5;
+BA_ "CanDootDecode" BO_ 2147485198 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485199 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485199 5;
+BA_ "CanDootSimulate" BO_ 2147485199 0;
+BA_ "CanDootPaused" BO_ 2147485199 1;
+BA_ "CanDootDecodeBus" BO_ 2147485199 5;
+BA_ "CanDootDecode" BO_ 2147485199 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147485200 1000;
+BA_ "CanDootSimulateBus" BO_ 2147485200 5;
+BA_ "CanDootSimulate" BO_ 2147485200 0;
+BA_ "CanDootPaused" BO_ 2147485200 1;
+BA_ "CanDootDecodeBus" BO_ 2147485200 5;
+BA_ "CanDootDecode" BO_ 2147485200 1;
+BA_ "GenMsgCycleTime" BO_ 2147483915 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483915 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483915 5;
+BA_ "CanDootSimulate" BO_ 2147483915 0;
+BA_ "CanDootPaused" BO_ 2147483915 1;
+BA_ "CanDootDecodeBus" BO_ 2147483915 5;
+BA_ "CanDootDecode" BO_ 2147483915 1;
+BA_ "GenMsgCycleTime" BO_ 2147483920 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483920 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483920 5;
+BA_ "CanDootSimulate" BO_ 2147483920 0;
+BA_ "CanDootPaused" BO_ 2147483920 1;
+BA_ "CanDootDecodeBus" BO_ 2147483920 5;
+BA_ "CanDootDecode" BO_ 2147483920 1;
+BA_ "GenMsgCycleTime" BO_ 2147483910 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483910 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483910 5;
+BA_ "CanDootSimulate" BO_ 2147483910 0;
+BA_ "CanDootPaused" BO_ 2147483910 0;
+BA_ "CanDootDecodeBus" BO_ 2147483910 5;
+BA_ "CanDootDecode" BO_ 2147483910 1;
+BA_ "GenMsgCycleTime" BO_ 2147483909 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483909 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483909 5;
+BA_ "CanDootSimulate" BO_ 2147483909 0;
+BA_ "CanDootPaused" BO_ 2147483909 1;
+BA_ "CanDootDecodeBus" BO_ 2147483909 5;
+BA_ "CanDootDecode" BO_ 2147483909 1;
+BA_ "GenMsgCycleTime" BO_ 2147483908 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483908 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483908 5;
+BA_ "CanDootSimulate" BO_ 2147483908 0;
+BA_ "CanDootPaused" BO_ 2147483908 1;
+BA_ "CanDootDecodeBus" BO_ 2147483908 5;
+BA_ "CanDootDecode" BO_ 2147483908 1;
+BA_ "GenMsgCycleTime" BO_ 2147483942 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483942 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483942 5;
+BA_ "CanDootSimulate" BO_ 2147483942 0;
+BA_ "CanDootPaused" BO_ 2147483942 1;
+BA_ "CanDootDecodeBus" BO_ 2147483942 5;
+BA_ "CanDootDecode" BO_ 2147483942 1;
+BA_ "GenMsgCycleTime" BO_ 2147483941 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483941 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483941 5;
+BA_ "CanDootSimulate" BO_ 2147483941 0;
+BA_ "CanDootPaused" BO_ 2147483941 1;
+BA_ "CanDootDecodeBus" BO_ 2147483941 5;
+BA_ "CanDootDecode" BO_ 2147483941 1;
+BA_ "GenMsgCycleTime" BO_ 2147483913 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483913 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483913 5;
+BA_ "CanDootSimulate" BO_ 2147483913 0;
+BA_ "CanDootPaused" BO_ 2147483913 0;
+BA_ "CanDootDecodeBus" BO_ 2147483913 5;
+BA_ "CanDootDecode" BO_ 2147483913 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483921 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483921 5;
+BA_ "CanDootSimulate" BO_ 2147483921 0;
+BA_ "CanDootPaused" BO_ 2147483921 1;
+BA_ "CanDootDecodeBus" BO_ 2147483921 5;
+BA_ "CanDootDecode" BO_ 2147483921 1;
+BA_ "GenMsgCycleTime" BO_ 2147483917 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483917 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483917 5;
+BA_ "CanDootSimulate" BO_ 2147483917 0;
+BA_ "CanDootPaused" BO_ 2147483917 1;
+BA_ "CanDootDecodeBus" BO_ 2147483917 5;
+BA_ "CanDootDecode" BO_ 2147483917 1;
+BA_ "GenMsgCycleTime" BO_ 2147483918 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483918 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483918 5;
+BA_ "CanDootSimulate" BO_ 2147483918 0;
+BA_ "CanDootPaused" BO_ 2147483918 0;
+BA_ "CanDootDecodeBus" BO_ 2147483918 5;
+BA_ "CanDootDecode" BO_ 2147483918 1;
+BA_ "GenMsgCycleTime" BO_ 2147483916 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483916 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483916 5;
+BA_ "CanDootSimulate" BO_ 2147483916 0;
+BA_ "CanDootPaused" BO_ 2147483916 1;
+BA_ "CanDootDecodeBus" BO_ 2147483916 5;
+BA_ "CanDootDecode" BO_ 2147483916 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483922 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483922 5;
+BA_ "CanDootSimulate" BO_ 2147483922 0;
+BA_ "CanDootPaused" BO_ 2147483922 1;
+BA_ "CanDootDecodeBus" BO_ 2147483922 5;
+BA_ "CanDootDecode" BO_ 2147483922 1;
+BA_ "GenMsgCycleTime" BO_ 2147483919 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483919 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483919 5;
+BA_ "CanDootSimulate" BO_ 2147483919 0;
+BA_ "CanDootPaused" BO_ 2147483919 0;
+BA_ "CanDootDecodeBus" BO_ 2147483919 5;
+BA_ "CanDootDecode" BO_ 2147483919 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483924 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483924 5;
+BA_ "CanDootSimulate" BO_ 2147483924 0;
+BA_ "CanDootPaused" BO_ 2147483924 0;
+BA_ "CanDootDecodeBus" BO_ 2147483924 5;
+BA_ "CanDootDecode" BO_ 2147483924 1;
+BA_ "GenMsgCycleTime" BO_ 2147483912 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483912 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483912 5;
+BA_ "CanDootSimulate" BO_ 2147483912 0;
+BA_ "CanDootPaused" BO_ 2147483912 1;
+BA_ "CanDootDecodeBus" BO_ 2147483912 5;
+BA_ "CanDootDecode" BO_ 2147483912 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483923 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483923 5;
+BA_ "CanDootSimulate" BO_ 2147483923 0;
+BA_ "CanDootPaused" BO_ 2147483923 1;
+BA_ "CanDootDecodeBus" BO_ 2147483923 5;
+BA_ "CanDootDecode" BO_ 2147483923 1;
+BA_ "GenMsgCycleTime" BO_ 2147483914 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483914 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483914 5;
+BA_ "CanDootSimulate" BO_ 2147483914 0;
+BA_ "CanDootPaused" BO_ 2147483914 1;
+BA_ "CanDootDecodeBus" BO_ 2147483914 5;
+BA_ "CanDootDecode" BO_ 2147483914 1;
+BA_ "GenMsgCycleTime" BO_ 2147483940 5;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483940 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483940 5;
+BA_ "CanDootSimulate" BO_ 2147483940 0;
+BA_ "CanDootPaused" BO_ 2147483940 1;
+BA_ "CanDootDecodeBus" BO_ 2147483940 5;
+BA_ "CanDootDecode" BO_ 2147483940 1;
+BA_ "GenMsgCycleTime" BO_ 2147483911 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483911 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483911 5;
+BA_ "CanDootSimulate" BO_ 2147483911 0;
+BA_ "CanDootPaused" BO_ 2147483911 1;
+BA_ "CanDootDecodeBus" BO_ 2147483911 5;
+BA_ "CanDootDecode" BO_ 2147483911 1;
+BA_ "GenMsgCycleTime" BO_ 2147483892 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483892 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483892 5;
+BA_ "CanDootSimulate" BO_ 2147483892 0;
+BA_ "CanDootPaused" BO_ 2147483892 1;
+BA_ "CanDootDecodeBus" BO_ 2147483892 5;
+BA_ "CanDootDecode" BO_ 2147483892 1;
+BA_ "GenMsgCycleTime" BO_ 2147483891 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483891 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483891 5;
+BA_ "CanDootSimulate" BO_ 2147483891 0;
+BA_ "CanDootPaused" BO_ 2147483891 1;
+BA_ "CanDootDecodeBus" BO_ 2147483891 5;
+BA_ "CanDootDecode" BO_ 2147483891 1;
+BA_ "GenMsgCycleTime" BO_ 2147483890 5;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483890 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483890 5;
+BA_ "CanDootSimulate" BO_ 2147483890 0;
+BA_ "CanDootPaused" BO_ 2147483890 1;
+BA_ "CanDootDecodeBus" BO_ 2147483890 5;
+BA_ "CanDootDecode" BO_ 2147483890 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483874 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483874 5;
+BA_ "CanDootSimulate" BO_ 2147483874 0;
+BA_ "CanDootPaused" BO_ 2147483874 0;
+BA_ "CanDootDecodeBus" BO_ 2147483874 5;
+BA_ "CanDootDecode" BO_ 2147483874 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483873 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483873 5;
+BA_ "CanDootSimulate" BO_ 2147483873 0;
+BA_ "CanDootPaused" BO_ 2147483873 1;
+BA_ "CanDootDecodeBus" BO_ 2147483873 5;
+BA_ "CanDootDecode" BO_ 2147483873 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483872 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483872 5;
+BA_ "CanDootSimulate" BO_ 2147483872 0;
+BA_ "CanDootPaused" BO_ 2147483872 1;
+BA_ "CanDootDecodeBus" BO_ 2147483872 5;
+BA_ "CanDootDecode" BO_ 2147483872 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483871 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483871 5;
+BA_ "CanDootSimulate" BO_ 2147483871 0;
+BA_ "CanDootPaused" BO_ 2147483871 1;
+BA_ "CanDootDecodeBus" BO_ 2147483871 5;
+BA_ "CanDootDecode" BO_ 2147483871 1;
+BA_ "GenMsgCycleTime" BO_ 2147483870 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483870 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483870 5;
+BA_ "CanDootSimulate" BO_ 2147483870 0;
+BA_ "CanDootPaused" BO_ 2147483870 1;
+BA_ "CanDootDecodeBus" BO_ 2147483870 5;
+BA_ "CanDootDecode" BO_ 2147483870 1;
+BA_ "GenMsgCycleTime" BO_ 2147483869 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483869 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483869 5;
+BA_ "CanDootSimulate" BO_ 2147483869 0;
+BA_ "CanDootPaused" BO_ 2147483869 0;
+BA_ "CanDootDecodeBus" BO_ 2147483869 5;
+BA_ "CanDootDecode" BO_ 2147483869 1;
+BA_ "GenMsgCycleTime" BO_ 2147483868 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483868 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483868 5;
+BA_ "CanDootSimulate" BO_ 2147483868 0;
+BA_ "CanDootPaused" BO_ 2147483868 0;
+BA_ "CanDootDecodeBus" BO_ 2147483868 5;
+BA_ "CanDootDecode" BO_ 2147483868 1;
+BA_ "GenMsgCycleTime" BO_ 2147483867 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483867 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483867 5;
+BA_ "CanDootSimulate" BO_ 2147483867 0;
+BA_ "CanDootPaused" BO_ 2147483867 1;
+BA_ "CanDootDecodeBus" BO_ 2147483867 5;
+BA_ "CanDootDecode" BO_ 2147483867 1;
+BA_ "GenMsgCycleTime" BO_ 2147483866 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483866 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483866 5;
+BA_ "CanDootSimulate" BO_ 2147483866 0;
+BA_ "CanDootPaused" BO_ 2147483866 1;
+BA_ "CanDootDecodeBus" BO_ 2147483866 5;
+BA_ "CanDootDecode" BO_ 2147483866 1;
+BA_ "GenMsgCycleTime" BO_ 2147483865 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483865 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483865 5;
+BA_ "CanDootSimulate" BO_ 2147483865 0;
+BA_ "CanDootPaused" BO_ 2147483865 1;
+BA_ "CanDootDecodeBus" BO_ 2147483865 5;
+BA_ "CanDootDecode" BO_ 2147483865 1;
+BA_ "GenMsgCycleTime" BO_ 2147483864 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483864 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483864 5;
+BA_ "CanDootSimulate" BO_ 2147483864 0;
+BA_ "CanDootPaused" BO_ 2147483864 1;
+BA_ "CanDootDecodeBus" BO_ 2147483864 5;
+BA_ "CanDootDecode" BO_ 2147483864 1;
+BA_ "GenMsgCycleTime" BO_ 2147483863 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483863 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483863 5;
+BA_ "CanDootSimulate" BO_ 2147483863 0;
+BA_ "CanDootPaused" BO_ 2147483863 0;
+BA_ "CanDootDecodeBus" BO_ 2147483863 5;
+BA_ "CanDootDecode" BO_ 2147483863 1;
+BA_ "GenMsgCycleTime" BO_ 2147483862 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483862 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483862 5;
+BA_ "CanDootSimulate" BO_ 2147483862 0;
+BA_ "CanDootPaused" BO_ 2147483862 1;
+BA_ "CanDootDecodeBus" BO_ 2147483862 5;
+BA_ "CanDootDecode" BO_ 2147483862 1;
+BA_ "GenMsgCycleTime" BO_ 2147483861 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483861 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483861 5;
+BA_ "CanDootSimulate" BO_ 2147483861 0;
+BA_ "CanDootPaused" BO_ 2147483861 1;
+BA_ "CanDootDecodeBus" BO_ 2147483861 5;
+BA_ "CanDootDecode" BO_ 2147483861 1;
+BA_ "GenMsgCycleTime" BO_ 2147483860 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483860 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483860 5;
+BA_ "CanDootSimulate" BO_ 2147483860 0;
+BA_ "CanDootPaused" BO_ 2147483860 0;
+BA_ "CanDootDecodeBus" BO_ 2147483860 5;
+BA_ "CanDootDecode" BO_ 2147483860 1;
+BA_ "GenMsgCycleTime" BO_ 2147483859 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483859 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483859 5;
+BA_ "CanDootSimulate" BO_ 2147483859 0;
+BA_ "CanDootPaused" BO_ 2147483859 1;
+BA_ "CanDootDecodeBus" BO_ 2147483859 5;
+BA_ "CanDootDecode" BO_ 2147483859 1;
+BA_ "GenMsgCycleTime" BO_ 2147483858 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483858 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483858 5;
+BA_ "CanDootSimulate" BO_ 2147483858 0;
+BA_ "CanDootPaused" BO_ 2147483858 1;
+BA_ "CanDootDecodeBus" BO_ 2147483858 5;
+BA_ "CanDootDecode" BO_ 2147483858 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483821 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483821 5;
+BA_ "CanDootSimulate" BO_ 2147483821 0;
+BA_ "CanDootPaused" BO_ 2147483821 1;
+BA_ "CanDootDecodeBus" BO_ 2147483821 5;
+BA_ "CanDootDecode" BO_ 2147483821 1;
+BA_ "GenMsgCycleTime" BO_ 2147483820 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483820 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483820 5;
+BA_ "CanDootSimulate" BO_ 2147483820 0;
+BA_ "CanDootPaused" BO_ 2147483820 1;
+BA_ "CanDootDecodeBus" BO_ 2147483820 5;
+BA_ "CanDootDecode" BO_ 2147483820 1;
+BA_ "GenMsgCycleTime" BO_ 2147483842 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483842 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483842 5;
+BA_ "CanDootSimulate" BO_ 2147483842 0;
+BA_ "CanDootPaused" BO_ 2147483842 1;
+BA_ "CanDootDecodeBus" BO_ 2147483842 5;
+BA_ "CanDootDecode" BO_ 2147483842 1;
+BA_ "GenMsgCycleTime" BO_ 2147483841 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483841 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483841 5;
+BA_ "CanDootSimulate" BO_ 2147483841 0;
+BA_ "CanDootPaused" BO_ 2147483841 1;
+BA_ "CanDootDecodeBus" BO_ 2147483841 5;
+BA_ "CanDootDecode" BO_ 2147483841 1;
+BA_ "GenMsgCycleTime" BO_ 2147483840 5;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483840 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483840 5;
+BA_ "CanDootSimulate" BO_ 2147483840 0;
+BA_ "CanDootPaused" BO_ 2147483840 1;
+BA_ "CanDootDecodeBus" BO_ 2147483840 5;
+BA_ "CanDootDecode" BO_ 2147483840 1;
+BA_ "GenMsgCycleTime" BO_ 2147483819 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483819 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483819 5;
+BA_ "CanDootSimulate" BO_ 2147483819 0;
+BA_ "CanDootPaused" BO_ 2147483819 0;
+BA_ "CanDootDecodeBus" BO_ 2147483819 5;
+BA_ "CanDootDecode" BO_ 2147483819 1;
+BA_ "GenMsgCycleTime" BO_ 2147483818 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483818 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483818 5;
+BA_ "CanDootSimulate" BO_ 2147483818 0;
+BA_ "CanDootPaused" BO_ 2147483818 0;
+BA_ "CanDootDecodeBus" BO_ 2147483818 5;
+BA_ "CanDootDecode" BO_ 2147483818 1;
+BA_ "GenMsgCycleTime" BO_ 2147483817 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483817 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483817 5;
+BA_ "CanDootSimulate" BO_ 2147483817 0;
+BA_ "CanDootPaused" BO_ 2147483817 1;
+BA_ "CanDootDecodeBus" BO_ 2147483817 5;
+BA_ "CanDootDecode" BO_ 2147483817 1;
+BA_ "GenMsgCycleTime" BO_ 2147483816 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483816 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483816 5;
+BA_ "CanDootSimulate" BO_ 2147483816 0;
+BA_ "CanDootPaused" BO_ 2147483816 1;
+BA_ "CanDootDecodeBus" BO_ 2147483816 5;
+BA_ "CanDootDecode" BO_ 2147483816 1;
+BA_ "GenMsgCycleTime" BO_ 2147483815 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483815 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483815 5;
+BA_ "CanDootSimulate" BO_ 2147483815 0;
+BA_ "CanDootPaused" BO_ 2147483815 1;
+BA_ "CanDootDecodeBus" BO_ 2147483815 5;
+BA_ "CanDootDecode" BO_ 2147483815 1;
+BA_ "GenMsgCycleTime" BO_ 2147483814 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483814 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483814 5;
+BA_ "CanDootSimulate" BO_ 2147483814 0;
+BA_ "CanDootPaused" BO_ 2147483814 1;
+BA_ "CanDootDecodeBus" BO_ 2147483814 5;
+BA_ "CanDootDecode" BO_ 2147483814 1;
+BA_ "GenMsgCycleTime" BO_ 2147483813 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483813 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483813 5;
+BA_ "CanDootSimulate" BO_ 2147483813 0;
+BA_ "CanDootPaused" BO_ 2147483813 0;
+BA_ "CanDootDecodeBus" BO_ 2147483813 5;
+BA_ "CanDootDecode" BO_ 2147483813 1;
+BA_ "GenMsgCycleTime" BO_ 2147483812 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483812 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483812 5;
+BA_ "CanDootSimulate" BO_ 2147483812 0;
+BA_ "CanDootPaused" BO_ 2147483812 1;
+BA_ "CanDootDecodeBus" BO_ 2147483812 5;
+BA_ "CanDootDecode" BO_ 2147483812 1;
+BA_ "GenMsgCycleTime" BO_ 2147483811 10;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483811 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483811 5;
+BA_ "CanDootSimulate" BO_ 2147483811 0;
+BA_ "CanDootPaused" BO_ 2147483811 1;
+BA_ "CanDootDecodeBus" BO_ 2147483811 5;
+BA_ "CanDootDecode" BO_ 2147483811 1;
+BA_ "GenMsgCycleTime" BO_ 2147483810 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483810 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483810 5;
+BA_ "CanDootSimulate" BO_ 2147483810 0;
+BA_ "CanDootPaused" BO_ 2147483810 0;
+BA_ "CanDootDecodeBus" BO_ 2147483810 5;
+BA_ "CanDootDecode" BO_ 2147483810 1;
+BA_ "GenMsgCycleTime" BO_ 2147483809 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483809 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483809 5;
+BA_ "CanDootSimulate" BO_ 2147483809 0;
+BA_ "CanDootPaused" BO_ 2147483809 1;
+BA_ "CanDootDecodeBus" BO_ 2147483809 5;
+BA_ "CanDootDecode" BO_ 2147483809 1;
+BA_ "GenMsgCycleTime" BO_ 2147483808 100;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483808 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483808 5;
+BA_ "CanDootSimulate" BO_ 2147483808 0;
+BA_ "CanDootPaused" BO_ 2147483808 1;
+BA_ "CanDootDecodeBus" BO_ 2147483808 5;
+BA_ "CanDootDecode" BO_ 2147483808 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483822 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483822 5;
+BA_ "CanDootSimulate" BO_ 2147483822 0;
+BA_ "CanDootPaused" BO_ 2147483822 1;
+BA_ "CanDootDecodeBus" BO_ 2147483822 5;
+BA_ "CanDootDecode" BO_ 2147483822 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483823 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483823 5;
+BA_ "CanDootSimulate" BO_ 2147483823 0;
+BA_ "CanDootPaused" BO_ 2147483823 1;
+BA_ "CanDootDecodeBus" BO_ 2147483823 5;
+BA_ "CanDootDecode" BO_ 2147483823 1;
+BA_ "CanDootSimulateCycleTime" BO_ 2147483824 1000;
+BA_ "CanDootSimulateBus" BO_ 2147483824 5;
+BA_ "CanDootSimulate" BO_ 2147483824 0;
+BA_ "CanDootPaused" BO_ 2147483824 0;
+BA_ "CanDootDecodeBus" BO_ 2147483824 5;
+BA_ "CanDootDecode" BO_ 2147483824 1;
+

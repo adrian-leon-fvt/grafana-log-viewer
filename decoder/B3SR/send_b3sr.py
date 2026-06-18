@@ -42,6 +42,7 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 CSVContent = tuple[Path, datetime]
 
 B3SR_JOB = "B3SR"
+DBC_FOLDER_OVERRIDE: str | None = None
 
 canedge_folder = Path.joinpath(
     get_windows_home_path(),
@@ -61,8 +62,25 @@ def shortpath(p: Path) -> str:
     return "../" + "/".join(p.parts[-3:])
 
 
-def get_dbc_file_path() -> Path:
-    return canedge_folder.joinpath("b3sr_base.dbc")
+def resolve_dbc_folder(dbc_folder: str | None = None) -> Path:
+    value = DBC_FOLDER_OVERRIDE if dbc_folder is None else dbc_folder
+    default_folder = Path(__file__).resolve().parent / "dbc"
+    legacy_folder = canedge_folder
+
+    if value is None or not str(value).strip():
+        return default_folder
+
+    if str(value).strip().lower() in {"old", "compatibility"}:
+        return legacy_folder
+
+    resolved = Path(os.path.expanduser(os.path.expandvars(str(value).strip())))
+    if not resolved.is_absolute():
+        resolved = Path.cwd() / resolved
+    return resolved
+
+
+def get_dbc_file_path(dbc_folder: str | None = None) -> Path:
+    return resolve_dbc_folder(dbc_folder).joinpath("b3sr_base.dbc")
 
 
 def send_files_to_victoriametrics(
@@ -707,8 +725,15 @@ if __name__ == "__main__":
         action="store_true",
         help="Skip signal range checks while sending decoded data.",
     )
+    parser.add_argument(
+        "--dbc-folder",
+        type=str,
+        default="",
+        help="DBC folder path, or 'old'/'compatibility' for workstation lookup. Defaults to decoder/B3SR/dbc.",
+    )
 
     args = parser.parse_args()
+    DBC_FOLDER_OVERRIDE = args.dbc_folder
 
     server = server_vm_test_dump if args.test else server_vm_b3sr
 
