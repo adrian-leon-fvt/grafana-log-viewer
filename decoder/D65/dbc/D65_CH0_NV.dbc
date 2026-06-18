@@ -1,0 +1,558 @@
+VERSION "created by canmatrix"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+s
+BS_:
+
+BU_: Master_ECU HVH_ECU pBMU ACO0 RX TX
+
+
+BO_ 2364642139 VPC_HVESSP1D3: 8 ACO0
+ SG_ Core_Lowest_Cell_Temp : 16|16@1+ (0.03125,-273) [-273|1774.96875] "deg C"  RX
+ SG_ Core_Highest_Cell_Temp : 0|16@1+ (0.03125,-273) [-273|1774.96875] "deg C"  RX
+
+BO_ 2350603013 VPC_HVESSC1: 8 pBMU
+ SG_ HV_Bus_Connect_Command : 0|2@1+ (1,0) [0|3] "bit"  ACO0
+ SG_ Active_Isolation_Test_Command : 4|2@1+ (1,0) [0|3] "bit"  ACO0
+ SG_ Cell_Balancing_Command : 8|2@1+ (1,0) [0|3] "bit"  ACO0
+ SG_ Operation_Consent : 12|2@1+ (1,0) [0|3] "bit"  ACO0
+
+BO_ 2364575835 VPC_HVESSD1: 8 ACO0
+ SG_ Available_Discharge_Power : 0|16@1+ (0.05,0) [0|3276.75] "kW"  RX
+ SG_ Available_Charge_Power : 16|16@1+ (0.05,0) [0|3276.75] "kW"  RX
+ SG_ Voltage_Level : 32|16@1+ (0.05,0) [0|3276.75] "V"  RX
+ SG_ Current : 48|16@1+ (0.05,-1600) [-1600|1676.75] "A"  RX
+
+BO_ 2364576091 VPC_HVESSD2: 8 ACO0
+ SG_ Fast_Update_SOC : 0|16@1+ (0.0015625,0) [0|102.3984375] "%"  RX
+ SG_ Highest_Cell_Voltage : 16|16@1+ (0.001,0) [0|65.535] "V"  RX
+ SG_ Lowest_Cell_Voltage : 32|16@1+ (0.001,0) [0|65.535] "V"  RX
+
+BO_ 2364576347 VPC_HVESSD3: 8 ACO0
+ SG_ Highest_Cell_Temperature : 0|16@1+ (0.03125,-273) [-273|1774.96875] "deg C"  RX
+ SG_ Lowest_Cell_Temperature : 16|16@1+ (0.03125,-273) [-273|1774.96875] "deg C"  RX
+ SG_ Average_Cell_Temperature : 32|16@1+ (0.03125,-273) [-273|1774.96875] "deg C"  RX
+
+BO_ 2364576603 VPC_HVESSD4: 8 ACO0
+ SG_ Discharge_Capacity : 0|16@1+ (0.01,0) [0|655.35] "Ah"  RX
+ SG_ Charge_Capacity : 16|16@1+ (0.01,0) [0|655.35] "Ah"  RX
+ SG_ Cell_Balancing_Count : 32|16@1+ (1,0) [0|65535] "count"  RX
+
+BO_ 2364576859 VPC_HVESSD5: 8 ACO0
+ SG_ Discharge_Current_Limit : 0|16@1+ (0.05,-1600) [-1600|1676.75] "A"  RX
+ SG_ Charge_Current_Limit : 16|16@1+ (0.05,-1600) [-1600|1676.75] "A"  RX
+ SG_ Lowest_Cell_SOC : 32|16@1+ (0.0015625,0) [0|102.3984375] "%"  RX
+ SG_ Highest_Cell_SOC : 48|16@1+ (0.0015625,0) [0|102.3984375] "%"  RX
+
+BO_ 2364577115 VPC_HVESSD6: 8 ACO0
+ SG_ Bus_Voltage : 0|16@1+ (0.05,0) [0|3276.75] "V"  RX
+ SG_ Ignition_Voltage : 16|16@1+ (0.01,0) [0|655.35] "V"  RX
+ SG_ Electronics_Temperature : 48|8@1+ (1,-40) [-40|215] "degC"  RX
+
+BO_ 2364577371 VPC_HVESSS1: 8 ACO0
+ SG_ HV_Bus_Disconnect_Forewarning : 4|4@1+ (1,0) [0|15] "bit"  RX
+ SG_ HV_Bus_Active_Isolation_Test_St : 12|4@1+ (1,0) [0|15] "bit"  RX
+ SG_ HVIL_Status : 20|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Cell_Balance_Status : 28|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Cell_Balancing_Active : 30|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ HV_Bus_Connection_Status : 40|4@1+ (1,0) [0|15] "bit"  RX
+ SG_ Operational_Status : 44|4@1+ (1,0) [0|15] "bit"  RX
+
+BO_ 2364579931 VPC_HVESSD7: 8 ACO0
+ SG_ Discharge_Energy_Capacity : 0|24@1+ (0.001,0) [0|16777.215] "kWh"  RX
+ SG_ Charge_Energy_Capacity : 24|24@1+ (0.001,0) [0|16777.215] "kWh"  RX
+ SG_ Maximum_Charge_Voltage_Limit : 48|16@1+ (0.05,0) [0|3276.75] "V"  RX
+
+BO_ 2364607067 VPC_HVESSD8: 8 ACO0
+ SG_ Highest_Cell_Voltage_Module_Nr : 0|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Highest_Cell_Voltage_Cell_Nr : 8|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Lowest_Cell_Voltage_Module_Nr : 16|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Lowest_Cell_Voltage_Cell_Nr : 24|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Average_Cell_Voltage : 32|16@1+ (0.001,0) [0|65.535] "V"  RX
+
+BO_ 2364607323 VPC_HVESSD9: 8 ACO0
+ SG_ Highest_Cell_Temperature_Module : 0|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Highest_Cell_Temperature_Cell_N : 8|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Lowest_Cell_Temperature_Module_ : 16|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Lowest_Cell_Temperature_Cell_Nr : 24|8@1+ (1,0) [0|255] "count"  RX
+
+BO_ 2364607579 VPC_HVESSD10: 8 ACO0
+ SG_ Highest_Cell_SOC_Module_Nr : 0|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Highest_Cell_SOC_Cell_Nr : 8|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Lowest_Cell_SOC_Module_Nr : 16|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Lowest_Cell_SOC_Cell_Nr : 24|8@1+ (1,0) [0|255] "count"  RX
+ SG_ Passive_Isolation_Test_Results : 48|16@1+ (0.1,0) [0|6553.5] "ohm/V"  RX
+
+BO_ 2365522011 VPC_PropB_00: 8 ACO0
+ SG_ P1_HV_Bus_Contactor_State : 0|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ P2_HV_Bus_Contactor_State : 2|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Vehicle_Contactor_Pos_Closed : 12|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Vehicle_Contactor_Neg_Closed : 14|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ External_HVIL_Open : 16|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Emergency_stop_1_Active : 18|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Emergency_stop_2_Active : 20|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Self_discharge_time : 22|8@1+ (1,0) [0|255] "bit"  RX
+ SG_ Critical_cell_temperature : 30|2@1+ (1,0) [0|3] "bool"  RX
+ SG_ Expect_system_int_HVIL_break : 32|2@1+ (1,0) [0|3] "bool"  RX
+
+BO_ 2364641627 VPC_HVESSP1D1: 8 ACO0
+ SG_ Core_Voltage_Level : 32|16@1+ (0.05,0) [0|3276.75] "V"  RX
+ SG_ Core_Current : 48|16@1+ (0.05,-1600) [-1600|1676.75] "A"  RX
+
+BO_ 2364645467 VPC_HVESSP2D1: 8 ACO0
+ SG_ Core_Voltage_Level : 32|16@1+ (0.05,0) [0|3276.75] "V"  RX
+ SG_ Core_Current : 48|16@1+ (0.05,-1600) [-1600|1676.75] "A"  RX
+
+BO_ 2364645979 VPC_HVESSP2D3: 8 ACO0
+ SG_ Core_Highest_Cell_Temp : 0|16@1+ (0.03125,-273) [-273|1774.96875] "deg C"  RX
+ SG_ Core_Lowest_Cell_Temp : 16|16@1+ (0.03125,-273) [-273|1774.96875] "deg C"  RX
+
+BO_ 2364641883 VPC_HVESSP1D2: 8 ACO0
+ SG_ Core_Fast_Update_SOC : 0|16@1+ (0.0015625,0) [0|102.3984375] "%"  RX
+ SG_ Core_Highest_Cell_Voltage : 16|16@1+ (0.001,0) [0|65.535] "V"  RX
+ SG_ Core_Lowest_Cell_Voltage : 32|16@1+ (0.001,0) [0|65.535] "V"  RX
+
+BO_ 2364645723 VPC_HVESSP2D2: 8 ACO0
+ SG_ Core_Fast_Update_SOC : 0|16@1+ (0.0015625,0) [0|102.3984375] "%"  RX
+ SG_ Core_Highest_Cell_Voltage : 16|16@1+ (0.001,0) [0|65.535] "V"  RX
+ SG_ Core_Lowest_Cell_Voltage : 32|16@1+ (0.001,0) [0|65.535] "V"  RX
+
+BO_ 2365522437 VPC_PropB_01: 8 pBMU
+ SG_ Expect_int_HVIL_open_outside_pa : 6|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ External_Clear_DMs_Request : 8|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ External_Enable_TMS_Request : 10|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ External_Disable_TMS_Request : 12|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Vehicle_Cont_Pos_Close_Request : 14|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Vehicle_Cont_Neg_Close_Request : 16|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Disable_Pack_1_Command : 18|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Disable_Pack_2_Command : 20|2@1+ (1,0) [0|3] "bit"  RX
+ SG_ Charge_mode : 30|2@1+ (1,0) [0|3] "bit"  RX
+
+BO_ 2365522949 VPC_PropB_02: 8 pBMU
+ SG_ System_Number_Of_Subpacks : 0|4@1+ (1,0) [0|15] ""  RX
+
+
+
+CM_ SG_ 2364642139 Core_Lowest_Cell_Temp "The lowest temperature level reported by any cell in this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364642139 Core_Highest_Cell_Temp "The highest temperature level reported by any cell in this High Voltage Energy Storage Pack instance. ";
+CM_ SG_ 2350603013 HV_Bus_Connect_Command "Command to connect the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) to the high-voltage bus.";
+CM_ SG_ 2350603013 Active_Isolation_Test_Command "Command for the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) to perform an active electrical isolation test on the high voltage bus.";
+CM_ SG_ 2350603013 Cell_Balancing_Command "Command for the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) to perform cell balancing.";
+CM_ SG_ 2350603013 Operation_Consent "This parameter provides an indication to the HVES1 pack (or system) that an external device is ready for HVES1 to proceed with high voltage operation.";
+CM_ SG_ 2364575835 Available_Discharge_Power "The rate at which this High Voltage Energy Storage System instance can currently provide energy for propulsion or other uses.";
+CM_ SG_ 2364575835 Available_Charge_Power "The rate at which this High Voltage Energy Storage System instance can currently receive energy from a regenerative or recharging system.";
+CM_ SG_ 2364575835 Voltage_Level "The voltage level of the High Voltage Energy Storage System.";
+CM_ SG_ 2364575835 Current "The current in or out of the High Voltage Energy Storage System.";
+CM_ SG_ 2364576091 Fast_Update_SOC "Indicates the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) state of charge.";
+CM_ SG_ 2364576091 Highest_Cell_Voltage "The highest voltage level reported by any cell in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack).";
+CM_ SG_ 2364576091 Lowest_Cell_Voltage "The lowest voltage level reported by any cell in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack).";
+CM_ SG_ 2364576347 Highest_Cell_Temperature "Indicates the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) state of charge.";
+CM_ SG_ 2364576347 Lowest_Cell_Temperature "The highest voltage level reported by any cell in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack).";
+CM_ SG_ 2364576347 Average_Cell_Temperature "The lowest voltage level reported by any cell in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack).";
+CM_ SG_ 2364576603 Discharge_Capacity "The amount of stored electrical charge in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) that is available for use by the hybrid system.";
+CM_ SG_ 2364576603 Charge_Capacity "The amount of unused electrical charge storage in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) that is available to be filled by charging. ";
+CM_ SG_ 2364576603 Cell_Balancing_Count "The number of cells that are currently being balanced in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack).";
+CM_ SG_ 2364576859 Discharge_Current_Limit "The maximum permissible current flow out of this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364576859 Charge_Current_Limit "The maximum permissible current flow into this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364576859 Lowest_Cell_SOC "Indicates the state of charge of the lowest-charged cell in this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364576859 Highest_Cell_SOC "Indicates the state of charge of the highest-charged cell in this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364577115 Bus_Voltage "The voltage level of the high voltage bus, as measured by the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) on the bus side (not the battery side) of its contactors.";
+CM_ SG_ 2364577115 Ignition_Voltage "The voltage level at the ignition input of the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) controller.";
+CM_ SG_ 2364577115 Electronics_Temperature "The temperature of the electronics or control modules in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack). If there are multiple temperature sensors then this parameter would be set to the maximum sensor reading.";
+CM_ SG_ 2364577371 HV_Bus_Disconnect_Forewarning "Indicates that the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) is about to disconnect from the high voltage bus due to unacceptable conditions.";
+CM_ SG_ 2364577371 HV_Bus_Active_Isolation_Test_St "Status of the high-voltage bus electrical active isolation test as performed by the High Voltage Energy Storage System (or Pack 1 in systems with only one pack).";
+CM_ SG_ 2364577371 HVIL_Status "Status of the High Voltage Interlock Loop from the viewpoint of the High Voltage Energy Storage System (or Pack 1 in systems with only one pack).";
+CM_ SG_ 2364577371 Cell_Balance_Status "Indicates whether or not the cells in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) are balanced.";
+CM_ SG_ 2364577371 Cell_Balancing_Active "Indicates whether or not the cells in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) are currently being balanced.";
+CM_ SG_ 2364577371 HV_Bus_Connection_Status "This parameter provides high level feedback on the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) high voltage bus connection.";
+CM_ SG_ 2364577371 Operational_Status "Provides feedback on where the High Voltage Energy Storage System (or Pack 1 in systems with only one pack) is in its operating spectrum.";
+CM_ SG_ 2364579931 Discharge_Energy_Capacity "The amount of stored electrical energy in this High Voltage Energy Storage Pack instance that is available for use by the hybrid system, i.e. how full is the tank.";
+CM_ SG_ 2364579931 Charge_Energy_Capacity "The amount of unused electrical energy storage available to be filled by charging this High Voltage Energy Storage Pack instance, i.e. how much empty space is remaining in the tank.";
+CM_ SG_ 2364579931 Maximum_Charge_Voltage_Limit "The maximum voltage level not to be exceeded while charging this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364607067 Highest_Cell_Voltage_Module_Nr "Identifies the location of the module containing SPN 5922 (HVESS Highest Cell Voltage).";
+CM_ SG_ 2364607067 Highest_Cell_Voltage_Cell_Nr "Identifies the location of SPN 5922 (HVESS Highest Cell Voltage) within SPN 8236 (HVESS Highest Cell Voltage Module Number).";
+CM_ SG_ 2364607067 Lowest_Cell_Voltage_Module_Nr "Identifies the location of the module containing SPN 5923 (HVESS Lowest Cell Voltage).";
+CM_ SG_ 2364607067 Lowest_Cell_Voltage_Cell_Nr "Identifies the location of SPN 5923 (HVESS Lowest Cell Voltage) within SPN 8238 (HVESS Lowest Cell Voltage Module Number).";
+CM_ SG_ 2364607067 Average_Cell_Voltage "The average cell voltage in the High Voltage Energy Storage System (or Pack 1 in systems with only one pack).";
+CM_ SG_ 2364607323 Highest_Cell_Temperature_Module "Identifies the location of the module containing SPN 8075 (HVESS Highest Cell Temperature).";
+CM_ SG_ 2364607323 Highest_Cell_Temperature_Cell_N "Identifies the location of SPN 8075 (HVESS Highest Cell Temperature) within SPN 8241 (HVESS Highest Cell Temperature Module Number).";
+CM_ SG_ 2364607323 Lowest_Cell_Temperature_Module_ "Identifies the location of the module containing SPN 8076 (HVESS Lowest Cell Temperature ).";
+CM_ SG_ 2364607323 Lowest_Cell_Temperature_Cell_Nr "Identifies the location of SPN 8076 (HVESS Lowest Cell Temperature) within SPN 8243 (HVESS Lowest Cell Temperature Module Number).";
+CM_ SG_ 2364607579 Highest_Cell_SOC_Module_Nr "Identifies the location of the module containing SPN 8085 (HVESS Highest Cell State of Charge).";
+CM_ SG_ 2364607579 Highest_Cell_SOC_Cell_Nr "Identifies the location of SPN 8085 (HVESS Highest Cell State of Charge) within SPN 8245 (HVESS Highest Cell State of Charge Module Number).";
+CM_ SG_ 2364607579 Lowest_Cell_SOC_Module_Nr "Identifies the location of the module containing SPN 8084 (HVESS Lowest Cell State of Charge).";
+CM_ SG_ 2364607579 Lowest_Cell_SOC_Cell_Nr "Identifies the location of SPN 8084 (HVESS Lowest Cell State of Charge) within SPN 8247 (HVESS Lowest Cell State of Charge Module Number).";
+CM_ SG_ 2364607579 Passive_Isolation_Test_Results "The isolation resistance expressed in Ohms per Volt that resulted from the High-Voltage Bus Passive Isolation Test.";
+CM_ SG_ 2365522011 P1_HV_Bus_Contactor_State "Status of the High Voltage Energy Storage Pack 1 contactor.";
+CM_ SG_ 2365522011 P2_HV_Bus_Contactor_State "Status of the High Voltage Energy Storage Pack 2 contactor.";
+CM_ SG_ 2365522011 Vehicle_Contactor_Pos_Closed "Status of the High Voltage Energy Storage Pack 3 contactor.";
+CM_ SG_ 2365522011 Vehicle_Contactor_Neg_Closed "Status of the High Voltage Energy Storage Pack 4 contactor.";
+CM_ SG_ 2365522011 External_HVIL_Open "Status of the external HVIL for the master subpack";
+CM_ SG_ 2365522011 Emergency_stop_1_Active "Status of the emergency stop 1";
+CM_ SG_ 2365522011 Emergency_stop_2_Active "Status of the emergency stop 2";
+CM_ SG_ 2365522011 Self_discharge_time "Self discharge time in minutes (limited to 15 min)";
+CM_ SG_ 2365522011 Critical_cell_temperature "Sound external alarm unit. ";
+CM_ SG_ 2365522011 Expect_system_int_HVIL_break "Warning from the system that one or more cores will open HVIL ";
+CM_ SG_ 2364641627 Core_Voltage_Level "The voltage level of this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364641627 Core_Current "The current in or out of this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364645467 Core_Voltage_Level "The voltage level of this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364645467 Core_Current "The current in or out of this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364645979 Core_Highest_Cell_Temp "The highest temperature level reported by any cell in this High Voltage Energy Storage Pack instance. ";
+CM_ SG_ 2364645979 Core_Lowest_Cell_Temp "The lowest temperature level reported by any cell in this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364641883 Core_Fast_Update_SOC "Indicates this High Voltage Energy Storage Pack instance state of charge.";
+CM_ SG_ 2364641883 Core_Highest_Cell_Voltage "The highest voltage level reported by any cell in this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364641883 Core_Lowest_Cell_Voltage "The lowest voltage level reported by any cell in this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364645723 Core_Fast_Update_SOC "Indicates this High Voltage Energy Storage Pack instance state of charge.";
+CM_ SG_ 2364645723 Core_Highest_Cell_Voltage "The highest voltage level reported by any cell in this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2364645723 Core_Lowest_Cell_Voltage "The lowest voltage level reported by any cell in this High Voltage Energy Storage Pack instance.";
+CM_ SG_ 2365522437 Expect_int_HVIL_open_outside_pa "Internal HVIL break warning from an external (outside the pack) ECU";
+CM_ SG_ 2365522437 External_Clear_DMs_Request "External request to clear DMs";
+CM_ SG_ 2365522437 External_Enable_TMS_Request "Enable TMS Request";
+CM_ SG_ 2365522437 External_Disable_TMS_Request "Disable TMS Request";
+CM_ SG_ 2365522437 Vehicle_Cont_Pos_Close_Request "Status of the High Voltage Energy Storage Pack 1 contactor.";
+CM_ SG_ 2365522437 Vehicle_Cont_Neg_Close_Request "Status of the High Voltage Energy Storage Pack 2 contactor.";
+CM_ SG_ 2365522437 Disable_Pack_1_Command "Subpack 1 Disabled from Vehicle CAN";
+CM_ SG_ 2365522437 Disable_Pack_2_Command "Subpack 2 Disabled from Vehicle CAN";
+CM_ SG_ 2365522437 Charge_mode "Tells the system that it will be charging.";
+CM_ SG_ 2365522949 System_Number_Of_Subpacks "Number of slave subpacks present in the system.";
+BA_DEF_ BO_  "CG_MessageInstName" STRING ;
+BA_DEF_ BO_  "CI_MsgDefinition" STRING ;
+BA_DEF_ BO_  "CI_MsgId" INT 0 2147483647;
+BA_DEF_ BO_  "CI_MsgName" STRING ;
+BA_DEF_ BO_  "CanDootDecode" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootDecodeBus" INT 0 6;
+BA_DEF_ BO_  "CanDootHideAll" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootPaused" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulate" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulateBus" INT 0 6;
+BA_DEF_ BO_  "CanDootSimulateCycleTime" INT 0 50000;
+BA_DEF_ BO_  "DiagConnection" INT 0 65535;
+BA_DEF_ BO_  "DiagRequest" ENUM  "No","Yes";
+BA_DEF_ BO_  "DiagResponse" ENUM  "No","Yes";
+BA_DEF_ BO_  "DiagState" ENUM  "No","Yes";
+BA_DEF_ BO_  "DiagUUDTResponse" ENUM  "No","Yes";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 3600000;
+BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 0 3600000;
+BA_DEF_ BO_  "GenMsgDelayTime" INT 0 3600000;
+BA_DEF_ BO_  "GenMsgILSupport" ENUM  "No","Yes";
+BA_DEF_ BO_  "GenMsgNrOfRepetition" INT 0 1000000;
+BA_DEF_ BO_  "GenMsgRequestable" INT 0 1;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclic","On request","NotUsed","NotUsed","NotUsed","NotUsed","IfActiveWithRepetion","IfActive","noMsgSendType";
+BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 100000;
+BA_DEF_ BO_  "TpJ1939VarDlc" ENUM  "No","Yes";
+BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","J1939PG";
+BA_DEF_ SG_  "CG_VarType" ENUM  "bool","uint8_t","int8_t","uint16_t","int16_t","uint32_t","int32_t","float","double";
+BA_DEF_ SG_  "CI_ParId" STRING ;
+BA_DEF_ SG_  "CI_SigId" INT 0 2147483647;
+BA_DEF_ SG_  "CI_SigName" STRING ;
+BA_DEF_ SG_  "CanDootBroadcast" ENUM  "No","Yes";
+BA_DEF_ SG_  "CanDootGroup" ENUM  "None","g1","g2","g3","g4","g5","g6","g7","g8","g9","gA","gB","gC","gD","gE","gF";
+BA_DEF_ SG_  "CanDootHidden" ENUM  "No","Yes";
+BA_DEF_ SG_  "GenSigEVName" STRING ;
+BA_DEF_ SG_  "GenSigILSupport" ENUM  "No","Yes";
+BA_DEF_ SG_  "GenSigInactiveValue" INT 0 2147483647;
+BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType";
+BA_DEF_ SG_  "GenSigStartValue" INT 0 2147483647;
+BA_DEF_ SG_  "GenSigTimeoutTime_AHW" INT 0 3600000;
+BA_DEF_ SG_  "SPN" INT 0 524287;
+BA_DEF_ SG_  "SigType" ENUM  "Default","Range","RangeSigned","ASCII","Discrete","Control","ReferencePGN","DTC","StringDelimiter","StringLength","StringLengthControl";
+BA_DEF_ BU_  "ECU" STRING ;
+BA_DEF_ BU_  "ILUsed" ENUM  "No","Yes";
+BA_DEF_ BU_  "IsOBDrelevant" ENUM  "No","Yes";
+BA_DEF_ BU_  "NmJ1939AAC" INT 0 1;
+BA_DEF_ BU_  "NmJ1939ECUInstance" INT 0 7;
+BA_DEF_ BU_  "NmJ1939Function" INT 0 255;
+BA_DEF_ BU_  "NmJ1939FunctionInstance" INT 0 7;
+BA_DEF_ BU_  "NmJ1939IdentityNumber" INT 0 2097151;
+BA_DEF_ BU_  "NmJ1939IndustryGroup" INT 0 7;
+BA_DEF_ BU_  "NmJ1939ManufacturerCode" INT 0 2047;
+BA_DEF_ BU_  "NmJ1939System" INT 0 127;
+BA_DEF_ BU_  "NmJ1939SystemInstance" INT 0 15;
+BA_DEF_ BU_  "NmStationAddress" INT 0 255;
+BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_  "Baudrate" INT 0 1000000;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_  "CI_CcdVersion" STRING ;
+BA_DEF_  "CI_MakeDbcSwLastRevDate" STRING ;
+BA_DEF_  "Manufacturer" STRING ;
+BA_DEF_  "ProtocolType" STRING ;
+BA_DEF_DEF_  "CG_MessageInstName" "";
+BA_DEF_DEF_  "CI_MsgDefinition" "";
+BA_DEF_DEF_  "CI_MsgId" 0;
+BA_DEF_DEF_  "CI_MsgName" "";
+BA_DEF_DEF_  "CanDootDecode" "Yes";
+BA_DEF_DEF_  "CanDootDecodeBus" 1;
+BA_DEF_DEF_  "CanDootHideAll" "No";
+BA_DEF_DEF_  "CanDootPaused" "No";
+BA_DEF_DEF_  "CanDootSimulate" "No";
+BA_DEF_DEF_  "CanDootSimulateBus" 1;
+BA_DEF_DEF_  "CanDootSimulateCycleTime" 100;
+BA_DEF_DEF_  "DiagConnection" 0;
+BA_DEF_DEF_  "DiagRequest" "No";
+BA_DEF_DEF_  "DiagResponse" "No";
+BA_DEF_DEF_  "DiagState" "No";
+BA_DEF_DEF_  "DiagUUDTResponse" "No";
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "GenMsgCycleTimeFast" 0;
+BA_DEF_DEF_  "GenMsgDelayTime" 1;
+BA_DEF_DEF_  "GenMsgILSupport" "Yes";
+BA_DEF_DEF_  "GenMsgNrOfRepetition" 0;
+BA_DEF_DEF_  "GenMsgRequestable" 0;
+BA_DEF_DEF_  "GenMsgSendType" "noMsgSendType";
+BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
+BA_DEF_DEF_  "TpJ1939VarDlc" "No";
+BA_DEF_DEF_  "VFrameFormat" "J1939PG";
+BA_DEF_DEF_  "CG_VarType" "uint8_t";
+BA_DEF_DEF_  "CI_ParId" "";
+BA_DEF_DEF_  "CI_SigId" 0;
+BA_DEF_DEF_  "CI_SigName" "";
+BA_DEF_DEF_  "CanDootBroadcast" "No";
+BA_DEF_DEF_  "CanDootGroup" "None";
+BA_DEF_DEF_  "CanDootHidden" "No";
+BA_DEF_DEF_  "GenSigEVName" "Env@Nodename_@Signame";
+BA_DEF_DEF_  "GenSigILSupport" "Yes";
+BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "GenSigSendType" "NoSigSendType";
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "GenSigTimeoutTime_AHW" 0;
+BA_DEF_DEF_  "SPN" 0;
+BA_DEF_DEF_  "SigType" "Default";
+BA_DEF_DEF_  "ECU" "";
+BA_DEF_DEF_  "ILUsed" "Yes";
+BA_DEF_DEF_  "IsOBDrelevant" "No";
+BA_DEF_DEF_  "NmJ1939AAC" 0;
+BA_DEF_DEF_  "NmJ1939ECUInstance" 0;
+BA_DEF_DEF_  "NmJ1939Function" 0;
+BA_DEF_DEF_  "NmJ1939FunctionInstance" 0;
+BA_DEF_DEF_  "NmJ1939IdentityNumber" 0;
+BA_DEF_DEF_  "NmJ1939IndustryGroup" 0;
+BA_DEF_DEF_  "NmJ1939ManufacturerCode" 0;
+BA_DEF_DEF_  "NmJ1939System" 0;
+BA_DEF_DEF_  "NmJ1939SystemInstance" 0;
+BA_DEF_DEF_  "NmStationAddress" 254;
+BA_DEF_DEF_  "NodeLayerModules" "J1939_IL.dll";
+BA_DEF_DEF_  "Baudrate" 0;
+BA_DEF_DEF_  "BusType" "";
+BA_DEF_DEF_  "CI_CcdVersion" "";
+BA_DEF_DEF_  "CI_MakeDbcSwLastRevDate" "";
+BA_DEF_DEF_  "Manufacturer" "";
+BA_DEF_DEF_  "ProtocolType" "";
+BA_ "Baudrate" 500000;
+BA_ "BusType" "CAN";
+BA_ "CI_CcdVersion" "AE";
+BA_ "Manufacturer" "Vector";
+BA_ "NmStationAddress" BU_ Master_ECU 33;
+BA_ "ECU" BU_ HVH_ECU "HVH_ECU";
+BA_ "NmJ1939ECUInstance" BU_ HVH_ECU 1;
+BA_ "NmJ1939IdentityNumber" BU_ HVH_ECU 68;
+BA_ "NmStationAddress" BU_ HVH_ECU 68;
+BA_ "CanDootDecode" BO_ 2364642139 1;
+BA_ "CanDootDecodeBus" BO_ 2364642139 0;
+BA_ "CanDootPaused" BO_ 2364642139 0;
+BA_ "CanDootSimulate" BO_ 2364642139 0;
+BA_ "CanDootSimulateBus" BO_ 2364642139 0;
+BA_ "GenMsgCycleTime" BO_ 2364642139 20;
+BA_ "VFrameFormat" BO_ 2364642139 3;
+BA_ "CanDootDecodeBus" BO_ 2350603013 0;
+BA_ "CanDootSimulateBus" BO_ 2350603013 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2350603013 20;
+BA_ "GenMsgCycleTime" BO_ 2350603013 20;
+BA_ "CanDootDecode" BO_ 2350603013 1;
+BA_ "CanDootPaused" BO_ 2350603013 0;
+BA_ "CanDootSimulate" BO_ 2350603013 0;
+BA_ "VFrameFormat" BO_ 2350603013 3;
+BA_ "CanDootDecodeBus" BO_ 2364575835 0;
+BA_ "CanDootSimulateBus" BO_ 2364575835 0;
+BA_ "GenMsgCycleTime" BO_ 2364575835 20;
+BA_ "CanDootDecode" BO_ 2364575835 1;
+BA_ "CanDootPaused" BO_ 2364575835 0;
+BA_ "CanDootSimulate" BO_ 2364575835 0;
+BA_ "VFrameFormat" BO_ 2364575835 3;
+BA_ "CanDootDecodeBus" BO_ 2364576091 0;
+BA_ "CanDootSimulateBus" BO_ 2364576091 0;
+BA_ "GenMsgCycleTime" BO_ 2364576091 20;
+BA_ "CanDootDecode" BO_ 2364576091 1;
+BA_ "CanDootPaused" BO_ 2364576091 0;
+BA_ "CanDootSimulate" BO_ 2364576091 0;
+BA_ "VFrameFormat" BO_ 2364576091 3;
+BA_ "CanDootDecodeBus" BO_ 2364576347 0;
+BA_ "CanDootSimulateBus" BO_ 2364576347 0;
+BA_ "GenMsgCycleTime" BO_ 2364576347 20;
+BA_ "CanDootDecode" BO_ 2364576347 1;
+BA_ "CanDootPaused" BO_ 2364576347 0;
+BA_ "CanDootSimulate" BO_ 2364576347 0;
+BA_ "VFrameFormat" BO_ 2364576347 3;
+BA_ "CanDootDecodeBus" BO_ 2364576603 0;
+BA_ "CanDootSimulateBus" BO_ 2364576603 0;
+BA_ "GenMsgCycleTime" BO_ 2364576603 100;
+BA_ "CanDootDecode" BO_ 2364576603 1;
+BA_ "CanDootPaused" BO_ 2364576603 0;
+BA_ "CanDootSimulate" BO_ 2364576603 0;
+BA_ "VFrameFormat" BO_ 2364576603 3;
+BA_ "CanDootDecodeBus" BO_ 2364576859 0;
+BA_ "CanDootSimulateBus" BO_ 2364576859 0;
+BA_ "GenMsgCycleTime" BO_ 2364576859 20;
+BA_ "CanDootDecode" BO_ 2364576859 1;
+BA_ "CanDootPaused" BO_ 2364576859 0;
+BA_ "CanDootSimulate" BO_ 2364576859 0;
+BA_ "VFrameFormat" BO_ 2364576859 3;
+BA_ "CanDootDecodeBus" BO_ 2364577115 0;
+BA_ "CanDootSimulateBus" BO_ 2364577115 0;
+BA_ "GenMsgCycleTime" BO_ 2364577115 100;
+BA_ "CanDootDecode" BO_ 2364577115 1;
+BA_ "CanDootPaused" BO_ 2364577115 0;
+BA_ "CanDootSimulate" BO_ 2364577115 0;
+BA_ "VFrameFormat" BO_ 2364577115 3;
+BA_ "CanDootDecodeBus" BO_ 2364577371 0;
+BA_ "CanDootSimulateBus" BO_ 2364577371 0;
+BA_ "GenMsgCycleTime" BO_ 2364577371 100;
+BA_ "CanDootDecode" BO_ 2364577371 1;
+BA_ "CanDootPaused" BO_ 2364577371 0;
+BA_ "CanDootSimulate" BO_ 2364577371 0;
+BA_ "VFrameFormat" BO_ 2364577371 3;
+BA_ "CanDootDecodeBus" BO_ 2364579931 0;
+BA_ "CanDootSimulateBus" BO_ 2364579931 0;
+BA_ "GenMsgCycleTime" BO_ 2364579931 20;
+BA_ "CanDootDecode" BO_ 2364579931 1;
+BA_ "CanDootPaused" BO_ 2364579931 0;
+BA_ "CanDootSimulate" BO_ 2364579931 0;
+BA_ "VFrameFormat" BO_ 2364579931 3;
+BA_ "CanDootDecodeBus" BO_ 2364607067 0;
+BA_ "CanDootSimulateBus" BO_ 2364607067 0;
+BA_ "GenMsgCycleTime" BO_ 2364607067 100;
+BA_ "CanDootDecode" BO_ 2364607067 1;
+BA_ "CanDootPaused" BO_ 2364607067 0;
+BA_ "CanDootSimulate" BO_ 2364607067 0;
+BA_ "VFrameFormat" BO_ 2364607067 3;
+BA_ "CanDootDecodeBus" BO_ 2364607323 0;
+BA_ "CanDootSimulateBus" BO_ 2364607323 0;
+BA_ "GenMsgCycleTime" BO_ 2364607323 100;
+BA_ "CanDootDecode" BO_ 2364607323 1;
+BA_ "CanDootPaused" BO_ 2364607323 0;
+BA_ "CanDootSimulate" BO_ 2364607323 0;
+BA_ "VFrameFormat" BO_ 2364607323 3;
+BA_ "CanDootDecodeBus" BO_ 2364607579 0;
+BA_ "CanDootSimulateBus" BO_ 2364607579 0;
+BA_ "GenMsgCycleTime" BO_ 2364607579 100;
+BA_ "CanDootDecode" BO_ 2364607579 1;
+BA_ "CanDootPaused" BO_ 2364607579 0;
+BA_ "CanDootSimulate" BO_ 2364607579 0;
+BA_ "VFrameFormat" BO_ 2364607579 3;
+BA_ "CanDootDecodeBus" BO_ 2365522011 0;
+BA_ "CanDootSimulateBus" BO_ 2365522011 0;
+BA_ "GenMsgCycleTime" BO_ 2365522011 100;
+BA_ "CanDootDecode" BO_ 2365522011 1;
+BA_ "CanDootPaused" BO_ 2365522011 0;
+BA_ "CanDootSimulate" BO_ 2365522011 0;
+BA_ "VFrameFormat" BO_ 2365522011 3;
+BA_ "CanDootDecodeBus" BO_ 2364641627 0;
+BA_ "CanDootSimulateBus" BO_ 2364641627 0;
+BA_ "GenMsgCycleTime" BO_ 2364641627 20;
+BA_ "CanDootDecode" BO_ 2364641627 1;
+BA_ "CanDootPaused" BO_ 2364641627 0;
+BA_ "CanDootSimulate" BO_ 2364641627 0;
+BA_ "VFrameFormat" BO_ 2364641627 3;
+BA_ "CanDootDecodeBus" BO_ 2364645467 0;
+BA_ "CanDootSimulateBus" BO_ 2364645467 0;
+BA_ "GenMsgCycleTime" BO_ 2364645467 20;
+BA_ "CanDootDecode" BO_ 2364645467 1;
+BA_ "CanDootPaused" BO_ 2364645467 0;
+BA_ "CanDootSimulate" BO_ 2364645467 0;
+BA_ "VFrameFormat" BO_ 2364645467 3;
+BA_ "CanDootDecodeBus" BO_ 2364645979 0;
+BA_ "CanDootSimulateBus" BO_ 2364645979 0;
+BA_ "GenMsgCycleTime" BO_ 2364645979 20;
+BA_ "CanDootDecode" BO_ 2364645979 1;
+BA_ "CanDootPaused" BO_ 2364645979 0;
+BA_ "CanDootSimulate" BO_ 2364645979 0;
+BA_ "VFrameFormat" BO_ 2364645979 3;
+BA_ "CanDootDecodeBus" BO_ 2364641883 0;
+BA_ "CanDootSimulateBus" BO_ 2364641883 0;
+BA_ "GenMsgCycleTime" BO_ 2364641883 20;
+BA_ "CanDootDecode" BO_ 2364641883 1;
+BA_ "CanDootPaused" BO_ 2364641883 0;
+BA_ "CanDootSimulate" BO_ 2364641883 0;
+BA_ "VFrameFormat" BO_ 2364641883 3;
+BA_ "CanDootDecodeBus" BO_ 2364645723 0;
+BA_ "CanDootSimulateBus" BO_ 2364645723 0;
+BA_ "GenMsgCycleTime" BO_ 2364645723 20;
+BA_ "CanDootDecode" BO_ 2364645723 1;
+BA_ "CanDootPaused" BO_ 2364645723 0;
+BA_ "CanDootSimulate" BO_ 2364645723 0;
+BA_ "VFrameFormat" BO_ 2364645723 3;
+BA_ "CanDootDecode" BO_ 2365522437 1;
+BA_ "CanDootDecodeBus" BO_ 2365522437 0;
+BA_ "CanDootSimulate" BO_ 2365522437 0;
+BA_ "CanDootSimulateBus" BO_ 2365522437 0;
+BA_ "GenMsgCycleTime" BO_ 2365522437 10;
+BA_ "CanDootPaused" BO_ 2365522437 0;
+BA_ "VFrameFormat" BO_ 2365522437 3;
+BA_ "CanDootDecode" BO_ 2365522949 1;
+BA_ "CanDootDecodeBus" BO_ 2365522949 0;
+BA_ "CanDootSimulate" BO_ 2365522949 0;
+BA_ "CanDootSimulateBus" BO_ 2365522949 0;
+BA_ "CanDootSimulateCycleTime" BO_ 2365522949 500;
+BA_ "GenMsgCycleTime" BO_ 2365522949 1000;
+BA_ "CanDootPaused" BO_ 2365522949 0;
+BA_ "VFrameFormat" BO_ 2365522949 3;
+BA_ "GenSigStartValue" SG_ 2364642139 Core_Lowest_Cell_Temp 8736;
+BA_ "GenSigStartValue" SG_ 2364642139 Core_Highest_Cell_Temp 8736;
+BA_ "CanDootBroadcast" SG_ 2350603013 HV_Bus_Connect_Command 1;
+BA_ "CanDootBroadcast" SG_ 2364575835 Current 1;
+BA_ "GenSigStartValue" SG_ 2364575835 Current 32000;
+BA_ "CanDootBroadcast" SG_ 2364576347 Highest_Cell_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2364576347 Highest_Cell_Temperature 8736;
+BA_ "GenSigStartValue" SG_ 2364576347 Lowest_Cell_Temperature 8736;
+BA_ "GenSigStartValue" SG_ 2364576347 Average_Cell_Temperature 8736;
+BA_ "GenSigStartValue" SG_ 2364576859 Discharge_Current_Limit 32000;
+BA_ "GenSigStartValue" SG_ 2364576859 Charge_Current_Limit 32000;
+BA_ "CanDootBroadcast" SG_ 2364577115 Bus_Voltage 1;
+BA_ "CanDootBroadcast" SG_ 2364577115 Ignition_Voltage 1;
+BA_ "CanDootBroadcast" SG_ 2364577115 Electronics_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2364577115 Electronics_Temperature 40;
+BA_ "CanDootBroadcast" SG_ 2364577371 HV_Bus_Disconnect_Forewarning 1;
+BA_ "CanDootBroadcast" SG_ 2364577371 HVIL_Status 1;
+BA_ "CanDootBroadcast" SG_ 2364577371 HV_Bus_Connection_Status 1;
+BA_ "CanDootBroadcast" SG_ 2364577371 Operational_Status 1;
+BA_ "CanDootBroadcast" SG_ 2364607067 Average_Cell_Voltage 1;
+BA_ "CanDootBroadcast" SG_ 2365522011 Vehicle_Contactor_Pos_Closed 1;
+BA_ "CanDootBroadcast" SG_ 2365522011 Vehicle_Contactor_Neg_Closed 1;
+BA_ "CanDootBroadcast" SG_ 2365522011 Emergency_stop_1_Active 1;
+BA_ "CanDootBroadcast" SG_ 2365522011 Emergency_stop_2_Active 1;
+BA_ "CanDootBroadcast" SG_ 2365522011 Expect_system_int_HVIL_break 1;
+BA_ "GenSigStartValue" SG_ 2364641627 Core_Current 32000;
+BA_ "GenSigStartValue" SG_ 2364645467 Core_Current 32000;
+BA_ "GenSigStartValue" SG_ 2364645979 Core_Highest_Cell_Temp 8736;
+BA_ "GenSigStartValue" SG_ 2364645979 Core_Lowest_Cell_Temp 8736;
+BA_ "CanDootHidden" SG_ 2365522437 Disable_Pack_2_Command 1;
+BA_ "GenSigStartValue" SG_ 2365522949 System_Number_Of_Subpacks 0;
+

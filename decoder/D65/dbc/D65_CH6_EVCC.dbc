@@ -1,0 +1,1879 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: EV EVCC
+
+
+BO_ 2566855296 EVCC_InletStatus2: 8 EVCC
+ SG_ protective_earth_offset : 32|16@1+ (1,-32000) [-32000|33533] "mV"  EV
+ SG_ control_pilot_min_voltage : 16|16@1+ (1,-32000) [-32000|33533] "mV"  EV
+ SG_ plug_present_voltage : 0|16@1+ (1,0) [0|65533] "mV"  EV
+
+BO_ 2566872448 EVCC_StateM: 5 EVCC
+ SG_ appl_scc_func_mode_req : 36|2@1+ (1,0) [0|3] ""  EV
+ SG_ appl_scc_charge_mode_req : 33|3@1+ (1,0) [0|6] ""  EV
+ SG_ statem_internet_available : 32|1@1+ (1,0) [0|0] ""  EV
+ SG_ statem_state_machine_status : 24|8@1+ (1,0) [0|0] ""  EV
+ SG_ statem_state_machine_message_sta : 16|8@1+ (1,0) [0|0] ""  EV
+ SG_ statem_state_machine_error : 8|8@1+ (1,0) [0|0] ""  EV
+ SG_ statem_energy_transfer_mode_flag : 0|8@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566871680 EVCC_PresentVoltage: 5 EVCC
+ SG_ present_voltage_unit_flag : 32|8@1+ (1,0) [0|0] ""  EV
+ SG_ present_voltage_value : 16|16@1- (1,0) [0|0] ""  EV
+ SG_ present_voltage_multiplier : 8|8@1- (1,0) [0|0] ""  EV
+ SG_ present_voltage_unit : 0|4@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566871424 EVCC_PresentCurrent: 5 EVCC
+ SG_ present_current_unit_flag : 32|8@1+ (1,0) [0|0] ""  EV
+ SG_ present_current_value : 16|16@1- (1,0) [0|0] ""  EV
+ SG_ present_current_multiplier : 8|8@1- (1,0) [0|0] ""  EV
+ SG_ present_current_unit : 0|4@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566870912 EVCC_EvseMinimumVoltageLimit: 5 EVCC
+ SG_ minimum_voltage_limit_unit_flag : 32|8@1+ (1,0) [0|0] ""  EV
+ SG_ minimum_voltage_limit_value : 16|16@1- (1,0) [0|0] ""  EV
+ SG_ minimum_voltage_limit_multiplier : 8|8@1- (1,0) [0|0] ""  EV
+ SG_ minimum_voltage_limit_unit : 0|4@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566870656 EVCC_EvseMinimumCurrentLimit: 5 EVCC
+ SG_ minimum_current_limit_unit_flag : 32|8@1+ (1,0) [0|0] ""  EV
+ SG_ minimum_current_limit_value : 16|16@1- (1,0) [0|0] ""  EV
+ SG_ minimum_current_limit_multiplier : 8|8@1- (1,0) [0|0] ""  EV
+ SG_ minimum_current_limit_unit : 0|4@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566870400 EVCC_EvseMaximumVoltageLimit: 5 EVCC
+ SG_ maximum_voltage_limit_unit_flag : 32|8@1+ (1,0) [0|0] ""  EV
+ SG_ maximum_voltage_limit_value : 16|16@1- (1,0) [0|0] ""  EV
+ SG_ maximum_voltage_limit_multiplier : 8|8@1- (1,0) [0|0] ""  EV
+ SG_ maximum_voltage_limit_flag : 4|2@1+ (1,0) [0|0] ""  EV
+ SG_ maximum_voltage_limit_unit : 0|4@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566870144 EVCC_EvseMaximumPowerLimit: 5 EVCC
+ SG_ maximum_powerL_lmit_unit_flag : 32|8@1+ (1,0) [0|0] ""  EV
+ SG_ maximum_power_limit_value : 16|16@1- (1,0) [0|0] ""  EV
+ SG_ maximum_power_limit_multiplier : 8|8@1- (1,0) [0|0] ""  EV
+ SG_ maximum_power_limit_flag : 4|2@1+ (1,0) [0|0] ""  EV
+ SG_ maximum_power_limit_unit : 0|4@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566869888 EVCC_EvseMaximumCurrentLimit: 5 EVCC
+ SG_ maximum_current_limit_unit_flag : 32|8@1+ (1,0) [0|0] ""  EV
+ SG_ maximum_current_limit_value : 16|16@1- (1,0) [0|0] ""  EV
+ SG_ maximum_current_limit_multiplier : 8|8@1- (1,0) [0|0] ""  EV
+ SG_ maximum_current_limit_flag : 4|2@1+ (1,0) [0|0] ""  EV
+ SG_ maximum_current_limit_unit : 0|4@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566863234 EVCC_EvMaximumVoltageLimit: 5 EV
+ SG_ maximum_voltage_limit_unit_flag : 32|8@1+ (1,0) [0|0] ""  EVCC
+ SG_ maximum_voltage_limit_value : 16|16@1- (1,0) [0|0] ""  EVCC
+ SG_ maximum_voltage_limit_multiplier : 8|8@1- (1,0) [0|0] ""  EVCC
+ SG_ maximum_voltage_limit_flag : 4|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ maximum_voltage_limit_unit : 0|4@1+ (1,0) [0|0] ""  EVCC
+
+BO_ 2566862978 EVCC_EvMaximumPowerLimit: 5 EV
+ SG_ maximum_power_limit_unit_flag : 32|8@1+ (1,0) [0|0] ""  EVCC
+ SG_ maximum_power_limit_value : 16|16@1- (1,0) [0|0] ""  EVCC
+ SG_ maximum_power_limit_multiplier : 8|8@1- (1,0) [0|0] ""  EVCC
+ SG_ maximum_power_limit_flag : 4|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ maximum_power_limit_unit : 0|4@1+ (1,0) [0|0] ""  EVCC
+
+BO_ 2566862722 EVCC_EvMaximumCurrentLimit: 5 EV
+ SG_ maximum_current_limit_unit_flag : 32|8@1+ (1,0) [0|0] ""  EVCC
+ SG_ maximum_current_limit_value : 16|16@1- (1,0) [0|0] ""  EVCC
+ SG_ maximum_current_limit_multiplier : 8|8@1- (1,0) [0|0] ""  EVCC
+ SG_ maximum_current_limit_flag : 4|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ maximum_current_limit_unit : 0|4@1+ (1,0) [0|0] ""  EVCC
+
+BO_ 2566869120 EVCC_Status: 8 EVCC
+ SG_ notification_max_delay : 32|32@1+ (1,0) [0|0] ""  EV
+ SG_ response_code : 24|5@1+ (1,0) [0|0] ""  EV
+ SG_ date_time_now_flag : 20|2@1+ (1,0) [0|0] ""  EV
+ SG_ power_limit_achieved : 18|2@1+ (1,0) [0|0] ""  EV
+ SG_ voltage_limit_achieved : 16|2@1+ (1,0) [0|0] ""  EV
+ SG_ status_code : 12|4@1+ (1,0) [0|0] ""  EV
+ SG_ processing : 10|2@1+ (1,0) [0|0] ""  EV
+ SG_ notification : 8|2@1+ (1,0) [0|0] ""  EV
+ SG_ isolation_status_flag : 5|2@1+ (1,0) [0|0] ""  EV
+ SG_ isolation_status : 2|3@1+ (1,0) [0|0] ""  EV
+ SG_ current_limit_achieved : 0|2@1+ (1,0) [0|0] ""  EV
+
+BO_ 2566861954 EVCC_TargetCurrent: 5 EV
+ SG_ target_current_unit : 32|4@1+ (1,0) [0|0] ""  EVCC
+ SG_ target_current_unit_flag : 24|8@1+ (1,0) [0|0] ""  EVCC
+ SG_ target_current_multiplier : 16|8@1- (1,0) [0|0] ""  EVCC
+ SG_ target_current_value : 0|16@1- (1,0) [0|0] ""  EVCC
+
+BO_ 2566861698 EVCC_TargetVoltage: 5 EV
+ SG_ target_voltage_unit : 32|4@1+ (1,0) [0|0] ""  EVCC
+ SG_ target_voltage_unit_flag : 24|8@1+ (1,0) [0|0] ""  EVCC
+ SG_ target_voltage_multiplier : 16|8@1- (1,0) [0|0] ""  EVCC
+ SG_ target_voltage_value : 0|16@1- (1,0) [0|0] ""  EVCC
+
+BO_ 2566860930 EVCC_VehicleStatus: 7 EV
+ SG_ ress_soc : 48|8@1- (1,0) [0|0] ""  EVCC
+ SG_ full_soc : 40|8@1- (1,0) [0|0] ""  EVCC
+ SG_ bulk_soc : 32|8@1- (1,0) [0|0] ""  EVCC
+ SG_ statem_energy_transfer_mode : 26|4@1+ (1,0) [0|15] ""  EVCC
+ SG_ power_delivery_parameter_flag : 24|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ ress_conditioning_flag : 22|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ ress_conditioning : 20|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ ready : 18|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ cabin_conditioning_flag : 16|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ cabin_conditioning : 14|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ charging_complete : 12|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ full_soc_flag : 10|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ bulk_soc_flag : 8|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ bulk_charging_complete_flag : 6|2@1+ (1,0) [0|3] "x"  EVCC
+ SG_ bulk_charging_complete : 4|2@1+ (1,0) [0|0] ""  EVCC
+ SG_ error_code : 0|4@1+ (1,0) [0|0] ""  EVCC
+
+BO_ 2566857090 EVCC_ChargeFromVehicle: 8 EV
+ SG_ pwm_charge_mode_request : 48|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ renegotiate : 46|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ charge_selection : 44|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ stop_charge : 42|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ contactor_status : 40|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ charge_permission : 38|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ plug_unlock_permission : 36|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ plug_lock_permission : 34|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ isolation_measurement_status : 32|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ link_voltage : 16|16@1+ (1,0) [0|65533] "V"  EVCC
+ SG_ contactor_voltage : 0|16@1+ (1,0) [0|65533] "V"  EVCC
+
+BO_ 2566854528 EVCC_ChargeToVehicle: 8 EVCC
+ SG_ state_charge_from_vehicle : 44|8@1+ (1,0) [0|255] ""  EV
+ SG_ mobilization_status : 8|2@1+ (1,0) [0|3] ""  EV
+ SG_ charging_status : 6|2@1+ (1,0) [0|3] ""  EV
+ SG_ charge_selection_ack : 4|2@1+ (1,0) [0|3] ""  EV
+ SG_ contactor_request : 2|2@1+ (1,0) [0|0] ""  EV
+ SG_ isolation_measurement_request : 0|2@1+ (1,0) [0|3] ""  EV
+
+BO_ 2566856834 EVCC_Requests: 8 EV
+ SG_ Inlet_MotorRequest : 53|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ charge_unit_request : 51|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ control_pilot_charge_mode_reques : 48|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ rtc_timer_value : 40|8@1+ (1,0) [0|254] "min"  EVCC
+ SG_ plug_lock_motor_request : 36|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ rtc_timer_request : 34|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ highside_out_4_request : 32|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ highside_out_3_request : 30|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ highside_out_2_request : 28|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ highside_out_1_request : 26|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ highside_out_0_request : 24|2@1+ (1,0) [0|3] ""  EVCC
+ SG_ led_2_request : 16|8@1+ (0.5,0) [0|100] "%"  EVCC
+ SG_ led_1_request : 8|8@1+ (0.5,0) [0|100] "%"  EVCC
+ SG_ led_0_request : 0|8@1+ (0.5,0) [0|100] "%"  EVCC
+
+BO_ 2566854016 EVCC_OutputStatus: 7 EVCC
+ SG_ highside_out_3_input_wakeup : 52|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_4_input_status : 50|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_4_input_debounced_s : 48|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_3_input_status : 46|2@1+ (1,0) [0|3] ""  EV
+ SG_ high_side_out_3_input_debounced_ : 44|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_2_input_status : 42|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_2_input_debounced_s : 40|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_1_input_status : 38|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_1_input_debounced_s : 36|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_0_input_status : 34|2@1+ (1,0) [0|3] ""  EV
+ SG_ highside_out_0_Input_debounced_s : 32|2@1+ (1,0) [0|3] ""  EV
+ SG_ led_2_self_diagnostic_status : 28|3@1+ (1,0) [0|7] ""  EV
+ SG_ led_1_self_diagnostic_status : 24|3@1+ (1,0) [0|7] ""  EV
+ SG_ led_0_self_diagnostic_status : 20|3@1+ (1,0) [0|7] ""  EV
+ SG_ highside_out_4_self_diagnostic_s : 16|3@1+ (1,0) [0|7] ""  EV
+ SG_ highside_out_3_self_diagnostic_s : 12|3@1+ (1,0) [0|7] ""  EV
+ SG_ highside_out_2_self_diagnostic_s : 8|3@1+ (1,0) [0|7] ""  EV
+ SG_ highside_out_1_self_diagnostic_s : 4|3@1+ (1,0) [0|7] ""  EV
+ SG_ highside_out_0_self_diagnostic_s : 0|3@1+ (1,0) [0|7] ""  EV
+
+BO_ 2566853760 EVCC_ControlPilotStatus: 7 EVCC
+ SG_ charge_unit_max_current : 48|8@1+ (1,0) [0|255] "A"  EV
+ SG_ charge_unit_state : 45|3@1+ (1,0) [0|7] ""  EV
+ SG_ charge_unit_mode : 42|3@1+ (1,0) [0|7] ""  EV
+ SG_ control_pilot_wakeup : 40|2@1+ (1,0) [0|3] ""  EV
+ SG_ control_pilot_voltage : 24|16@1+ (1,-32000) [-32000|33533] "mV"  EV
+ SG_ control_pilot_duty_cycle : 16|8@1+ (0.5,0) [0|100] "%"  EV
+ SG_ control_pilot_frequency : 0|16@1+ (1,0) [0|65533] "Hz"  EV
+
+BO_ 2566853504 EVCC_InletStatus: 8 EVCC
+ SG_ s3_switch_debounced_status : 62|2@1+ (1,0) [0|3] ""  EV
+ SG_ s3_switch_status : 60|2@1+ (1,0) [0|3] ""  EV
+ SG_ inlet_connection_status : 58|2@1+ (1,0) [0|0] ""  EV
+ SG_ digital_input_debounced_status : 56|2@1+ (1,0) [0|3] ""  EV
+ SG_ inlet_max_current : 48|8@1+ (1,0) [0|255] "A"  EV
+ SG_ inlet_motor_status : 44|3@1+ (1,0) [0|7] ""  EV
+ SG_ digital_input_wakeup : 42|2@1+ (1,0) [0|3] ""  EV
+ SG_ digital_input_status : 40|2@1+ (1,0) [0|3] ""  EV
+ SG_ inlet_hw_variant : 38|2@1+ (1,0) [0|3] ""  EV
+ SG_ plug_lock_output1_self_diagnosti : 35|3@1+ (1,0) [0|7] ""  EV
+ SG_ plug_lock_output0_self_diagnosti : 32|3@1+ (1,0) [0|7] ""  EV
+ SG_ plug_lock_motor_status : 29|3@1+ (1,0) [0|7] ""  EV
+ SG_ pos_feedback_self_diagnostic_sta : 26|3@1+ (1,0) [0|7] ""  EV
+ SG_ plug_present_wakeup : 24|2@1+ (1,0) [0|3] ""  EV
+ SG_ plug_present_status : 22|2@1+ (1,0) [0|0] ""  EV
+ SG_ plug_present_resistance : 19|3@1+ (1,0) [0|7] ""  EV
+ SG_ plug_present_self_diagnostic_sta : 16|3@1+ (1,0) [0|7] ""  EV
+ SG_ pos_feedback_voltage : 0|16@1+ (1,0) [0|65533] "mV"  EV
+
+BO_ 2566853248 EVCC_PTC2: 7 EVCC
+ SG_ ptc_2_self_diagnostic_status : 48|3@1+ (1,0) [0|7] ""  EV
+ SG_ ptc_2_temperature : 32|16@1+ (1,-150) [-150|65383] "�C"  EV
+ SG_ ptc_2_resistance : 16|16@1+ (1,0) [0|65533] "Ohm"  EV
+ SG_ ptc_2_raw : 0|16@1+ (1,0) [0|65533] ""  EV
+
+BO_ 2566852992 EVCC_PTC1: 7 EVCC
+ SG_ ptc_1_self_diagnostic_status : 48|3@1+ (1,0) [0|7] ""  EV
+ SG_ ptc_1_temperature : 32|16@1+ (1,-150) [-150|65383] "�C"  EV
+ SG_ ptc_1_resistance : 16|16@1+ (1,0) [0|65533] "Ohm"  EV
+ SG_ ptc_1_raw : 0|16@1+ (1,0) [0|65533] ""  EV
+
+BO_ 2566852736 EVCC_PTC0: 7 EVCC
+ SG_ ptc_0_self_diagnostic_status : 48|3@1+ (1,0) [0|7] ""  EV
+ SG_ ptc_0_temperature : 32|16@1+ (1,-150) [-150|65383] "�C"  EV
+ SG_ ptc_0_resistance : 16|16@1+ (1,0) [0|65533] "Ohm"  EV
+ SG_ ptc_0_raw : 0|16@1+ (1,0) [0|65533] ""  EV
+
+
+
+CM_ BU_ EVCC "The VCVCCU node";
+CM_ SG_ 2566855296 protective_earth_offset "Measured offset voltage of the protective earth signal";
+CM_ SG_ 2566855296 control_pilot_min_voltage "Measured min voltage value of control pilot signal";
+CM_ SG_ 2566855296 plug_present_voltage "Measured voltage value of proximity pin signal";
+CM_ SG_ 2566871680 present_voltage_value "Present voltage of ";
+CM_ SG_ 2566870912 minimum_voltage_limit_value "Minimum voltage the  can deliver with the expected accuracy";
+CM_ SG_ 2566870656 minimum_current_limit_value "Minimum current the  can deliver with the expected accuracy";
+CM_ SG_ 2566870400 maximum_voltage_limit_value "Maximum voltage the  can deliver";
+CM_ SG_ 2566870144 maximum_power_limit_value "Maximum power the  can deliver";
+CM_ SG_ 2566869888 maximum_current_limit_value "Maximum current the  can deliver";
+CM_ SG_ 2566863234 maximum_voltage_limit_value "Maximum voltage supported by the  ";
+CM_ SG_ 2566862978 maximum_power_limit_value "Maximum power supported by the  ";
+CM_ SG_ 2566862722 maximum_current_limit_value "Maximum current supported by the  ";
+CM_ SG_ 2566869120 notification_max_delay "The SECC uses the NotificationMaxDelay element in the Status to indicate the time until it expects the  CC to react on the action request indicated in Notification. To be performed immediately if time is in past.";
+CM_ SG_ 2566869120 response_code "Response Code indicating the acknowledgment status of any of the V2G messages received by the SECC.";
+CM_ SG_ 2566869120 power_limit_achieved "If set to TRUE, the  has reached its power limit";
+CM_ SG_ 2566869120 voltage_limit_achieved "If set to TRUE, the  has reached its voltage limit";
+CM_ SG_ 2566869120 status_code "Indicates if the internal state of the ";
+CM_ SG_ 2566869120 processing "Parameter  indicating  that  the  has finished the processing that  was  initiated  after  the ContractAuthenticationReq or that  the  is still processing at the time  the  response  message  was sent.";
+CM_ SG_ 2566869120 notification "This value is used by the SECC to influence the behaviour of the  CC. The Notification contains an action that the SECC wants the  CC to perform within time provided in NotificationMaxDelay. To be performed immediately if time is in past.";
+CM_ SG_ 2566869120 isolation_status "Indicates the isolation condition (result of the isolation test/monitoring). ";
+CM_ SG_ 2566869120 current_limit_achieved "If set to TRUE, the  has reached its current limit. ";
+CM_ SG_ 2566861954 target_current_value "Current demanded by  ";
+CM_ SG_ 2566861698 target_voltage_value "Target Voltage requested by  ";
+CM_ SG_ 2566860930 ress_soc "State of charge of the  ’s battery (RESS) ";
+CM_ SG_ 2566860930 full_soc "SOC at which the   considers the battery to be fully charged ";
+CM_ SG_ 2566860930 bulk_soc "SOC at which the   considers a fast charging process to end";
+CM_ SG_ 2566860930 statem_energy_transfer_mode "Selected energy transfer mode";
+CM_ SG_ 2566860930 ress_conditioning "Vehicle RESS Conditioning, The vehicle is using energyfrom the DC charger to condition the RESS to a target temperature.";
+CM_ SG_ 2566860930 ready "If set to TRUE, the   is ready to charge. ";
+CM_ SG_ 2566860930 cabin_conditioning "Vehicle Cabin Conditioning, The   is using energy from the DC supply to heat or cool the passenger compartment. ";
+CM_ SG_ 2566860930 charging_complete "If set to TRUE, the   indicates that full  charge  (100 %  SOC)  is complete.";
+CM_ SG_ 2566860930 bulk_charging_complete "If set to TRUE, the   indicates that bulk charge (approx. 80 % SOC) is complete.";
+CM_ SG_ 2566860930 error_code "Indicates the   internal status.";
+CM_ SG_ 2566857090 pwm_charge_mode_request "ChargeMode selected for Pwm charging";
+CM_ SG_ 2566857090 renegotiate "Triggers a renegotiation of V2G Charging Schedule with ";
+CM_ SG_ 2566857090 charge_selection "Vehicle charge selection signal";
+CM_ SG_ 2566857090 stop_charge "Stop charging button";
+CM_ SG_ 2566857090 contactor_status "Status of the Charging contactors";
+CM_ SG_ 2566857090 charge_permission "Permission from the vehicle to charge";
+CM_ SG_ 2566857090 plug_unlock_permission "Permission from the vehicle to unlock the plug";
+CM_ SG_ 2566857090 plug_lock_permission "Permission from the vehicle to lock the plug";
+CM_ SG_ 2566857090 isolation_measurement_status "Vehicle isolation measurement status";
+CM_ SG_ 2566857090 link_voltage "Measured voltage at the battery";
+CM_ SG_ 2566857090 contactor_voltage "Measured voltage at the contactor";
+CM_ SG_ 2566854528 charge_selection_ack "Charge selection acknowledge signal";
+CM_ SG_ 2566854528 contactor_request "Request for the Charging contactors";
+CM_ SG_ 2566854528 isolation_measurement_request "Vehicle isolation measurement request";
+CM_ SG_ 2566856834 Inlet_MotorRequest "Requests to control the inlet motor";
+CM_ SG_ 2566856834 charge_unit_request "Charging mode control of CP";
+CM_ SG_ 2566856834 control_pilot_charge_mode_reques "Value of the resistor connected to the Control Pilot which defines the mode used";
+CM_ SG_ 2566856834 rtc_timer_value "RTC timer value";
+CM_ SG_ 2566856834 plug_lock_motor_request "Request for the plug lock motor movement";
+CM_ SG_ 2566856834 rtc_timer_request "RTC timer request";
+CM_ SG_ 2566856834 highside_out_4_request "Request for high side output 4";
+CM_ SG_ 2566856834 highside_out_3_request "Request for high side output 3";
+CM_ SG_ 2566856834 highside_out_2_request "Request for high side output 2";
+CM_ SG_ 2566856834 highside_out_1_request "Request for high side output 1";
+CM_ SG_ 2566856834 highside_out_0_request "Request for high side output 0";
+CM_ SG_ 2566856834 led_2_request "Request for the duty cycle of the LED2";
+CM_ SG_ 2566856834 led_1_request "Request for the duty cycle of the LED1";
+CM_ SG_ 2566856834 led_0_request "Request for the duty cycle of the LED0";
+CM_ SG_ 2566854016 highside_out_3_input_wakeup "Wakeup detection of high side 3 input signal";
+CM_ SG_ 2566854016 highside_out_4_input_status "Status of the high side 4 input signal";
+CM_ SG_ 2566854016 highside_out_4_input_debounced_s "Debounced status of the high side 4 input signal";
+CM_ SG_ 2566854016 highside_out_3_input_status "Status of the high side 3 input signal";
+CM_ SG_ 2566854016 high_side_out_3_input_debounced_ "Debounced status of the high side 3 input signal";
+CM_ SG_ 2566854016 highside_out_2_input_status "Status of the high side 2 input signal";
+CM_ SG_ 2566854016 highside_out_2_input_debounced_s "Debounced status of the high side 2 input signal";
+CM_ SG_ 2566854016 highside_out_1_input_status "Status of the high side 1 input signal";
+CM_ SG_ 2566854016 highside_out_1_input_debounced_s "Debounced status of the high side 1 input signal";
+CM_ SG_ 2566854016 highside_out_0_input_status "Status of the high side 0 input signal";
+CM_ SG_ 2566854016 highside_out_0_Input_debounced_s "Debounced status of the high side 0 input signal";
+CM_ SG_ 2566854016 led_2_self_diagnostic_status "SelfDiagnosticStatus of LED output 2";
+CM_ SG_ 2566854016 led_1_self_diagnostic_status "SelfDiagnosticStatus of LED output 1";
+CM_ SG_ 2566854016 led_0_self_diagnostic_status "SelfDiagnosticStatus of LED output 0";
+CM_ SG_ 2566854016 highside_out_4_self_diagnostic_s "SelfDiagnosticStatus of high side output 4";
+CM_ SG_ 2566854016 highside_out_3_self_diagnostic_s "SelfDiagnosticStatus of high side output 3";
+CM_ SG_ 2566854016 highside_out_2_self_diagnostic_s "SelfDiagnosticStatus of high side output 2";
+CM_ SG_ 2566854016 highside_out_1_self_diagnostic_s "SelfDiagnosticStatus of high side output 1";
+CM_ SG_ 2566854016 highside_out_0_self_diagnostic_s "SelfDiagnosticStatus of high side output 0";
+CM_ SG_ 2566853760 charge_unit_max_current "Max current derived from CP duty cycle";
+CM_ SG_ 2566853760 charge_unit_state "Vehicle state derived from CP voltage and duty cycle";
+CM_ SG_ 2566853760 charge_unit_mode "Requested charging mode from the , derived from the CP duty cycle";
+CM_ SG_ 2566853760 control_pilot_wakeup "Wakeup detection of control pilot signal";
+CM_ SG_ 2566853760 control_pilot_voltage "Measured voltage value of control pilot signal";
+CM_ SG_ 2566853760 control_pilot_duty_cycle "Duty cycle of the Control Pilot signal";
+CM_ SG_ 2566853760 control_pilot_frequency "Measured frequency value of control pilot signal";
+CM_ SG_ 2566853504 s3_switch_debounced_status "Debounced status of the S3 switch signal";
+CM_ SG_ 2566853504 s3_switch_status "Status of the S3 switch signal";
+CM_ SG_ 2566853504 inlet_connection_status "Inlet connection state derived from PP and CP";
+CM_ SG_ 2566853504 digital_input_debounced_status "Debounced status of the digital input signal";
+CM_ SG_ 2566853504 inlet_max_current "Max current derived from PP resistance";
+CM_ SG_ 2566853504 inlet_motor_status "Inlet lock status";
+CM_ SG_ 2566853504 digital_input_wakeup "Wakeup detection of digital input signal";
+CM_ SG_ 2566853504 digital_input_status "Status of the digital input signal";
+CM_ SG_ 2566853504 inlet_hw_variant "Status of the digital input signal";
+CM_ SG_ 2566853504 plug_lock_output1_self_diagnosti "SelfDiagnosticStatus of full bridge output 0";
+CM_ SG_ 2566853504 plug_lock_output0_self_diagnosti "SelfDiagnosticStatus of full bridge output 0";
+CM_ SG_ 2566853504 plug_lock_motor_status "Status of the plug lock motor movement";
+CM_ SG_ 2566853504 pos_feedback_self_diagnostic_sta "SelfDiagnosticStatus of position feedback signal";
+CM_ SG_ 2566853504 plug_present_wakeup "Wakeup detection of proximity pin signal";
+CM_ SG_ 2566853504 plug_present_status "Proximity Pin detection";
+CM_ SG_ 2566853504 plug_present_resistance "Value of the resistor connected to the Proximity Pin which defines the diameter of the cable";
+CM_ SG_ 2566853504 plug_present_self_diagnostic_sta "SelfDiagnostic Status of proximity pin signal";
+CM_ SG_ 2566853504 pos_feedback_voltage "Measured voltage value of position feedback signal";
+CM_ SG_ 2566853248 ptc_2_self_diagnostic_status "SelfDiagnosticStatus of PTC2 signal";
+CM_ SG_ 2566853248 ptc_2_temperature "Temperature measurement inside the inlet";
+CM_ SG_ 2566853248 ptc_2_resistance "Measured resistance value of PTC2";
+CM_ SG_ 2566853248 ptc_2_raw "Measured raw value of PTC2";
+CM_ SG_ 2566852992 ptc_1_self_diagnostic_status "SelfDiagnosticStatus of PTC1 signal";
+CM_ SG_ 2566852992 ptc_1_temperature "Temperature measurement inside the inlet";
+CM_ SG_ 2566852992 ptc_1_resistance "Measured resistance value of PTC1";
+CM_ SG_ 2566852992 ptc_1_raw "Measured raw value of PTC1";
+CM_ SG_ 2566852736 ptc_0_self_diagnostic_status "SelfDiagnosticStatus of PTC0 signal";
+CM_ SG_ 2566852736 ptc_0_temperature "Temperature measurement inside the inlet";
+CM_ SG_ 2566852736 ptc_0_resistance "Measured resistance value of PTC0";
+CM_ SG_ 2566852736 ptc_0_raw "Measured raw value of PTC0";
+BA_DEF_  "E2EP01SyncCounterInit" INT 0 65535;
+BA_DEF_  "E2EP01DataIdNibbleOffset" INT 0 65535;
+BA_DEF_  "E2EP01DataIdMode" ENUM  "all16Bit","alternating8Bit","lower8Bit","lower12Bit";
+BA_DEF_  "E2EP01CounterOffset" INT 0 65535;
+BA_DEF_  "E2EP01CrcOffset" INT 0 65535;
+BA_DEF_  "E2EP01ProfileBehavior" ENUM  "PRE_R4_2","R4_2";
+BA_DEF_  "E2EP01Offset" INT 0 65535;
+BA_DEF_ BO_  "E2EProfile" STRING ;
+BA_DEF_ BO_  "E2EDataLength" INT 0 65535;
+BA_DEF_ BO_  "E2EDataId01" INT 0 65535;
+BA_DEF_  "E2EP01WindowSize" INT 0 65535;
+BA_DEF_  "E2EP01UpperHeaderBitsToShift" INT 0 65535;
+BA_DEF_  "E2EP01MinOkStateValid" INT 0 65535;
+BA_DEF_  "E2EP01MinOkStateInvalid" INT 0 65535;
+BA_DEF_  "E2EP01MinOkStateInit" INT 0 65535;
+BA_DEF_  "E2EP01MaxNoNewOrRepeatedData" INT 0 65535;
+BA_DEF_  "E2EP01MaxErrorStateValid" INT 0 65535;
+BA_DEF_  "E2EP01MaxErrorStateInvalid" INT 0 65535;
+BA_DEF_  "E2EP01MaxErrorStateInit" INT 0 65535;
+BA_DEF_  "E2EP01MaxDeltaCounter" INT 0 65535;
+BA_DEF_  "E2EP01ProfileName" STRING ;
+BA_DEF_ SG_  "SPN" INT 0 524287;
+BA_DEF_ SG_  "GenSigStartValue" INT 0 2147483647;
+BA_DEF_ SG_  "GenSigInactiveValue" INT 0 0;
+BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType";
+BA_DEF_ SG_  "GenSigILSupport" ENUM  "No","Yes";
+BA_DEF_ SG_  "GenSigEVName" STRING ;
+BA_DEF_ SG_  "SigType" ENUM  "Default","Range","RangeSigned","ASCII","Discrete","Control","ReferencePGN","DTC","StringDelimiter","StringLength","StringLengthControl";
+BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","J1939PG";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 3600000;
+BA_DEF_ BO_  "GenMsgRequestable" INT 0 1;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclic","NotUsed","IfActive","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed","noMsgSendType";
+BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 100000;
+BA_DEF_ BO_  "GenMsgILSupport" ENUM  "No","Yes";
+BA_DEF_ BO_  "GenMsgDelayTime" INT 0 1000;
+BA_DEF_ BO_  "GenMsgNrOfRepetition" INT 0 1000000;
+BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 0 3600000;
+BA_DEF_ BO_  "GenMsgFastOnStart" INT 0 100000;
+BA_DEF_ BO_  "TpJ1939VarDlc" ENUM  "No","Yes";
+BA_DEF_ BO_  "NmAsrMessage" ENUM  "no","yes";
+BA_DEF_ BO_  "DiagRequest" ENUM  "No","Yes";
+BA_DEF_ BO_  "DiagResponse" ENUM  "No","Yes";
+BA_DEF_ BO_  "DiagState" ENUM  "No","Yes";
+BA_DEF_ BO_  "DiagConnection" INT 0 65535;
+BA_DEF_ BU_  "NmStationAddress" INT 0 255;
+BA_DEF_ BU_  "NmJ1939AAC" INT 0 1;
+BA_DEF_ BU_  "NmJ1939ECUInstance" INT 0 3;
+BA_DEF_ BU_  "NmJ1939Function" INT 0 255;
+BA_DEF_ BU_  "NmJ1939FunctionInstance" INT 0 7;
+BA_DEF_ BU_  "NmJ1939IdentityNumber" INT 0 2097151;
+BA_DEF_ BU_  "NmJ1939IndustryGroup" INT 0 7;
+BA_DEF_ BU_  "NmJ1939ManufacturerCode" INT 0 2047;
+BA_DEF_ BU_  "NmJ1939System" INT 0 127;
+BA_DEF_ BU_  "NmJ1939SystemInstance" INT 0 15;
+BA_DEF_ BU_  "ECU" STRING ;
+BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_ BU_  "NmAsrCanMsgCycleOffset" INT 0 65535;
+BA_DEF_ BU_  "NmAsrCanMsgReducedTime" INT 0 65535;
+BA_DEF_ BU_  "NmAsrNode" ENUM  "no","yes";
+BA_DEF_ BU_  "NmAsrNodeIdentifier" INT 0 255;
+BA_DEF_  "ProtocolType" STRING ;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_  "DBName" STRING ;
+BA_DEF_  "NmAsrBaseAddress" HEX 0 536870911;
+BA_DEF_  "NmAsrCanMsgCycleTime" INT 0 65535;
+BA_DEF_  "NmAsrMessageCount" INT 0 256;
+BA_DEF_  "NmAsrRepeatMessageTime" INT 0 65535;
+BA_DEF_  "NmAsrTimeoutTime" INT 0 65535;
+BA_DEF_  "NmAsrWaitBusSleepTime" INT 0 65535;
+BA_DEF_  "NmType" STRING ;
+BA_DEF_  "SAE_J1939_21_SpecVersion" STRING ;
+BA_DEF_  "SAE_J1939_71_SpecVersion" STRING ;
+BA_DEF_  "SAE_J1939_73_SpecVersion" STRING ;
+BA_DEF_  "SAE_J1939_75_SpecVersion" STRING ;
+BA_DEF_  "DatabaseVersion" STRING ;
+BA_DEF_  "Baudrate" INT 0 10000000;
+BA_DEF_ BO_  "CanDootDecode" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootDecodeBus" INT 0 6;
+BA_DEF_ BO_  "CanDootPaused" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulate" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulateBus" INT 0 6;
+BA_DEF_ BO_  "CanDootSimulateCycleTime" INT 0 50000;
+BA_DEF_ BO_  "CG_MessageInstName" STRING ;
+BA_DEF_ BO_  "CG_RX_TX" ENUM  "RX","TX","NONE";
+BA_DEF_ SG_  "CanDootGroup" ENUM  "None","g1","g2","g3","g4","g5","g6","g7","g8","g9","gA","gB","gC","gD","gE","gF";
+BA_DEF_ SG_  "CanDootHidden" ENUM  "No","Yes";
+BA_DEF_ SG_  "CanDootBroadcast" ENUM  "No","Yes";
+BA_DEF_ SG_  "CG_VarType" ENUM  "bool","uint8_t","int8_t","uint16_t","int16_t","uint32_t","int32_t","float","double";
+BA_DEF_ SG_  "SystemSignalLongSymbol" STRING ;
+BA_DEF_DEF_  "E2EP01SyncCounterInit" 0;
+BA_DEF_DEF_  "E2EP01DataIdNibbleOffset" 0;
+BA_DEF_DEF_  "E2EP01DataIdMode" "all16Bit";
+BA_DEF_DEF_  "E2EP01CounterOffset" 0;
+BA_DEF_DEF_  "E2EP01CrcOffset" 0;
+BA_DEF_DEF_  "E2EP01ProfileBehavior" "R4_2";
+BA_DEF_DEF_  "E2EP01Offset" 0;
+BA_DEF_DEF_  "E2EProfile" "PXX";
+BA_DEF_DEF_  "E2EDataLength" 0;
+BA_DEF_DEF_  "E2EDataId01" 0;
+BA_DEF_DEF_  "E2EP01WindowSize" 0;
+BA_DEF_DEF_  "E2EP01UpperHeaderBitsToShift" 0;
+BA_DEF_DEF_  "E2EP01MinOkStateValid" 0;
+BA_DEF_DEF_  "E2EP01MinOkStateInvalid" 0;
+BA_DEF_DEF_  "E2EP01MinOkStateInit" 0;
+BA_DEF_DEF_  "E2EP01MaxNoNewOrRepeatedData" 15;
+BA_DEF_DEF_  "E2EP01MaxErrorStateValid" 0;
+BA_DEF_DEF_  "E2EP01MaxErrorStateInvalid" 0;
+BA_DEF_DEF_  "E2EP01MaxErrorStateInit" 0;
+BA_DEF_DEF_  "E2EP01MaxDeltaCounter" 15;
+BA_DEF_DEF_  "E2EP01ProfileName" "PROFILE_01";
+BA_DEF_DEF_  "SPN" 0;
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "GenSigSendType" "NoSigSendType";
+BA_DEF_DEF_  "GenSigILSupport" "Yes";
+BA_DEF_DEF_  "GenSigEVName" "Env@Nodename_@Signame";
+BA_DEF_DEF_  "SigType" "Default";
+BA_DEF_DEF_  "VFrameFormat" "J1939PG";
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "GenMsgRequestable" 1;
+BA_DEF_DEF_  "GenMsgSendType" "noMsgSendType";
+BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
+BA_DEF_DEF_  "GenMsgILSupport" "Yes";
+BA_DEF_DEF_  "GenMsgDelayTime" 0;
+BA_DEF_DEF_  "GenMsgNrOfRepetition" 0;
+BA_DEF_DEF_  "GenMsgCycleTimeFast" 0;
+BA_DEF_DEF_  "GenMsgFastOnStart" 0;
+BA_DEF_DEF_  "TpJ1939VarDlc" "No";
+BA_DEF_DEF_  "NmAsrMessage" "no";
+BA_DEF_DEF_  "DiagRequest" "No";
+BA_DEF_DEF_  "DiagResponse" "No";
+BA_DEF_DEF_  "DiagState" "No";
+BA_DEF_DEF_  "DiagConnection" 0;
+BA_DEF_DEF_  "NmStationAddress" 254;
+BA_DEF_DEF_  "NmJ1939AAC" 0;
+BA_DEF_DEF_  "NmJ1939ECUInstance" 0;
+BA_DEF_DEF_  "NmJ1939Function" 0;
+BA_DEF_DEF_  "NmJ1939FunctionInstance" 0;
+BA_DEF_DEF_  "NmJ1939IdentityNumber" 0;
+BA_DEF_DEF_  "NmJ1939IndustryGroup" 0;
+BA_DEF_DEF_  "NmJ1939ManufacturerCode" 0;
+BA_DEF_DEF_  "NmJ1939System" 0;
+BA_DEF_DEF_  "NmJ1939SystemInstance" 0;
+BA_DEF_DEF_  "ECU" "";
+BA_DEF_DEF_  "NodeLayerModules" "J1939_IL.dll";
+BA_DEF_DEF_  "NmAsrCanMsgCycleOffset" 0;
+BA_DEF_DEF_  "NmAsrCanMsgReducedTime" 50;
+BA_DEF_DEF_  "NmAsrNode" "yes";
+BA_DEF_DEF_  "NmAsrNodeIdentifier" 0;
+BA_DEF_DEF_  "ProtocolType" "J1939";
+BA_DEF_DEF_  "BusType" "CAN";
+BA_DEF_DEF_  "DBName" "";
+BA_DEF_DEF_  "NmAsrBaseAddress" 486506496;
+BA_DEF_DEF_  "NmAsrCanMsgCycleTime" 100;
+BA_DEF_DEF_  "NmAsrMessageCount" 64;
+BA_DEF_DEF_  "NmAsrRepeatMessageTime" 400;
+BA_DEF_DEF_  "NmAsrTimeoutTime" 1000;
+BA_DEF_DEF_  "NmAsrWaitBusSleepTime" 750;
+BA_DEF_DEF_  "NmType" "";
+BA_DEF_DEF_  "SAE_J1939_21_SpecVersion" "";
+BA_DEF_DEF_  "SAE_J1939_71_SpecVersion" "";
+BA_DEF_DEF_  "SAE_J1939_73_SpecVersion" "";
+BA_DEF_DEF_  "SAE_J1939_75_SpecVersion" "";
+BA_DEF_DEF_  "DatabaseVersion" "";
+BA_DEF_DEF_  "Baudrate" 500000;
+BA_DEF_DEF_  "CanDootDecode" "Yes";
+BA_DEF_DEF_  "CanDootDecodeBus" 1;
+BA_DEF_DEF_  "CanDootPaused" "No";
+BA_DEF_DEF_  "CanDootSimulate" "No";
+BA_DEF_DEF_  "CanDootSimulateBus" 1;
+BA_DEF_DEF_  "CanDootSimulateCycleTime" 100;
+BA_DEF_DEF_  "CG_MessageInstName" "";
+BA_DEF_DEF_  "CG_RX_TX" "RX";
+BA_DEF_DEF_  "CanDootGroup" "None";
+BA_DEF_DEF_  "CanDootHidden" "No";
+BA_DEF_DEF_  "CanDootBroadcast" "Yes";
+BA_DEF_DEF_  "CG_VarType" "uint8_t";
+BA_DEF_DEF_  "SystemSignalLongSymbol" "";
+BA_ "E2EP01MaxNoNewOrRepeatedData" 14;
+BA_ "E2EP01SyncCounterInit" 1;
+BA_ "E2EP01CrcOffset" 56;
+BA_ "E2EP01CounterOffset" 52;
+BA_ "BusType" "CAN";
+BA_ "NmAsrMessageCount" 256;
+BA_ "Baudrate" 250000;
+BA_ "E2EP01WindowSize" 1;
+BA_ "E2EP01MinOkStateValid" 1;
+BA_ "E2EP01MinOkStateInvalid" 1;
+BA_ "E2EP01MinOkStateInit" 1;
+BA_ "E2EP01MaxDeltaCounter" 4;
+BA_ "DBName" "SensataEVCC";
+BA_ "NmStationAddress" BU_ EV 130;
+BA_ "NodeLayerModules" BU_ EV "J1939_IL.dll, ASRNM33.dll";
+BA_ "NmAsrNodeIdentifier" BU_ EV 130;
+BA_ "NmStationAddress" BU_ EVCC 128;
+BA_ "ECU" BU_ EVCC "VCVCCU";
+BA_ "NodeLayerModules" BU_ EVCC "J1939_IL.dll, ASRNM33.dll";
+BA_ "NmAsrNodeIdentifier" BU_ EVCC 128;
+BA_ "CanDootPaused" BO_ 2566855296 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566855296 6;
+BA_ "GenMsgCycleTime" BO_ 2566855296 10;
+BA_ "GenMsgRequestable" BO_ 2566855296 0;
+BA_ "GenMsgSendType" BO_ 2566855296 0;
+BA_ "CanDootDecode" BO_ 2566855296 1;
+BA_ "CanDootDecodeBus" BO_ 2566855296 6;
+BA_ "CanDootSimulate" BO_ 2566855296 0;
+BA_ "CanDootSimulateBus" BO_ 2566855296 6;
+BA_ "CG_RX_TX" BO_ 2566855296 0;
+BA_ "CG_MessageInstName" BO_ 2566855296 "inlet_status_2";
+BA_ "VFrameFormat" BO_ 2566855296 3;
+BA_ "CanDootPaused" BO_ 2566872448 0;
+BA_ "CG_MessageInstName" BO_ 2566872448 "state_machines";
+BA_ "GenMsgCycleTime" BO_ 2566872448 500;
+BA_ "GenMsgRequestable" BO_ 2566872448 0;
+BA_ "GenMsgSendType" BO_ 2566872448 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566872448 138;
+BA_ "GenMsgDelayTime" BO_ 2566872448 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566872448 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566872448 20;
+BA_ "CanDootDecode" BO_ 2566872448 1;
+BA_ "CanDootDecodeBus" BO_ 2566872448 6;
+BA_ "CanDootSimulate" BO_ 2566872448 0;
+BA_ "CanDootSimulateBus" BO_ 2566872448 6;
+BA_ "CG_RX_TX" BO_ 2566872448 0;
+BA_ "VFrameFormat" BO_ 2566872448 3;
+BA_ "CanDootPaused" BO_ 2566871680 0;
+BA_ "GenMsgCycleTime" BO_ 2566871680 500;
+BA_ "GenMsgRequestable" BO_ 2566871680 0;
+BA_ "GenMsgSendType" BO_ 2566871680 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566871680 114;
+BA_ "GenMsgDelayTime" BO_ 2566871680 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566871680 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566871680 20;
+BA_ "CanDootDecode" BO_ 2566871680 1;
+BA_ "CanDootDecodeBus" BO_ 2566871680 6;
+BA_ "CanDootSimulate" BO_ 2566871680 0;
+BA_ "CanDootSimulateBus" BO_ 2566871680 6;
+BA_ "CG_RX_TX" BO_ 2566871680 0;
+BA_ "CG_MessageInstName" BO_ 2566871680 "evse_present_voltage";
+BA_ "VFrameFormat" BO_ 2566871680 3;
+BA_ "CanDootPaused" BO_ 2566871424 0;
+BA_ "GenMsgCycleTime" BO_ 2566871424 500;
+BA_ "GenMsgRequestable" BO_ 2566871424 0;
+BA_ "GenMsgSendType" BO_ 2566871424 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566871424 102;
+BA_ "GenMsgDelayTime" BO_ 2566871424 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566871424 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566871424 20;
+BA_ "CanDootDecode" BO_ 2566871424 1;
+BA_ "CanDootDecodeBus" BO_ 2566871424 6;
+BA_ "CanDootSimulate" BO_ 2566871424 0;
+BA_ "CanDootSimulateBus" BO_ 2566871424 6;
+BA_ "CG_RX_TX" BO_ 2566871424 0;
+BA_ "CG_MessageInstName" BO_ 2566871424 "evse_present_current";
+BA_ "VFrameFormat" BO_ 2566871424 3;
+BA_ "CanDootPaused" BO_ 2566870912 0;
+BA_ "GenMsgCycleTime" BO_ 2566870912 500;
+BA_ "GenMsgRequestable" BO_ 2566870912 0;
+BA_ "GenMsgSendType" BO_ 2566870912 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566870912 88;
+BA_ "GenMsgDelayTime" BO_ 2566870912 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566870912 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566870912 20;
+BA_ "CanDootDecode" BO_ 2566870912 1;
+BA_ "CanDootDecodeBus" BO_ 2566870912 6;
+BA_ "CanDootSimulate" BO_ 2566870912 0;
+BA_ "CanDootSimulateBus" BO_ 2566870912 6;
+BA_ "CG_RX_TX" BO_ 2566870912 0;
+BA_ "CG_MessageInstName" BO_ 2566870912 "evse_minimum_voltage_limit";
+BA_ "VFrameFormat" BO_ 2566870912 3;
+BA_ "CanDootPaused" BO_ 2566870656 0;
+BA_ "GenMsgCycleTime" BO_ 2566870656 500;
+BA_ "GenMsgRequestable" BO_ 2566870656 0;
+BA_ "GenMsgSendType" BO_ 2566870656 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566870656 76;
+BA_ "GenMsgDelayTime" BO_ 2566870656 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566870656 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566870656 20;
+BA_ "CanDootDecode" BO_ 2566870656 1;
+BA_ "CanDootDecodeBus" BO_ 2566870656 6;
+BA_ "CanDootSimulate" BO_ 2566870656 0;
+BA_ "CanDootSimulateBus" BO_ 2566870656 6;
+BA_ "CG_RX_TX" BO_ 2566870656 0;
+BA_ "CG_MessageInstName" BO_ 2566870656 "evse_minimum_current_limit";
+BA_ "VFrameFormat" BO_ 2566870656 3;
+BA_ "CanDootPaused" BO_ 2566870400 0;
+BA_ "GenMsgCycleTime" BO_ 2566870400 500;
+BA_ "GenMsgRequestable" BO_ 2566870400 0;
+BA_ "GenMsgSendType" BO_ 2566870400 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566870400 64;
+BA_ "GenMsgDelayTime" BO_ 2566870400 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566870400 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566870400 20;
+BA_ "CanDootDecode" BO_ 2566870400 1;
+BA_ "CanDootDecodeBus" BO_ 2566870400 6;
+BA_ "CanDootSimulate" BO_ 2566870400 0;
+BA_ "CanDootSimulateBus" BO_ 2566870400 6;
+BA_ "CG_RX_TX" BO_ 2566870400 0;
+BA_ "CG_MessageInstName" BO_ 2566870400 "evse_maximum_voltage_limit";
+BA_ "VFrameFormat" BO_ 2566870400 3;
+BA_ "CanDootPaused" BO_ 2566870144 0;
+BA_ "GenMsgCycleTime" BO_ 2566870144 500;
+BA_ "GenMsgRequestable" BO_ 2566870144 0;
+BA_ "GenMsgSendType" BO_ 2566870144 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566870144 52;
+BA_ "GenMsgDelayTime" BO_ 2566870144 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566870144 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566870144 20;
+BA_ "CanDootDecode" BO_ 2566870144 1;
+BA_ "CanDootDecodeBus" BO_ 2566870144 6;
+BA_ "CanDootSimulate" BO_ 2566870144 0;
+BA_ "CanDootSimulateBus" BO_ 2566870144 6;
+BA_ "CG_RX_TX" BO_ 2566870144 0;
+BA_ "CG_MessageInstName" BO_ 2566870144 "evse_maximum_power_limit";
+BA_ "VFrameFormat" BO_ 2566870144 3;
+BA_ "CanDootPaused" BO_ 2566869888 0;
+BA_ "GenMsgCycleTime" BO_ 2566869888 500;
+BA_ "GenMsgRequestable" BO_ 2566869888 0;
+BA_ "GenMsgSendType" BO_ 2566869888 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566869888 40;
+BA_ "GenMsgDelayTime" BO_ 2566869888 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566869888 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566869888 20;
+BA_ "CanDootDecode" BO_ 2566869888 1;
+BA_ "CanDootDecodeBus" BO_ 2566869888 6;
+BA_ "CanDootSimulate" BO_ 2566869888 0;
+BA_ "CanDootSimulateBus" BO_ 2566869888 6;
+BA_ "CG_RX_TX" BO_ 2566869888 0;
+BA_ "CG_MessageInstName" BO_ 2566869888 "evse_maximum_current_limit";
+BA_ "VFrameFormat" BO_ 2566869888 3;
+BA_ "CanDootPaused" BO_ 2566863234 0;
+BA_ "CanDootSimulateBus" BO_ 2566863234 6;
+BA_ "CanDootSimulate" BO_ 2566863234 0;
+BA_ "CG_MessageInstName" BO_ 2566863234 "ev_max_voltage_limit";
+BA_ "GenMsgCycleTime" BO_ 2566863234 200;
+BA_ "GenMsgRequestable" BO_ 2566863234 0;
+BA_ "GenMsgSendType" BO_ 2566863234 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566863234 50;
+BA_ "GenMsgDelayTime" BO_ 2566863234 0;
+BA_ "CanDootDecode" BO_ 2566863234 1;
+BA_ "CanDootDecodeBus" BO_ 2566863234 6;
+BA_ "CG_RX_TX" BO_ 2566863234 1;
+BA_ "VFrameFormat" BO_ 2566863234 3;
+BA_ "CanDootPaused" BO_ 2566862978 0;
+BA_ "CanDootSimulateBus" BO_ 2566862978 6;
+BA_ "CanDootSimulate" BO_ 2566862978 0;
+BA_ "CG_MessageInstName" BO_ 2566862978 "ev_max_power_limit";
+BA_ "GenMsgCycleTime" BO_ 2566862978 200;
+BA_ "GenMsgRequestable" BO_ 2566862978 0;
+BA_ "GenMsgSendType" BO_ 2566862978 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566862978 40;
+BA_ "GenMsgDelayTime" BO_ 2566862978 0;
+BA_ "CanDootDecode" BO_ 2566862978 1;
+BA_ "CanDootDecodeBus" BO_ 2566862978 6;
+BA_ "CG_RX_TX" BO_ 2566862978 1;
+BA_ "VFrameFormat" BO_ 2566862978 3;
+BA_ "CanDootPaused" BO_ 2566862722 0;
+BA_ "CanDootSimulateBus" BO_ 2566862722 6;
+BA_ "CanDootSimulate" BO_ 2566862722 0;
+BA_ "CG_MessageInstName" BO_ 2566862722 "ev_max_current_limit";
+BA_ "GenMsgCycleTime" BO_ 2566862722 200;
+BA_ "GenMsgRequestable" BO_ 2566862722 0;
+BA_ "GenMsgSendType" BO_ 2566862722 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566862722 30;
+BA_ "GenMsgDelayTime" BO_ 2566862722 0;
+BA_ "CanDootDecode" BO_ 2566862722 1;
+BA_ "CanDootDecodeBus" BO_ 2566862722 6;
+BA_ "CG_RX_TX" BO_ 2566862722 1;
+BA_ "VFrameFormat" BO_ 2566862722 3;
+BA_ "CanDootPaused" BO_ 2566869120 0;
+BA_ "GenMsgCycleTime" BO_ 2566869120 500;
+BA_ "GenMsgRequestable" BO_ 2566869120 0;
+BA_ "GenMsgSendType" BO_ 2566869120 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566869120 126;
+BA_ "GenMsgDelayTime" BO_ 2566869120 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566869120 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566869120 20;
+BA_ "CanDootDecode" BO_ 2566869120 1;
+BA_ "CanDootDecodeBus" BO_ 2566869120 6;
+BA_ "CanDootSimulate" BO_ 2566869120 0;
+BA_ "CanDootSimulateBus" BO_ 2566869120 6;
+BA_ "CG_RX_TX" BO_ 2566869120 0;
+BA_ "CG_MessageInstName" BO_ 2566869120 "evse_status";
+BA_ "VFrameFormat" BO_ 2566869120 3;
+BA_ "CanDootPaused" BO_ 2566861954 0;
+BA_ "CanDootSimulateBus" BO_ 2566861954 6;
+BA_ "CanDootSimulate" BO_ 2566861954 0;
+BA_ "CG_MessageInstName" BO_ 2566861954 "ev_target_current";
+BA_ "GenMsgCycleTime" BO_ 2566861954 200;
+BA_ "GenMsgRequestable" BO_ 2566861954 0;
+BA_ "GenMsgSendType" BO_ 2566861954 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566861954 60;
+BA_ "GenMsgDelayTime" BO_ 2566861954 0;
+BA_ "CanDootDecode" BO_ 2566861954 1;
+BA_ "CanDootDecodeBus" BO_ 2566861954 6;
+BA_ "CG_RX_TX" BO_ 2566861954 1;
+BA_ "VFrameFormat" BO_ 2566861954 3;
+BA_ "CanDootPaused" BO_ 2566861698 0;
+BA_ "CanDootSimulateBus" BO_ 2566861698 6;
+BA_ "CanDootSimulate" BO_ 2566861698 0;
+BA_ "CG_MessageInstName" BO_ 2566861698 "ev_target_voltage";
+BA_ "GenMsgCycleTime" BO_ 2566861698 200;
+BA_ "GenMsgRequestable" BO_ 2566861698 0;
+BA_ "GenMsgSendType" BO_ 2566861698 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566861698 70;
+BA_ "GenMsgDelayTime" BO_ 2566861698 0;
+BA_ "CanDootDecode" BO_ 2566861698 1;
+BA_ "CanDootDecodeBus" BO_ 2566861698 6;
+BA_ "CG_RX_TX" BO_ 2566861698 1;
+BA_ "VFrameFormat" BO_ 2566861698 3;
+BA_ "CanDootPaused" BO_ 2566860930 0;
+BA_ "CanDootSimulateBus" BO_ 2566860930 6;
+BA_ "CanDootSimulate" BO_ 2566860930 0;
+BA_ "CG_MessageInstName" BO_ 2566860930 "vehicle_status";
+BA_ "GenMsgCycleTime" BO_ 2566860930 200;
+BA_ "GenMsgRequestable" BO_ 2566860930 0;
+BA_ "GenMsgSendType" BO_ 2566860930 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566860930 100;
+BA_ "GenMsgDelayTime" BO_ 2566860930 0;
+BA_ "CanDootDecode" BO_ 2566860930 1;
+BA_ "CanDootDecodeBus" BO_ 2566860930 6;
+BA_ "CG_RX_TX" BO_ 2566860930 1;
+BA_ "VFrameFormat" BO_ 2566860930 3;
+BA_ "CanDootPaused" BO_ 2566857090 0;
+BA_ "CanDootSimulateBus" BO_ 2566857090 6;
+BA_ "CanDootSimulate" BO_ 2566857090 0;
+BA_ "E2EDataId01" BO_ 2566857090 65313;
+BA_ "E2EDataLength" BO_ 2566857090 64;
+BA_ "E2EProfile" BO_ 2566857090 "P01";
+BA_ "GenMsgCycleTime" BO_ 2566857090 20;
+BA_ "GenMsgRequestable" BO_ 2566857090 0;
+BA_ "GenMsgSendType" BO_ 2566857090 0;
+BA_ "CanDootDecode" BO_ 2566857090 1;
+BA_ "CanDootDecodeBus" BO_ 2566857090 6;
+BA_ "CG_RX_TX" BO_ 2566857090 1;
+BA_ "CG_MessageInstName" BO_ 2566857090 "charge_from_vehicle";
+BA_ "VFrameFormat" BO_ 2566857090 3;
+BA_ "CanDootPaused" BO_ 2566854528 0;
+BA_ "E2EDataLength" BO_ 2566854528 64;
+BA_ "GenMsgCycleTime" BO_ 2566854528 20;
+BA_ "GenMsgRequestable" BO_ 2566854528 0;
+BA_ "GenMsgSendType" BO_ 2566854528 0;
+BA_ "GenMsgNrOfRepetition" BO_ 2566854528 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566854528 20;
+BA_ "E2EDataId01" BO_ 2566854528 65303;
+BA_ "E2EProfile" BO_ 2566854528 "P01";
+BA_ "CanDootDecode" BO_ 2566854528 1;
+BA_ "CanDootDecodeBus" BO_ 2566854528 6;
+BA_ "CanDootSimulate" BO_ 2566854528 0;
+BA_ "CanDootSimulateBus" BO_ 2566854528 6;
+BA_ "CG_RX_TX" BO_ 2566854528 0;
+BA_ "CG_MessageInstName" BO_ 2566854528 "charge_to_vehicle";
+BA_ "VFrameFormat" BO_ 2566854528 3;
+BA_ "CanDootPaused" BO_ 2566856834 0;
+BA_ "CanDootSimulateBus" BO_ 2566856834 6;
+BA_ "CanDootSimulate" BO_ 2566856834 0;
+BA_ "CG_MessageInstName" BO_ 2566856834 "request";
+BA_ "GenMsgCycleTime" BO_ 2566856834 250;
+BA_ "GenMsgRequestable" BO_ 2566856834 0;
+BA_ "GenMsgSendType" BO_ 2566856834 0;
+BA_ "CanDootDecode" BO_ 2566856834 1;
+BA_ "CanDootDecodeBus" BO_ 2566856834 6;
+BA_ "CG_RX_TX" BO_ 2566856834 1;
+BA_ "VFrameFormat" BO_ 2566856834 3;
+BA_ "CanDootPaused" BO_ 2566854016 0;
+BA_ "CG_MessageInstName" BO_ 2566854016 "output_status";
+BA_ "GenMsgCycleTime" BO_ 2566854016 500;
+BA_ "GenMsgRequestable" BO_ 2566854016 0;
+BA_ "GenMsgSendType" BO_ 2566854016 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566854016 8;
+BA_ "GenMsgNrOfRepetition" BO_ 2566854016 4;
+BA_ "GenMsgCycleTimeFast" BO_ 2566854016 20;
+BA_ "CanDootDecode" BO_ 2566854016 1;
+BA_ "CanDootDecodeBus" BO_ 2566854016 6;
+BA_ "CanDootSimulate" BO_ 2566854016 0;
+BA_ "CanDootSimulateBus" BO_ 2566854016 6;
+BA_ "CG_RX_TX" BO_ 2566854016 0;
+BA_ "VFrameFormat" BO_ 2566854016 3;
+BA_ "CanDootPaused" BO_ 2566853760 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566853760 2;
+BA_ "GenMsgCycleTime" BO_ 2566853760 10;
+BA_ "GenMsgRequestable" BO_ 2566853760 0;
+BA_ "GenMsgSendType" BO_ 2566853760 0;
+BA_ "CanDootDecode" BO_ 2566853760 1;
+BA_ "CanDootDecodeBus" BO_ 2566853760 6;
+BA_ "CanDootSimulate" BO_ 2566853760 0;
+BA_ "CanDootSimulateBus" BO_ 2566853760 6;
+BA_ "CG_RX_TX" BO_ 2566853760 0;
+BA_ "CG_MessageInstName" BO_ 2566853760 "control_pilot_status";
+BA_ "VFrameFormat" BO_ 2566853760 3;
+BA_ "CanDootPaused" BO_ 2566853504 0;
+BA_ "GenMsgStartDelayTime" BO_ 2566853504 4;
+BA_ "GenMsgCycleTime" BO_ 2566853504 10;
+BA_ "GenMsgRequestable" BO_ 2566853504 0;
+BA_ "GenMsgSendType" BO_ 2566853504 0;
+BA_ "CanDootDecode" BO_ 2566853504 1;
+BA_ "CanDootDecodeBus" BO_ 2566853504 6;
+BA_ "CanDootSimulate" BO_ 2566853504 0;
+BA_ "CanDootSimulateBus" BO_ 2566853504 6;
+BA_ "CG_RX_TX" BO_ 2566853504 0;
+BA_ "CG_MessageInstName" BO_ 2566853504 "inlet_status";
+BA_ "VFrameFormat" BO_ 2566853504 3;
+BA_ "CanDootPaused" BO_ 2566853248 0;
+BA_ "CG_MessageInstName" BO_ 2566853248 "ptc2";
+BA_ "GenMsgStartDelayTime" BO_ 2566853248 4;
+BA_ "GenMsgCycleTime" BO_ 2566853248 10;
+BA_ "GenMsgRequestable" BO_ 2566853248 0;
+BA_ "GenMsgSendType" BO_ 2566853248 0;
+BA_ "CanDootDecode" BO_ 2566853248 1;
+BA_ "CanDootDecodeBus" BO_ 2566853248 6;
+BA_ "CanDootSimulate" BO_ 2566853248 0;
+BA_ "CanDootSimulateBus" BO_ 2566853248 6;
+BA_ "CG_RX_TX" BO_ 2566853248 0;
+BA_ "VFrameFormat" BO_ 2566853248 3;
+BA_ "CanDootPaused" BO_ 2566852992 0;
+BA_ "CG_MessageInstName" BO_ 2566852992 "ptc1";
+BA_ "GenMsgStartDelayTime" BO_ 2566852992 2;
+BA_ "GenMsgCycleTime" BO_ 2566852992 10;
+BA_ "GenMsgRequestable" BO_ 2566852992 0;
+BA_ "GenMsgSendType" BO_ 2566852992 0;
+BA_ "CanDootDecode" BO_ 2566852992 1;
+BA_ "CanDootDecodeBus" BO_ 2566852992 6;
+BA_ "CanDootSimulate" BO_ 2566852992 0;
+BA_ "CanDootSimulateBus" BO_ 2566852992 6;
+BA_ "CG_RX_TX" BO_ 2566852992 0;
+BA_ "VFrameFormat" BO_ 2566852992 3;
+BA_ "CanDootPaused" BO_ 2566852736 0;
+BA_ "CG_MessageInstName" BO_ 2566852736 "ptc0";
+BA_ "GenMsgCycleTime" BO_ 2566852736 10;
+BA_ "GenMsgRequestable" BO_ 2566852736 0;
+BA_ "GenMsgSendType" BO_ 2566852736 0;
+BA_ "CanDootDecode" BO_ 2566852736 1;
+BA_ "CanDootDecodeBus" BO_ 2566852736 6;
+BA_ "CanDootSimulate" BO_ 2566852736 0;
+BA_ "CanDootSimulateBus" BO_ 2566852736 6;
+BA_ "CG_RX_TX" BO_ 2566852736 0;
+BA_ "VFrameFormat" BO_ 2566852736 3;
+BA_ "CanDootHidden" SG_ 2566855296 protective_earth_offset 0;
+BA_ "CanDootGroup" SG_ 2566855296 protective_earth_offset 0;
+BA_ "CanDootBroadcast" SG_ 2566855296 protective_earth_offset 0;
+BA_ "GenSigStartValue" SG_ 2566855296 protective_earth_offset 65535;
+BA_ "GenSigSendType" SG_ 2566855296 protective_earth_offset 7;
+BA_ "CG_VarType" SG_ 2566855296 protective_earth_offset 7;
+BA_ "CanDootHidden" SG_ 2566855296 control_pilot_min_voltage 0;
+BA_ "CanDootGroup" SG_ 2566855296 control_pilot_min_voltage 0;
+BA_ "CanDootBroadcast" SG_ 2566855296 control_pilot_min_voltage 0;
+BA_ "GenSigStartValue" SG_ 2566855296 control_pilot_min_voltage 65535;
+BA_ "GenSigSendType" SG_ 2566855296 control_pilot_min_voltage 7;
+BA_ "CG_VarType" SG_ 2566855296 control_pilot_min_voltage 7;
+BA_ "CanDootHidden" SG_ 2566855296 plug_present_voltage 0;
+BA_ "CanDootGroup" SG_ 2566855296 plug_present_voltage 0;
+BA_ "CanDootBroadcast" SG_ 2566855296 plug_present_voltage 0;
+BA_ "GenSigStartValue" SG_ 2566855296 plug_present_voltage 65535;
+BA_ "GenSigSendType" SG_ 2566855296 plug_present_voltage 7;
+BA_ "CG_VarType" SG_ 2566855296 plug_present_voltage 7;
+BA_ "CanDootHidden" SG_ 2566872448 appl_scc_func_mode_req 0;
+BA_ "CanDootGroup" SG_ 2566872448 appl_scc_func_mode_req 0;
+BA_ "CanDootBroadcast" SG_ 2566872448 appl_scc_func_mode_req 0;
+BA_ "GenSigSendType" SG_ 2566872448 appl_scc_func_mode_req 4;
+BA_ "CG_VarType" SG_ 2566872448 appl_scc_func_mode_req 1;
+BA_ "CanDootHidden" SG_ 2566872448 appl_scc_charge_mode_req 0;
+BA_ "CanDootGroup" SG_ 2566872448 appl_scc_charge_mode_req 0;
+BA_ "CanDootBroadcast" SG_ 2566872448 appl_scc_charge_mode_req 0;
+BA_ "GenSigSendType" SG_ 2566872448 appl_scc_charge_mode_req 4;
+BA_ "CG_VarType" SG_ 2566872448 appl_scc_charge_mode_req 1;
+BA_ "CanDootHidden" SG_ 2566872448 statem_internet_available 0;
+BA_ "CanDootGroup" SG_ 2566872448 statem_internet_available 0;
+BA_ "CanDootBroadcast" SG_ 2566872448 statem_internet_available 0;
+BA_ "GenSigStartValue" SG_ 2566872448 statem_internet_available 0;
+BA_ "GenSigSendType" SG_ 2566872448 statem_internet_available 4;
+BA_ "CG_VarType" SG_ 2566872448 statem_internet_available 0;
+BA_ "CanDootHidden" SG_ 2566872448 statem_state_machine_status 0;
+BA_ "CanDootGroup" SG_ 2566872448 statem_state_machine_status 0;
+BA_ "CanDootBroadcast" SG_ 2566872448 statem_state_machine_status 0;
+BA_ "GenSigStartValue" SG_ 2566872448 statem_state_machine_status 0;
+BA_ "GenSigSendType" SG_ 2566872448 statem_state_machine_status 4;
+BA_ "CG_VarType" SG_ 2566872448 statem_state_machine_status 1;
+BA_ "CanDootHidden" SG_ 2566872448 statem_state_machine_message_sta 0;
+BA_ "CanDootGroup" SG_ 2566872448 statem_state_machine_message_sta 0;
+BA_ "CanDootBroadcast" SG_ 2566872448 statem_state_machine_message_sta 0;
+BA_ "GenSigStartValue" SG_ 2566872448 statem_state_machine_message_sta 0;
+BA_ "GenSigSendType" SG_ 2566872448 statem_state_machine_message_sta 4;
+BA_ "CG_VarType" SG_ 2566872448 statem_state_machine_message_sta 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566872448 statem_state_machine_message_sta "statem_state_machine_message_state";
+BA_ "CanDootHidden" SG_ 2566872448 statem_state_machine_error 0;
+BA_ "CanDootGroup" SG_ 2566872448 statem_state_machine_error 0;
+BA_ "CanDootBroadcast" SG_ 2566872448 statem_state_machine_error 0;
+BA_ "GenSigStartValue" SG_ 2566872448 statem_state_machine_error 0;
+BA_ "GenSigSendType" SG_ 2566872448 statem_state_machine_error 4;
+BA_ "CG_VarType" SG_ 2566872448 statem_state_machine_error 1;
+BA_ "CanDootHidden" SG_ 2566872448 statem_energy_transfer_mode_flag 0;
+BA_ "CanDootGroup" SG_ 2566872448 statem_energy_transfer_mode_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566872448 statem_energy_transfer_mode_flag 0;
+BA_ "GenSigStartValue" SG_ 2566872448 statem_energy_transfer_mode_flag 0;
+BA_ "GenSigSendType" SG_ 2566872448 statem_energy_transfer_mode_flag 4;
+BA_ "CG_VarType" SG_ 2566872448 statem_energy_transfer_mode_flag 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566872448 statem_energy_transfer_mode_flag "statem_energy_transfer_mode_flags";
+BA_ "CanDootHidden" SG_ 2566871680 present_voltage_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566871680 present_voltage_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566871680 present_voltage_unit_flag 0;
+BA_ "GenSigSendType" SG_ 2566871680 present_voltage_unit_flag 4;
+BA_ "CG_VarType" SG_ 2566871680 present_voltage_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566871680 present_voltage_value 0;
+BA_ "CanDootGroup" SG_ 2566871680 present_voltage_value 0;
+BA_ "CanDootBroadcast" SG_ 2566871680 present_voltage_value 0;
+BA_ "GenSigSendType" SG_ 2566871680 present_voltage_value 4;
+BA_ "CG_VarType" SG_ 2566871680 present_voltage_value 7;
+BA_ "CanDootHidden" SG_ 2566871680 present_voltage_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566871680 present_voltage_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566871680 present_voltage_multiplier 0;
+BA_ "GenSigSendType" SG_ 2566871680 present_voltage_multiplier 4;
+BA_ "CG_VarType" SG_ 2566871680 present_voltage_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566871680 present_voltage_unit 0;
+BA_ "CanDootGroup" SG_ 2566871680 present_voltage_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566871680 present_voltage_unit 0;
+BA_ "GenSigSendType" SG_ 2566871680 present_voltage_unit 4;
+BA_ "CG_VarType" SG_ 2566871680 present_voltage_unit 1;
+BA_ "CanDootHidden" SG_ 2566871424 present_current_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566871424 present_current_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566871424 present_current_unit_flag 0;
+BA_ "GenSigSendType" SG_ 2566871424 present_current_unit_flag 4;
+BA_ "CG_VarType" SG_ 2566871424 present_current_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566871424 present_current_value 0;
+BA_ "CanDootGroup" SG_ 2566871424 present_current_value 0;
+BA_ "CanDootBroadcast" SG_ 2566871424 present_current_value 0;
+BA_ "GenSigSendType" SG_ 2566871424 present_current_value 4;
+BA_ "CG_VarType" SG_ 2566871424 present_current_value 7;
+BA_ "CanDootHidden" SG_ 2566871424 present_current_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566871424 present_current_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566871424 present_current_multiplier 0;
+BA_ "GenSigSendType" SG_ 2566871424 present_current_multiplier 4;
+BA_ "CG_VarType" SG_ 2566871424 present_current_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566871424 present_current_unit 0;
+BA_ "CanDootGroup" SG_ 2566871424 present_current_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566871424 present_current_unit 0;
+BA_ "GenSigSendType" SG_ 2566871424 present_current_unit 4;
+BA_ "CG_VarType" SG_ 2566871424 present_current_unit 1;
+BA_ "CanDootHidden" SG_ 2566870912 minimum_voltage_limit_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566870912 minimum_voltage_limit_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566870912 minimum_voltage_limit_unit_flag 0;
+BA_ "GenSigSendType" SG_ 2566870912 minimum_voltage_limit_unit_flag 4;
+BA_ "CG_VarType" SG_ 2566870912 minimum_voltage_limit_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566870912 minimum_voltage_limit_value 0;
+BA_ "CanDootGroup" SG_ 2566870912 minimum_voltage_limit_value 0;
+BA_ "CanDootBroadcast" SG_ 2566870912 minimum_voltage_limit_value 0;
+BA_ "GenSigSendType" SG_ 2566870912 minimum_voltage_limit_value 4;
+BA_ "CG_VarType" SG_ 2566870912 minimum_voltage_limit_value 7;
+BA_ "CanDootHidden" SG_ 2566870912 minimum_voltage_limit_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566870912 minimum_voltage_limit_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566870912 minimum_voltage_limit_multiplier 0;
+BA_ "GenSigSendType" SG_ 2566870912 minimum_voltage_limit_multiplier 4;
+BA_ "CG_VarType" SG_ 2566870912 minimum_voltage_limit_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566870912 minimum_voltage_limit_unit 0;
+BA_ "CanDootGroup" SG_ 2566870912 minimum_voltage_limit_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566870912 minimum_voltage_limit_unit 0;
+BA_ "GenSigSendType" SG_ 2566870912 minimum_voltage_limit_unit 4;
+BA_ "CG_VarType" SG_ 2566870912 minimum_voltage_limit_unit 1;
+BA_ "CanDootHidden" SG_ 2566870656 minimum_current_limit_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566870656 minimum_current_limit_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566870656 minimum_current_limit_unit_flag 0;
+BA_ "GenSigSendType" SG_ 2566870656 minimum_current_limit_unit_flag 4;
+BA_ "CG_VarType" SG_ 2566870656 minimum_current_limit_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566870656 minimum_current_limit_value 0;
+BA_ "CanDootGroup" SG_ 2566870656 minimum_current_limit_value 0;
+BA_ "CanDootBroadcast" SG_ 2566870656 minimum_current_limit_value 0;
+BA_ "GenSigSendType" SG_ 2566870656 minimum_current_limit_value 4;
+BA_ "CG_VarType" SG_ 2566870656 minimum_current_limit_value 7;
+BA_ "CanDootHidden" SG_ 2566870656 minimum_current_limit_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566870656 minimum_current_limit_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566870656 minimum_current_limit_multiplier 0;
+BA_ "GenSigSendType" SG_ 2566870656 minimum_current_limit_multiplier 4;
+BA_ "CG_VarType" SG_ 2566870656 minimum_current_limit_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566870656 minimum_current_limit_unit 0;
+BA_ "CanDootGroup" SG_ 2566870656 minimum_current_limit_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566870656 minimum_current_limit_unit 0;
+BA_ "GenSigSendType" SG_ 2566870656 minimum_current_limit_unit 4;
+BA_ "CG_VarType" SG_ 2566870656 minimum_current_limit_unit 1;
+BA_ "CanDootHidden" SG_ 2566870400 maximum_voltage_limit_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566870400 maximum_voltage_limit_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566870400 maximum_voltage_limit_unit_flag 0;
+BA_ "GenSigSendType" SG_ 2566870400 maximum_voltage_limit_unit_flag 4;
+BA_ "CG_VarType" SG_ 2566870400 maximum_voltage_limit_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566870400 maximum_voltage_limit_value 0;
+BA_ "CanDootGroup" SG_ 2566870400 maximum_voltage_limit_value 0;
+BA_ "CanDootBroadcast" SG_ 2566870400 maximum_voltage_limit_value 0;
+BA_ "GenSigSendType" SG_ 2566870400 maximum_voltage_limit_value 4;
+BA_ "CG_VarType" SG_ 2566870400 maximum_voltage_limit_value 7;
+BA_ "CanDootHidden" SG_ 2566870400 maximum_voltage_limit_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566870400 maximum_voltage_limit_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566870400 maximum_voltage_limit_multiplier 0;
+BA_ "GenSigSendType" SG_ 2566870400 maximum_voltage_limit_multiplier 4;
+BA_ "CG_VarType" SG_ 2566870400 maximum_voltage_limit_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566870400 maximum_voltage_limit_flag 0;
+BA_ "CanDootGroup" SG_ 2566870400 maximum_voltage_limit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566870400 maximum_voltage_limit_flag 0;
+BA_ "GenSigStartValue" SG_ 2566870400 maximum_voltage_limit_flag 3;
+BA_ "GenSigSendType" SG_ 2566870400 maximum_voltage_limit_flag 4;
+BA_ "CG_VarType" SG_ 2566870400 maximum_voltage_limit_flag 1;
+BA_ "CanDootHidden" SG_ 2566870400 maximum_voltage_limit_unit 0;
+BA_ "CanDootGroup" SG_ 2566870400 maximum_voltage_limit_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566870400 maximum_voltage_limit_unit 0;
+BA_ "GenSigSendType" SG_ 2566870400 maximum_voltage_limit_unit 4;
+BA_ "CG_VarType" SG_ 2566870400 maximum_voltage_limit_unit 1;
+BA_ "CanDootHidden" SG_ 2566870144 maximum_powerL_lmit_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566870144 maximum_powerL_lmit_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566870144 maximum_powerL_lmit_unit_flag 0;
+BA_ "GenSigSendType" SG_ 2566870144 maximum_powerL_lmit_unit_flag 4;
+BA_ "CG_VarType" SG_ 2566870144 maximum_powerL_lmit_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566870144 maximum_power_limit_value 0;
+BA_ "CanDootGroup" SG_ 2566870144 maximum_power_limit_value 0;
+BA_ "CanDootBroadcast" SG_ 2566870144 maximum_power_limit_value 0;
+BA_ "GenSigSendType" SG_ 2566870144 maximum_power_limit_value 4;
+BA_ "CG_VarType" SG_ 2566870144 maximum_power_limit_value 7;
+BA_ "CanDootHidden" SG_ 2566870144 maximum_power_limit_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566870144 maximum_power_limit_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566870144 maximum_power_limit_multiplier 0;
+BA_ "GenSigSendType" SG_ 2566870144 maximum_power_limit_multiplier 4;
+BA_ "CG_VarType" SG_ 2566870144 maximum_power_limit_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566870144 maximum_power_limit_flag 0;
+BA_ "CanDootGroup" SG_ 2566870144 maximum_power_limit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566870144 maximum_power_limit_flag 0;
+BA_ "GenSigStartValue" SG_ 2566870144 maximum_power_limit_flag 3;
+BA_ "GenSigSendType" SG_ 2566870144 maximum_power_limit_flag 4;
+BA_ "CG_VarType" SG_ 2566870144 maximum_power_limit_flag 1;
+BA_ "CanDootHidden" SG_ 2566870144 maximum_power_limit_unit 0;
+BA_ "CanDootGroup" SG_ 2566870144 maximum_power_limit_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566870144 maximum_power_limit_unit 0;
+BA_ "GenSigSendType" SG_ 2566870144 maximum_power_limit_unit 4;
+BA_ "CG_VarType" SG_ 2566870144 maximum_power_limit_unit 1;
+BA_ "CanDootHidden" SG_ 2566869888 maximum_current_limit_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566869888 maximum_current_limit_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566869888 maximum_current_limit_unit_flag 0;
+BA_ "GenSigSendType" SG_ 2566869888 maximum_current_limit_unit_flag 4;
+BA_ "CG_VarType" SG_ 2566869888 maximum_current_limit_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566869888 maximum_current_limit_value 0;
+BA_ "CanDootGroup" SG_ 2566869888 maximum_current_limit_value 0;
+BA_ "CanDootBroadcast" SG_ 2566869888 maximum_current_limit_value 0;
+BA_ "GenSigSendType" SG_ 2566869888 maximum_current_limit_value 4;
+BA_ "CG_VarType" SG_ 2566869888 maximum_current_limit_value 7;
+BA_ "CanDootHidden" SG_ 2566869888 maximum_current_limit_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566869888 maximum_current_limit_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566869888 maximum_current_limit_multiplier 0;
+BA_ "GenSigSendType" SG_ 2566869888 maximum_current_limit_multiplier 4;
+BA_ "CG_VarType" SG_ 2566869888 maximum_current_limit_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566869888 maximum_current_limit_flag 0;
+BA_ "CanDootGroup" SG_ 2566869888 maximum_current_limit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566869888 maximum_current_limit_flag 0;
+BA_ "GenSigStartValue" SG_ 2566869888 maximum_current_limit_flag 3;
+BA_ "GenSigSendType" SG_ 2566869888 maximum_current_limit_flag 4;
+BA_ "CG_VarType" SG_ 2566869888 maximum_current_limit_flag 1;
+BA_ "CanDootHidden" SG_ 2566869888 maximum_current_limit_unit 0;
+BA_ "CanDootGroup" SG_ 2566869888 maximum_current_limit_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566869888 maximum_current_limit_unit 0;
+BA_ "GenSigSendType" SG_ 2566869888 maximum_current_limit_unit 4;
+BA_ "CG_VarType" SG_ 2566869888 maximum_current_limit_unit 1;
+BA_ "CanDootHidden" SG_ 2566863234 maximum_voltage_limit_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566863234 maximum_voltage_limit_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566863234 maximum_voltage_limit_unit_flag 0;
+BA_ "CG_VarType" SG_ 2566863234 maximum_voltage_limit_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566863234 maximum_voltage_limit_value 0;
+BA_ "CanDootGroup" SG_ 2566863234 maximum_voltage_limit_value 0;
+BA_ "CanDootBroadcast" SG_ 2566863234 maximum_voltage_limit_value 0;
+BA_ "CG_VarType" SG_ 2566863234 maximum_voltage_limit_value 7;
+BA_ "CanDootHidden" SG_ 2566863234 maximum_voltage_limit_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566863234 maximum_voltage_limit_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566863234 maximum_voltage_limit_multiplier 0;
+BA_ "CG_VarType" SG_ 2566863234 maximum_voltage_limit_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566863234 maximum_voltage_limit_flag 0;
+BA_ "CanDootGroup" SG_ 2566863234 maximum_voltage_limit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566863234 maximum_voltage_limit_flag 0;
+BA_ "GenSigStartValue" SG_ 2566863234 maximum_voltage_limit_flag 3;
+BA_ "CG_VarType" SG_ 2566863234 maximum_voltage_limit_flag 1;
+BA_ "CanDootHidden" SG_ 2566863234 maximum_voltage_limit_unit 0;
+BA_ "CanDootGroup" SG_ 2566863234 maximum_voltage_limit_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566863234 maximum_voltage_limit_unit 0;
+BA_ "CG_VarType" SG_ 2566863234 maximum_voltage_limit_unit 1;
+BA_ "CanDootHidden" SG_ 2566862978 maximum_power_limit_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566862978 maximum_power_limit_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566862978 maximum_power_limit_unit_flag 0;
+BA_ "CG_VarType" SG_ 2566862978 maximum_power_limit_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566862978 maximum_power_limit_value 0;
+BA_ "CanDootGroup" SG_ 2566862978 maximum_power_limit_value 0;
+BA_ "CanDootBroadcast" SG_ 2566862978 maximum_power_limit_value 0;
+BA_ "CG_VarType" SG_ 2566862978 maximum_power_limit_value 7;
+BA_ "CanDootHidden" SG_ 2566862978 maximum_power_limit_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566862978 maximum_power_limit_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566862978 maximum_power_limit_multiplier 0;
+BA_ "CG_VarType" SG_ 2566862978 maximum_power_limit_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566862978 maximum_power_limit_flag 0;
+BA_ "CanDootGroup" SG_ 2566862978 maximum_power_limit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566862978 maximum_power_limit_flag 0;
+BA_ "GenSigStartValue" SG_ 2566862978 maximum_power_limit_flag 3;
+BA_ "CG_VarType" SG_ 2566862978 maximum_power_limit_flag 1;
+BA_ "CanDootHidden" SG_ 2566862978 maximum_power_limit_unit 0;
+BA_ "CanDootGroup" SG_ 2566862978 maximum_power_limit_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566862978 maximum_power_limit_unit 0;
+BA_ "CG_VarType" SG_ 2566862978 maximum_power_limit_unit 1;
+BA_ "CanDootHidden" SG_ 2566862722 maximum_current_limit_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566862722 maximum_current_limit_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566862722 maximum_current_limit_unit_flag 0;
+BA_ "CG_VarType" SG_ 2566862722 maximum_current_limit_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566862722 maximum_current_limit_value 0;
+BA_ "CanDootGroup" SG_ 2566862722 maximum_current_limit_value 0;
+BA_ "CanDootBroadcast" SG_ 2566862722 maximum_current_limit_value 0;
+BA_ "CG_VarType" SG_ 2566862722 maximum_current_limit_value 7;
+BA_ "CanDootHidden" SG_ 2566862722 maximum_current_limit_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566862722 maximum_current_limit_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566862722 maximum_current_limit_multiplier 0;
+BA_ "CG_VarType" SG_ 2566862722 maximum_current_limit_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566862722 maximum_current_limit_flag 0;
+BA_ "CanDootGroup" SG_ 2566862722 maximum_current_limit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566862722 maximum_current_limit_flag 0;
+BA_ "GenSigStartValue" SG_ 2566862722 maximum_current_limit_flag 3;
+BA_ "CG_VarType" SG_ 2566862722 maximum_current_limit_flag 1;
+BA_ "CanDootHidden" SG_ 2566862722 maximum_current_limit_unit 0;
+BA_ "CanDootGroup" SG_ 2566862722 maximum_current_limit_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566862722 maximum_current_limit_unit 0;
+BA_ "CG_VarType" SG_ 2566862722 maximum_current_limit_unit 1;
+BA_ "CanDootHidden" SG_ 2566869120 notification_max_delay 0;
+BA_ "CanDootGroup" SG_ 2566869120 notification_max_delay 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 notification_max_delay 0;
+BA_ "GenSigSendType" SG_ 2566869120 notification_max_delay 4;
+BA_ "CG_VarType" SG_ 2566869120 notification_max_delay 5;
+BA_ "CanDootHidden" SG_ 2566869120 response_code 0;
+BA_ "CanDootGroup" SG_ 2566869120 response_code 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 response_code 0;
+BA_ "GenSigSendType" SG_ 2566869120 response_code 4;
+BA_ "CG_VarType" SG_ 2566869120 response_code 1;
+BA_ "CanDootHidden" SG_ 2566869120 date_time_now_flag 0;
+BA_ "CanDootGroup" SG_ 2566869120 date_time_now_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 date_time_now_flag 0;
+BA_ "GenSigStartValue" SG_ 2566869120 date_time_now_flag 3;
+BA_ "GenSigSendType" SG_ 2566869120 date_time_now_flag 4;
+BA_ "CG_VarType" SG_ 2566869120 date_time_now_flag 1;
+BA_ "CanDootHidden" SG_ 2566869120 power_limit_achieved 0;
+BA_ "CanDootGroup" SG_ 2566869120 power_limit_achieved 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 power_limit_achieved 0;
+BA_ "GenSigStartValue" SG_ 2566869120 power_limit_achieved 3;
+BA_ "GenSigSendType" SG_ 2566869120 power_limit_achieved 4;
+BA_ "CG_VarType" SG_ 2566869120 power_limit_achieved 1;
+BA_ "CanDootHidden" SG_ 2566869120 voltage_limit_achieved 0;
+BA_ "CanDootGroup" SG_ 2566869120 voltage_limit_achieved 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 voltage_limit_achieved 0;
+BA_ "GenSigStartValue" SG_ 2566869120 voltage_limit_achieved 3;
+BA_ "GenSigSendType" SG_ 2566869120 voltage_limit_achieved 4;
+BA_ "CG_VarType" SG_ 2566869120 voltage_limit_achieved 1;
+BA_ "CanDootHidden" SG_ 2566869120 status_code 0;
+BA_ "CanDootGroup" SG_ 2566869120 status_code 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 status_code 0;
+BA_ "GenSigSendType" SG_ 2566869120 status_code 4;
+BA_ "CG_VarType" SG_ 2566869120 status_code 1;
+BA_ "CanDootHidden" SG_ 2566869120 processing 0;
+BA_ "CanDootGroup" SG_ 2566869120 processing 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 processing 0;
+BA_ "GenSigSendType" SG_ 2566869120 processing 4;
+BA_ "CG_VarType" SG_ 2566869120 processing 1;
+BA_ "CanDootHidden" SG_ 2566869120 notification 0;
+BA_ "CanDootGroup" SG_ 2566869120 notification 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 notification 0;
+BA_ "GenSigSendType" SG_ 2566869120 notification 4;
+BA_ "CG_VarType" SG_ 2566869120 notification 1;
+BA_ "CanDootHidden" SG_ 2566869120 isolation_status_flag 0;
+BA_ "CanDootGroup" SG_ 2566869120 isolation_status_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 isolation_status_flag 0;
+BA_ "GenSigStartValue" SG_ 2566869120 isolation_status_flag 3;
+BA_ "GenSigSendType" SG_ 2566869120 isolation_status_flag 4;
+BA_ "CG_VarType" SG_ 2566869120 isolation_status_flag 1;
+BA_ "CanDootHidden" SG_ 2566869120 isolation_status 0;
+BA_ "CanDootGroup" SG_ 2566869120 isolation_status 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 isolation_status 0;
+BA_ "GenSigSendType" SG_ 2566869120 isolation_status 4;
+BA_ "CG_VarType" SG_ 2566869120 isolation_status 1;
+BA_ "CanDootHidden" SG_ 2566869120 current_limit_achieved 0;
+BA_ "CanDootGroup" SG_ 2566869120 current_limit_achieved 0;
+BA_ "CanDootBroadcast" SG_ 2566869120 current_limit_achieved 0;
+BA_ "GenSigStartValue" SG_ 2566869120 current_limit_achieved 3;
+BA_ "GenSigSendType" SG_ 2566869120 current_limit_achieved 4;
+BA_ "CG_VarType" SG_ 2566869120 current_limit_achieved 1;
+BA_ "CanDootHidden" SG_ 2566861954 target_current_unit 0;
+BA_ "CanDootGroup" SG_ 2566861954 target_current_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566861954 target_current_unit 0;
+BA_ "CG_VarType" SG_ 2566861954 target_current_unit 1;
+BA_ "CanDootHidden" SG_ 2566861954 target_current_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566861954 target_current_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566861954 target_current_unit_flag 0;
+BA_ "CG_VarType" SG_ 2566861954 target_current_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566861954 target_current_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566861954 target_current_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566861954 target_current_multiplier 0;
+BA_ "CG_VarType" SG_ 2566861954 target_current_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566861954 target_current_value 0;
+BA_ "CanDootGroup" SG_ 2566861954 target_current_value 0;
+BA_ "CanDootBroadcast" SG_ 2566861954 target_current_value 0;
+BA_ "CG_VarType" SG_ 2566861954 target_current_value 7;
+BA_ "CanDootHidden" SG_ 2566861698 target_voltage_unit 0;
+BA_ "CanDootGroup" SG_ 2566861698 target_voltage_unit 0;
+BA_ "CanDootBroadcast" SG_ 2566861698 target_voltage_unit 0;
+BA_ "CG_VarType" SG_ 2566861698 target_voltage_unit 1;
+BA_ "CanDootHidden" SG_ 2566861698 target_voltage_unit_flag 0;
+BA_ "CanDootGroup" SG_ 2566861698 target_voltage_unit_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566861698 target_voltage_unit_flag 0;
+BA_ "CG_VarType" SG_ 2566861698 target_voltage_unit_flag 1;
+BA_ "CanDootHidden" SG_ 2566861698 target_voltage_multiplier 0;
+BA_ "CanDootGroup" SG_ 2566861698 target_voltage_multiplier 0;
+BA_ "CanDootBroadcast" SG_ 2566861698 target_voltage_multiplier 0;
+BA_ "CG_VarType" SG_ 2566861698 target_voltage_multiplier 2;
+BA_ "CanDootHidden" SG_ 2566861698 target_voltage_value 0;
+BA_ "CanDootGroup" SG_ 2566861698 target_voltage_value 0;
+BA_ "CanDootBroadcast" SG_ 2566861698 target_voltage_value 0;
+BA_ "CG_VarType" SG_ 2566861698 target_voltage_value 7;
+BA_ "CanDootHidden" SG_ 2566860930 ress_soc 0;
+BA_ "CanDootGroup" SG_ 2566860930 ress_soc 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 ress_soc 0;
+BA_ "CG_VarType" SG_ 2566860930 ress_soc 2;
+BA_ "CanDootHidden" SG_ 2566860930 full_soc 0;
+BA_ "CanDootGroup" SG_ 2566860930 full_soc 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 full_soc 0;
+BA_ "CG_VarType" SG_ 2566860930 full_soc 2;
+BA_ "CanDootHidden" SG_ 2566860930 bulk_soc 0;
+BA_ "CanDootGroup" SG_ 2566860930 bulk_soc 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 bulk_soc 0;
+BA_ "CG_VarType" SG_ 2566860930 bulk_soc 2;
+BA_ "CanDootHidden" SG_ 2566860930 statem_energy_transfer_mode 0;
+BA_ "CanDootGroup" SG_ 2566860930 statem_energy_transfer_mode 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 statem_energy_transfer_mode 0;
+BA_ "GenSigStartValue" SG_ 2566860930 statem_energy_transfer_mode 15;
+BA_ "CG_VarType" SG_ 2566860930 statem_energy_transfer_mode 1;
+BA_ "CanDootHidden" SG_ 2566860930 power_delivery_parameter_flag 0;
+BA_ "CanDootGroup" SG_ 2566860930 power_delivery_parameter_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 power_delivery_parameter_flag 0;
+BA_ "GenSigStartValue" SG_ 2566860930 power_delivery_parameter_flag 3;
+BA_ "CG_VarType" SG_ 2566860930 power_delivery_parameter_flag 1;
+BA_ "CanDootHidden" SG_ 2566860930 ress_conditioning_flag 0;
+BA_ "CanDootGroup" SG_ 2566860930 ress_conditioning_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 ress_conditioning_flag 0;
+BA_ "GenSigStartValue" SG_ 2566860930 ress_conditioning_flag 3;
+BA_ "CG_VarType" SG_ 2566860930 ress_conditioning_flag 1;
+BA_ "CanDootHidden" SG_ 2566860930 ress_conditioning 0;
+BA_ "CanDootGroup" SG_ 2566860930 ress_conditioning 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 ress_conditioning 0;
+BA_ "GenSigStartValue" SG_ 2566860930 ress_conditioning 3;
+BA_ "CG_VarType" SG_ 2566860930 ress_conditioning 1;
+BA_ "CanDootHidden" SG_ 2566860930 ready 0;
+BA_ "CanDootGroup" SG_ 2566860930 ready 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 ready 0;
+BA_ "GenSigStartValue" SG_ 2566860930 ready 3;
+BA_ "CG_VarType" SG_ 2566860930 ready 1;
+BA_ "CanDootHidden" SG_ 2566860930 cabin_conditioning_flag 0;
+BA_ "CanDootGroup" SG_ 2566860930 cabin_conditioning_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 cabin_conditioning_flag 0;
+BA_ "GenSigStartValue" SG_ 2566860930 cabin_conditioning_flag 3;
+BA_ "CG_VarType" SG_ 2566860930 cabin_conditioning_flag 1;
+BA_ "CanDootHidden" SG_ 2566860930 cabin_conditioning 0;
+BA_ "CanDootGroup" SG_ 2566860930 cabin_conditioning 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 cabin_conditioning 0;
+BA_ "GenSigStartValue" SG_ 2566860930 cabin_conditioning 3;
+BA_ "CG_VarType" SG_ 2566860930 cabin_conditioning 1;
+BA_ "CanDootHidden" SG_ 2566860930 charging_complete 0;
+BA_ "CanDootGroup" SG_ 2566860930 charging_complete 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 charging_complete 0;
+BA_ "GenSigStartValue" SG_ 2566860930 charging_complete 3;
+BA_ "CG_VarType" SG_ 2566860930 charging_complete 1;
+BA_ "CanDootHidden" SG_ 2566860930 full_soc_flag 0;
+BA_ "CanDootGroup" SG_ 2566860930 full_soc_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 full_soc_flag 0;
+BA_ "GenSigStartValue" SG_ 2566860930 full_soc_flag 3;
+BA_ "CG_VarType" SG_ 2566860930 full_soc_flag 1;
+BA_ "CanDootHidden" SG_ 2566860930 bulk_soc_flag 0;
+BA_ "CanDootGroup" SG_ 2566860930 bulk_soc_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 bulk_soc_flag 0;
+BA_ "GenSigStartValue" SG_ 2566860930 bulk_soc_flag 3;
+BA_ "CG_VarType" SG_ 2566860930 bulk_soc_flag 1;
+BA_ "CanDootHidden" SG_ 2566860930 bulk_charging_complete_flag 0;
+BA_ "CanDootGroup" SG_ 2566860930 bulk_charging_complete_flag 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 bulk_charging_complete_flag 0;
+BA_ "GenSigStartValue" SG_ 2566860930 bulk_charging_complete_flag 3;
+BA_ "CG_VarType" SG_ 2566860930 bulk_charging_complete_flag 1;
+BA_ "CanDootHidden" SG_ 2566860930 bulk_charging_complete 0;
+BA_ "CanDootGroup" SG_ 2566860930 bulk_charging_complete 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 bulk_charging_complete 0;
+BA_ "GenSigStartValue" SG_ 2566860930 bulk_charging_complete 3;
+BA_ "CG_VarType" SG_ 2566860930 bulk_charging_complete 1;
+BA_ "CanDootHidden" SG_ 2566860930 error_code 0;
+BA_ "CanDootGroup" SG_ 2566860930 error_code 0;
+BA_ "CanDootBroadcast" SG_ 2566860930 error_code 0;
+BA_ "CG_VarType" SG_ 2566860930 error_code 1;
+BA_ "CanDootHidden" SG_ 2566857090 pwm_charge_mode_request 0;
+BA_ "CanDootGroup" SG_ 2566857090 pwm_charge_mode_request 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 pwm_charge_mode_request 0;
+BA_ "GenSigStartValue" SG_ 2566857090 pwm_charge_mode_request 3;
+BA_ "CG_VarType" SG_ 2566857090 pwm_charge_mode_request 1;
+BA_ "CanDootHidden" SG_ 2566857090 renegotiate 0;
+BA_ "CanDootGroup" SG_ 2566857090 renegotiate 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 renegotiate 0;
+BA_ "GenSigStartValue" SG_ 2566857090 renegotiate 3;
+BA_ "CG_VarType" SG_ 2566857090 renegotiate 1;
+BA_ "CanDootHidden" SG_ 2566857090 charge_selection 0;
+BA_ "CanDootGroup" SG_ 2566857090 charge_selection 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 charge_selection 0;
+BA_ "GenSigStartValue" SG_ 2566857090 charge_selection 3;
+BA_ "CG_VarType" SG_ 2566857090 charge_selection 1;
+BA_ "CanDootHidden" SG_ 2566857090 stop_charge 0;
+BA_ "CanDootGroup" SG_ 2566857090 stop_charge 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 stop_charge 0;
+BA_ "GenSigStartValue" SG_ 2566857090 stop_charge 3;
+BA_ "CG_VarType" SG_ 2566857090 stop_charge 1;
+BA_ "CanDootHidden" SG_ 2566857090 contactor_status 0;
+BA_ "CanDootGroup" SG_ 2566857090 contactor_status 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 contactor_status 0;
+BA_ "GenSigStartValue" SG_ 2566857090 contactor_status 3;
+BA_ "CG_VarType" SG_ 2566857090 contactor_status 1;
+BA_ "CanDootHidden" SG_ 2566857090 charge_permission 0;
+BA_ "CanDootGroup" SG_ 2566857090 charge_permission 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 charge_permission 0;
+BA_ "GenSigStartValue" SG_ 2566857090 charge_permission 3;
+BA_ "CG_VarType" SG_ 2566857090 charge_permission 1;
+BA_ "CanDootHidden" SG_ 2566857090 plug_unlock_permission 0;
+BA_ "CanDootGroup" SG_ 2566857090 plug_unlock_permission 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 plug_unlock_permission 0;
+BA_ "GenSigStartValue" SG_ 2566857090 plug_unlock_permission 3;
+BA_ "CG_VarType" SG_ 2566857090 plug_unlock_permission 1;
+BA_ "CanDootHidden" SG_ 2566857090 plug_lock_permission 0;
+BA_ "CanDootGroup" SG_ 2566857090 plug_lock_permission 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 plug_lock_permission 0;
+BA_ "GenSigStartValue" SG_ 2566857090 plug_lock_permission 3;
+BA_ "CG_VarType" SG_ 2566857090 plug_lock_permission 1;
+BA_ "CanDootHidden" SG_ 2566857090 isolation_measurement_status 0;
+BA_ "CanDootGroup" SG_ 2566857090 isolation_measurement_status 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 isolation_measurement_status 0;
+BA_ "GenSigStartValue" SG_ 2566857090 isolation_measurement_status 3;
+BA_ "CG_VarType" SG_ 2566857090 isolation_measurement_status 1;
+BA_ "CanDootHidden" SG_ 2566857090 link_voltage 0;
+BA_ "CanDootGroup" SG_ 2566857090 link_voltage 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 link_voltage 0;
+BA_ "GenSigStartValue" SG_ 2566857090 link_voltage 65535;
+BA_ "CG_VarType" SG_ 2566857090 link_voltage 7;
+BA_ "CanDootHidden" SG_ 2566857090 contactor_voltage 0;
+BA_ "CanDootGroup" SG_ 2566857090 contactor_voltage 0;
+BA_ "CanDootBroadcast" SG_ 2566857090 contactor_voltage 0;
+BA_ "GenSigStartValue" SG_ 2566857090 contactor_voltage 65535;
+BA_ "CG_VarType" SG_ 2566857090 contactor_voltage 7;
+BA_ "CanDootHidden" SG_ 2566854528 state_charge_from_vehicle 0;
+BA_ "CanDootGroup" SG_ 2566854528 state_charge_from_vehicle 0;
+BA_ "CanDootBroadcast" SG_ 2566854528 state_charge_from_vehicle 0;
+BA_ "GenSigStartValue" SG_ 2566854528 state_charge_from_vehicle 0;
+BA_ "CG_VarType" SG_ 2566854528 state_charge_from_vehicle 1;
+BA_ "CanDootHidden" SG_ 2566854528 mobilization_status 0;
+BA_ "CanDootGroup" SG_ 2566854528 mobilization_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854528 mobilization_status 0;
+BA_ "GenSigStartValue" SG_ 2566854528 mobilization_status 3;
+BA_ "CG_VarType" SG_ 2566854528 mobilization_status 1;
+BA_ "CanDootHidden" SG_ 2566854528 charging_status 0;
+BA_ "CanDootGroup" SG_ 2566854528 charging_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854528 charging_status 0;
+BA_ "GenSigStartValue" SG_ 2566854528 charging_status 3;
+BA_ "CG_VarType" SG_ 2566854528 charging_status 1;
+BA_ "CanDootHidden" SG_ 2566854528 charge_selection_ack 0;
+BA_ "CanDootGroup" SG_ 2566854528 charge_selection_ack 0;
+BA_ "CanDootBroadcast" SG_ 2566854528 charge_selection_ack 0;
+BA_ "GenSigStartValue" SG_ 2566854528 charge_selection_ack 3;
+BA_ "CG_VarType" SG_ 2566854528 charge_selection_ack 1;
+BA_ "CanDootHidden" SG_ 2566854528 contactor_request 0;
+BA_ "CanDootGroup" SG_ 2566854528 contactor_request 0;
+BA_ "CanDootBroadcast" SG_ 2566854528 contactor_request 0;
+BA_ "GenSigStartValue" SG_ 2566854528 contactor_request 3;
+BA_ "CG_VarType" SG_ 2566854528 contactor_request 1;
+BA_ "CanDootHidden" SG_ 2566854528 isolation_measurement_request 0;
+BA_ "CanDootGroup" SG_ 2566854528 isolation_measurement_request 0;
+BA_ "CanDootBroadcast" SG_ 2566854528 isolation_measurement_request 0;
+BA_ "GenSigStartValue" SG_ 2566854528 isolation_measurement_request 3;
+BA_ "CG_VarType" SG_ 2566854528 isolation_measurement_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 Inlet_MotorRequest 0;
+BA_ "CanDootGroup" SG_ 2566856834 Inlet_MotorRequest 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 Inlet_MotorRequest 0;
+BA_ "GenSigStartValue" SG_ 2566856834 Inlet_MotorRequest 3;
+BA_ "CG_VarType" SG_ 2566856834 Inlet_MotorRequest 1;
+BA_ "CanDootHidden" SG_ 2566856834 charge_unit_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 charge_unit_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 charge_unit_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 charge_unit_request 3;
+BA_ "CG_VarType" SG_ 2566856834 charge_unit_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 control_pilot_charge_mode_reques 0;
+BA_ "CanDootGroup" SG_ 2566856834 control_pilot_charge_mode_reques 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 control_pilot_charge_mode_reques 0;
+BA_ "GenSigStartValue" SG_ 2566856834 control_pilot_charge_mode_reques 7;
+BA_ "CG_VarType" SG_ 2566856834 control_pilot_charge_mode_reques 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566856834 control_pilot_charge_mode_reques "control_pilot_charge_mode_request";
+BA_ "CanDootHidden" SG_ 2566856834 rtc_timer_value 0;
+BA_ "CanDootGroup" SG_ 2566856834 rtc_timer_value 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 rtc_timer_value 0;
+BA_ "GenSigStartValue" SG_ 2566856834 rtc_timer_value 255;
+BA_ "CG_VarType" SG_ 2566856834 rtc_timer_value 1;
+BA_ "CanDootHidden" SG_ 2566856834 plug_lock_motor_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 plug_lock_motor_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 plug_lock_motor_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 plug_lock_motor_request 7;
+BA_ "CG_VarType" SG_ 2566856834 plug_lock_motor_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 rtc_timer_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 rtc_timer_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 rtc_timer_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 rtc_timer_request 3;
+BA_ "CG_VarType" SG_ 2566856834 rtc_timer_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 highside_out_4_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 highside_out_4_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 highside_out_4_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 highside_out_4_request 3;
+BA_ "CG_VarType" SG_ 2566856834 highside_out_4_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 highside_out_3_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 highside_out_3_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 highside_out_3_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 highside_out_3_request 3;
+BA_ "CG_VarType" SG_ 2566856834 highside_out_3_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 highside_out_2_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 highside_out_2_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 highside_out_2_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 highside_out_2_request 3;
+BA_ "CG_VarType" SG_ 2566856834 highside_out_2_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 highside_out_1_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 highside_out_1_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 highside_out_1_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 highside_out_1_request 3;
+BA_ "CG_VarType" SG_ 2566856834 highside_out_1_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 highside_out_0_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 highside_out_0_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 highside_out_0_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 highside_out_0_request 3;
+BA_ "CG_VarType" SG_ 2566856834 highside_out_0_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 led_2_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 led_2_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 led_2_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 led_2_request 255;
+BA_ "CG_VarType" SG_ 2566856834 led_2_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 led_1_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 led_1_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 led_1_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 led_1_request 255;
+BA_ "CG_VarType" SG_ 2566856834 led_1_request 1;
+BA_ "CanDootHidden" SG_ 2566856834 led_0_request 0;
+BA_ "CanDootGroup" SG_ 2566856834 led_0_request 0;
+BA_ "CanDootBroadcast" SG_ 2566856834 led_0_request 0;
+BA_ "GenSigStartValue" SG_ 2566856834 led_0_request 255;
+BA_ "CG_VarType" SG_ 2566856834 led_0_request 1;
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_3_input_wakeup 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_3_input_wakeup 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_3_input_wakeup 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_3_input_wakeup 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_3_input_wakeup 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_3_input_wakeup 1;
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_4_input_status 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_4_input_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_4_input_status 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_4_input_status 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_4_input_status 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_4_input_status 1;
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_4_input_debounced_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_4_input_debounced_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_4_input_debounced_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_4_input_debounced_s 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_4_input_debounced_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_4_input_debounced_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_4_input_debounced_s "highside_out_4_input_debounced_status";
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_3_input_status 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_3_input_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_3_input_status 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_3_input_status 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_3_input_status 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_3_input_status 1;
+BA_ "CanDootHidden" SG_ 2566854016 high_side_out_3_input_debounced_ 0;
+BA_ "CanDootGroup" SG_ 2566854016 high_side_out_3_input_debounced_ 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 high_side_out_3_input_debounced_ 0;
+BA_ "GenSigStartValue" SG_ 2566854016 high_side_out_3_input_debounced_ 3;
+BA_ "GenSigSendType" SG_ 2566854016 high_side_out_3_input_debounced_ 4;
+BA_ "CG_VarType" SG_ 2566854016 high_side_out_3_input_debounced_ 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 high_side_out_3_input_debounced_ "high_side_out_3_input_debounced_status";
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_2_input_status 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_2_input_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_2_input_status 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_2_input_status 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_2_input_status 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_2_input_status 1;
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_2_input_debounced_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_2_input_debounced_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_2_input_debounced_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_2_input_debounced_s 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_2_input_debounced_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_2_input_debounced_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_2_input_debounced_s "highside_out_2_input_debounced_status";
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_1_input_status 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_1_input_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_1_input_status 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_1_input_status 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_1_input_status 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_1_input_status 1;
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_1_input_debounced_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_1_input_debounced_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_1_input_debounced_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_1_input_debounced_s 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_1_input_debounced_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_1_input_debounced_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_1_input_debounced_s "highside_out_1_input_debounced_status";
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_0_input_status 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_0_input_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_0_input_status 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_0_input_status 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_0_input_status 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_0_input_status 1;
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_0_Input_debounced_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_0_Input_debounced_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_0_Input_debounced_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_0_Input_debounced_s 3;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_0_Input_debounced_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_0_Input_debounced_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_0_Input_debounced_s "highside_out_0_Input_debounced_status";
+BA_ "CanDootHidden" SG_ 2566854016 led_2_self_diagnostic_status 0;
+BA_ "CanDootGroup" SG_ 2566854016 led_2_self_diagnostic_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 led_2_self_diagnostic_status 0;
+BA_ "GenSigStartValue" SG_ 2566854016 led_2_self_diagnostic_status 7;
+BA_ "GenSigSendType" SG_ 2566854016 led_2_self_diagnostic_status 4;
+BA_ "CG_VarType" SG_ 2566854016 led_2_self_diagnostic_status 1;
+BA_ "CanDootHidden" SG_ 2566854016 led_1_self_diagnostic_status 0;
+BA_ "CanDootGroup" SG_ 2566854016 led_1_self_diagnostic_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 led_1_self_diagnostic_status 0;
+BA_ "GenSigStartValue" SG_ 2566854016 led_1_self_diagnostic_status 7;
+BA_ "GenSigSendType" SG_ 2566854016 led_1_self_diagnostic_status 4;
+BA_ "CG_VarType" SG_ 2566854016 led_1_self_diagnostic_status 1;
+BA_ "CanDootHidden" SG_ 2566854016 led_0_self_diagnostic_status 0;
+BA_ "CanDootGroup" SG_ 2566854016 led_0_self_diagnostic_status 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 led_0_self_diagnostic_status 0;
+BA_ "GenSigStartValue" SG_ 2566854016 led_0_self_diagnostic_status 7;
+BA_ "GenSigSendType" SG_ 2566854016 led_0_self_diagnostic_status 4;
+BA_ "CG_VarType" SG_ 2566854016 led_0_self_diagnostic_status 1;
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_4_self_diagnostic_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_4_self_diagnostic_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_4_self_diagnostic_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_4_self_diagnostic_s 7;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_4_self_diagnostic_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_4_self_diagnostic_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_4_self_diagnostic_s "highside_out_4_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_3_self_diagnostic_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_3_self_diagnostic_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_3_self_diagnostic_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_3_self_diagnostic_s 7;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_3_self_diagnostic_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_3_self_diagnostic_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_3_self_diagnostic_s "highside_out_3_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_2_self_diagnostic_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_2_self_diagnostic_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_2_self_diagnostic_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_2_self_diagnostic_s 7;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_2_self_diagnostic_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_2_self_diagnostic_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_2_self_diagnostic_s "highside_out_2_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_1_self_diagnostic_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_1_self_diagnostic_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_1_self_diagnostic_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_1_self_diagnostic_s 7;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_1_self_diagnostic_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_1_self_diagnostic_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_1_self_diagnostic_s "highside_out_1_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566854016 highside_out_0_self_diagnostic_s 0;
+BA_ "CanDootGroup" SG_ 2566854016 highside_out_0_self_diagnostic_s 0;
+BA_ "CanDootBroadcast" SG_ 2566854016 highside_out_0_self_diagnostic_s 0;
+BA_ "GenSigStartValue" SG_ 2566854016 highside_out_0_self_diagnostic_s 7;
+BA_ "GenSigSendType" SG_ 2566854016 highside_out_0_self_diagnostic_s 4;
+BA_ "CG_VarType" SG_ 2566854016 highside_out_0_self_diagnostic_s 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566854016 highside_out_0_self_diagnostic_s "highside_out_0_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566853760 charge_unit_max_current 0;
+BA_ "CanDootGroup" SG_ 2566853760 charge_unit_max_current 0;
+BA_ "CanDootBroadcast" SG_ 2566853760 charge_unit_max_current 0;
+BA_ "GenSigStartValue" SG_ 2566853760 charge_unit_max_current 255;
+BA_ "GenSigSendType" SG_ 2566853760 charge_unit_max_current 7;
+BA_ "CG_VarType" SG_ 2566853760 charge_unit_max_current 7;
+BA_ "CanDootHidden" SG_ 2566853760 charge_unit_state 0;
+BA_ "CanDootGroup" SG_ 2566853760 charge_unit_state 0;
+BA_ "CanDootBroadcast" SG_ 2566853760 charge_unit_state 0;
+BA_ "GenSigStartValue" SG_ 2566853760 charge_unit_state 7;
+BA_ "GenSigSendType" SG_ 2566853760 charge_unit_state 7;
+BA_ "CG_VarType" SG_ 2566853760 charge_unit_state 1;
+BA_ "CanDootHidden" SG_ 2566853760 charge_unit_mode 0;
+BA_ "CanDootGroup" SG_ 2566853760 charge_unit_mode 0;
+BA_ "CanDootBroadcast" SG_ 2566853760 charge_unit_mode 0;
+BA_ "GenSigStartValue" SG_ 2566853760 charge_unit_mode 7;
+BA_ "GenSigSendType" SG_ 2566853760 charge_unit_mode 7;
+BA_ "CG_VarType" SG_ 2566853760 charge_unit_mode 1;
+BA_ "CanDootHidden" SG_ 2566853760 control_pilot_wakeup 0;
+BA_ "CanDootGroup" SG_ 2566853760 control_pilot_wakeup 0;
+BA_ "CanDootBroadcast" SG_ 2566853760 control_pilot_wakeup 0;
+BA_ "GenSigStartValue" SG_ 2566853760 control_pilot_wakeup 3;
+BA_ "GenSigSendType" SG_ 2566853760 control_pilot_wakeup 7;
+BA_ "CG_VarType" SG_ 2566853760 control_pilot_wakeup 1;
+BA_ "CanDootHidden" SG_ 2566853760 control_pilot_voltage 0;
+BA_ "CanDootGroup" SG_ 2566853760 control_pilot_voltage 0;
+BA_ "CanDootBroadcast" SG_ 2566853760 control_pilot_voltage 0;
+BA_ "GenSigStartValue" SG_ 2566853760 control_pilot_voltage 65535;
+BA_ "GenSigSendType" SG_ 2566853760 control_pilot_voltage 7;
+BA_ "CG_VarType" SG_ 2566853760 control_pilot_voltage 7;
+BA_ "CanDootHidden" SG_ 2566853760 control_pilot_duty_cycle 0;
+BA_ "CanDootGroup" SG_ 2566853760 control_pilot_duty_cycle 0;
+BA_ "CanDootBroadcast" SG_ 2566853760 control_pilot_duty_cycle 0;
+BA_ "GenSigStartValue" SG_ 2566853760 control_pilot_duty_cycle 255;
+BA_ "GenSigSendType" SG_ 2566853760 control_pilot_duty_cycle 7;
+BA_ "CG_VarType" SG_ 2566853760 control_pilot_duty_cycle 7;
+BA_ "CanDootHidden" SG_ 2566853760 control_pilot_frequency 0;
+BA_ "CanDootGroup" SG_ 2566853760 control_pilot_frequency 0;
+BA_ "CanDootBroadcast" SG_ 2566853760 control_pilot_frequency 0;
+BA_ "GenSigStartValue" SG_ 2566853760 control_pilot_frequency 65535;
+BA_ "GenSigSendType" SG_ 2566853760 control_pilot_frequency 7;
+BA_ "CG_VarType" SG_ 2566853760 control_pilot_frequency 3;
+BA_ "CanDootHidden" SG_ 2566853504 s3_switch_debounced_status 0;
+BA_ "CanDootGroup" SG_ 2566853504 s3_switch_debounced_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 s3_switch_debounced_status 0;
+BA_ "GenSigStartValue" SG_ 2566853504 s3_switch_debounced_status 3;
+BA_ "GenSigSendType" SG_ 2566853504 s3_switch_debounced_status 7;
+BA_ "CG_VarType" SG_ 2566853504 s3_switch_debounced_status 1;
+BA_ "CanDootHidden" SG_ 2566853504 s3_switch_status 0;
+BA_ "CanDootGroup" SG_ 2566853504 s3_switch_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 s3_switch_status 0;
+BA_ "GenSigStartValue" SG_ 2566853504 s3_switch_status 3;
+BA_ "GenSigSendType" SG_ 2566853504 s3_switch_status 7;
+BA_ "CG_VarType" SG_ 2566853504 s3_switch_status 1;
+BA_ "CanDootHidden" SG_ 2566853504 inlet_connection_status 0;
+BA_ "CanDootGroup" SG_ 2566853504 inlet_connection_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 inlet_connection_status 0;
+BA_ "GenSigStartValue" SG_ 2566853504 inlet_connection_status 3;
+BA_ "GenSigSendType" SG_ 2566853504 inlet_connection_status 7;
+BA_ "CG_VarType" SG_ 2566853504 inlet_connection_status 1;
+BA_ "CanDootHidden" SG_ 2566853504 digital_input_debounced_status 0;
+BA_ "CanDootGroup" SG_ 2566853504 digital_input_debounced_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 digital_input_debounced_status 0;
+BA_ "GenSigStartValue" SG_ 2566853504 digital_input_debounced_status 3;
+BA_ "GenSigSendType" SG_ 2566853504 digital_input_debounced_status 7;
+BA_ "CG_VarType" SG_ 2566853504 digital_input_debounced_status 1;
+BA_ "CanDootHidden" SG_ 2566853504 inlet_max_current 0;
+BA_ "CanDootGroup" SG_ 2566853504 inlet_max_current 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 inlet_max_current 0;
+BA_ "GenSigStartValue" SG_ 2566853504 inlet_max_current 255;
+BA_ "GenSigSendType" SG_ 2566853504 inlet_max_current 7;
+BA_ "CG_VarType" SG_ 2566853504 inlet_max_current 7;
+BA_ "CanDootHidden" SG_ 2566853504 inlet_motor_status 0;
+BA_ "CanDootGroup" SG_ 2566853504 inlet_motor_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 inlet_motor_status 0;
+BA_ "GenSigStartValue" SG_ 2566853504 inlet_motor_status 7;
+BA_ "GenSigSendType" SG_ 2566853504 inlet_motor_status 7;
+BA_ "CG_VarType" SG_ 2566853504 inlet_motor_status 1;
+BA_ "CanDootHidden" SG_ 2566853504 digital_input_wakeup 0;
+BA_ "CanDootGroup" SG_ 2566853504 digital_input_wakeup 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 digital_input_wakeup 0;
+BA_ "GenSigStartValue" SG_ 2566853504 digital_input_wakeup 3;
+BA_ "GenSigSendType" SG_ 2566853504 digital_input_wakeup 7;
+BA_ "CG_VarType" SG_ 2566853504 digital_input_wakeup 1;
+BA_ "CanDootHidden" SG_ 2566853504 digital_input_status 0;
+BA_ "CanDootGroup" SG_ 2566853504 digital_input_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 digital_input_status 0;
+BA_ "GenSigStartValue" SG_ 2566853504 digital_input_status 3;
+BA_ "GenSigSendType" SG_ 2566853504 digital_input_status 7;
+BA_ "CG_VarType" SG_ 2566853504 digital_input_status 1;
+BA_ "CanDootHidden" SG_ 2566853504 inlet_hw_variant 0;
+BA_ "CanDootGroup" SG_ 2566853504 inlet_hw_variant 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 inlet_hw_variant 0;
+BA_ "GenSigStartValue" SG_ 2566853504 inlet_hw_variant 3;
+BA_ "GenSigSendType" SG_ 2566853504 inlet_hw_variant 7;
+BA_ "CG_VarType" SG_ 2566853504 inlet_hw_variant 1;
+BA_ "CanDootHidden" SG_ 2566853504 plug_lock_output1_self_diagnosti 0;
+BA_ "CanDootGroup" SG_ 2566853504 plug_lock_output1_self_diagnosti 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 plug_lock_output1_self_diagnosti 0;
+BA_ "GenSigStartValue" SG_ 2566853504 plug_lock_output1_self_diagnosti 7;
+BA_ "GenSigSendType" SG_ 2566853504 plug_lock_output1_self_diagnosti 7;
+BA_ "CG_VarType" SG_ 2566853504 plug_lock_output1_self_diagnosti 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566853504 plug_lock_output1_self_diagnosti "plug_lock_output1_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566853504 plug_lock_output0_self_diagnosti 0;
+BA_ "CanDootGroup" SG_ 2566853504 plug_lock_output0_self_diagnosti 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 plug_lock_output0_self_diagnosti 0;
+BA_ "GenSigStartValue" SG_ 2566853504 plug_lock_output0_self_diagnosti 7;
+BA_ "GenSigSendType" SG_ 2566853504 plug_lock_output0_self_diagnosti 7;
+BA_ "CG_VarType" SG_ 2566853504 plug_lock_output0_self_diagnosti 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566853504 plug_lock_output0_self_diagnosti "plug_lock_output0_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566853504 plug_lock_motor_status 0;
+BA_ "CanDootGroup" SG_ 2566853504 plug_lock_motor_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 plug_lock_motor_status 0;
+BA_ "GenSigStartValue" SG_ 2566853504 plug_lock_motor_status 7;
+BA_ "GenSigSendType" SG_ 2566853504 plug_lock_motor_status 7;
+BA_ "CG_VarType" SG_ 2566853504 plug_lock_motor_status 1;
+BA_ "CanDootHidden" SG_ 2566853504 pos_feedback_self_diagnostic_sta 0;
+BA_ "CanDootGroup" SG_ 2566853504 pos_feedback_self_diagnostic_sta 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 pos_feedback_self_diagnostic_sta 0;
+BA_ "GenSigStartValue" SG_ 2566853504 pos_feedback_self_diagnostic_sta 7;
+BA_ "GenSigSendType" SG_ 2566853504 pos_feedback_self_diagnostic_sta 7;
+BA_ "CG_VarType" SG_ 2566853504 pos_feedback_self_diagnostic_sta 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566853504 pos_feedback_self_diagnostic_sta "pos_feedback_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566853504 plug_present_wakeup 0;
+BA_ "CanDootGroup" SG_ 2566853504 plug_present_wakeup 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 plug_present_wakeup 0;
+BA_ "GenSigStartValue" SG_ 2566853504 plug_present_wakeup 3;
+BA_ "GenSigSendType" SG_ 2566853504 plug_present_wakeup 7;
+BA_ "CG_VarType" SG_ 2566853504 plug_present_wakeup 1;
+BA_ "CanDootHidden" SG_ 2566853504 plug_present_status 0;
+BA_ "CanDootGroup" SG_ 2566853504 plug_present_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 plug_present_status 0;
+BA_ "GenSigStartValue" SG_ 2566853504 plug_present_status 3;
+BA_ "GenSigSendType" SG_ 2566853504 plug_present_status 7;
+BA_ "CG_VarType" SG_ 2566853504 plug_present_status 1;
+BA_ "CanDootHidden" SG_ 2566853504 plug_present_resistance 0;
+BA_ "CanDootGroup" SG_ 2566853504 plug_present_resistance 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 plug_present_resistance 0;
+BA_ "GenSigStartValue" SG_ 2566853504 plug_present_resistance 7;
+BA_ "GenSigSendType" SG_ 2566853504 plug_present_resistance 7;
+BA_ "CG_VarType" SG_ 2566853504 plug_present_resistance 1;
+BA_ "CanDootHidden" SG_ 2566853504 plug_present_self_diagnostic_sta 0;
+BA_ "CanDootGroup" SG_ 2566853504 plug_present_self_diagnostic_sta 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 plug_present_self_diagnostic_sta 0;
+BA_ "GenSigStartValue" SG_ 2566853504 plug_present_self_diagnostic_sta 7;
+BA_ "GenSigSendType" SG_ 2566853504 plug_present_self_diagnostic_sta 7;
+BA_ "CG_VarType" SG_ 2566853504 plug_present_self_diagnostic_sta 1;
+BA_ "SystemSignalLongSymbol" SG_ 2566853504 plug_present_self_diagnostic_sta "plug_present_self_diagnostic_status";
+BA_ "CanDootHidden" SG_ 2566853504 pos_feedback_voltage 0;
+BA_ "CanDootGroup" SG_ 2566853504 pos_feedback_voltage 0;
+BA_ "CanDootBroadcast" SG_ 2566853504 pos_feedback_voltage 0;
+BA_ "GenSigStartValue" SG_ 2566853504 pos_feedback_voltage 65535;
+BA_ "GenSigSendType" SG_ 2566853504 pos_feedback_voltage 7;
+BA_ "CG_VarType" SG_ 2566853504 pos_feedback_voltage 7;
+BA_ "CanDootHidden" SG_ 2566853248 ptc_2_self_diagnostic_status 0;
+BA_ "CanDootGroup" SG_ 2566853248 ptc_2_self_diagnostic_status 0;
+BA_ "CanDootBroadcast" SG_ 2566853248 ptc_2_self_diagnostic_status 0;
+BA_ "GenSigStartValue" SG_ 2566853248 ptc_2_self_diagnostic_status 7;
+BA_ "GenSigSendType" SG_ 2566853248 ptc_2_self_diagnostic_status 7;
+BA_ "CG_VarType" SG_ 2566853248 ptc_2_self_diagnostic_status 1;
+BA_ "CanDootHidden" SG_ 2566853248 ptc_2_temperature 0;
+BA_ "CanDootGroup" SG_ 2566853248 ptc_2_temperature 0;
+BA_ "CanDootBroadcast" SG_ 2566853248 ptc_2_temperature 0;
+BA_ "GenSigStartValue" SG_ 2566853248 ptc_2_temperature 65535;
+BA_ "GenSigSendType" SG_ 2566853248 ptc_2_temperature 7;
+BA_ "CG_VarType" SG_ 2566853248 ptc_2_temperature 7;
+BA_ "CanDootHidden" SG_ 2566853248 ptc_2_resistance 0;
+BA_ "CanDootGroup" SG_ 2566853248 ptc_2_resistance 0;
+BA_ "CanDootBroadcast" SG_ 2566853248 ptc_2_resistance 0;
+BA_ "GenSigStartValue" SG_ 2566853248 ptc_2_resistance 65535;
+BA_ "GenSigSendType" SG_ 2566853248 ptc_2_resistance 7;
+BA_ "CG_VarType" SG_ 2566853248 ptc_2_resistance 7;
+BA_ "CanDootHidden" SG_ 2566853248 ptc_2_raw 0;
+BA_ "CanDootGroup" SG_ 2566853248 ptc_2_raw 0;
+BA_ "CanDootBroadcast" SG_ 2566853248 ptc_2_raw 0;
+BA_ "GenSigStartValue" SG_ 2566853248 ptc_2_raw 65535;
+BA_ "GenSigSendType" SG_ 2566853248 ptc_2_raw 7;
+BA_ "CG_VarType" SG_ 2566853248 ptc_2_raw 7;
+BA_ "CanDootHidden" SG_ 2566852992 ptc_1_self_diagnostic_status 0;
+BA_ "CanDootGroup" SG_ 2566852992 ptc_1_self_diagnostic_status 0;
+BA_ "CanDootBroadcast" SG_ 2566852992 ptc_1_self_diagnostic_status 0;
+BA_ "GenSigStartValue" SG_ 2566852992 ptc_1_self_diagnostic_status 7;
+BA_ "GenSigSendType" SG_ 2566852992 ptc_1_self_diagnostic_status 7;
+BA_ "CG_VarType" SG_ 2566852992 ptc_1_self_diagnostic_status 1;
+BA_ "CanDootHidden" SG_ 2566852992 ptc_1_temperature 0;
+BA_ "CanDootGroup" SG_ 2566852992 ptc_1_temperature 0;
+BA_ "CanDootBroadcast" SG_ 2566852992 ptc_1_temperature 0;
+BA_ "GenSigStartValue" SG_ 2566852992 ptc_1_temperature 65535;
+BA_ "GenSigSendType" SG_ 2566852992 ptc_1_temperature 7;
+BA_ "CG_VarType" SG_ 2566852992 ptc_1_temperature 7;
+BA_ "CanDootHidden" SG_ 2566852992 ptc_1_resistance 0;
+BA_ "CanDootGroup" SG_ 2566852992 ptc_1_resistance 0;
+BA_ "CanDootBroadcast" SG_ 2566852992 ptc_1_resistance 0;
+BA_ "GenSigStartValue" SG_ 2566852992 ptc_1_resistance 65535;
+BA_ "GenSigSendType" SG_ 2566852992 ptc_1_resistance 7;
+BA_ "CG_VarType" SG_ 2566852992 ptc_1_resistance 7;
+BA_ "CanDootHidden" SG_ 2566852992 ptc_1_raw 0;
+BA_ "CanDootGroup" SG_ 2566852992 ptc_1_raw 0;
+BA_ "CanDootBroadcast" SG_ 2566852992 ptc_1_raw 0;
+BA_ "GenSigStartValue" SG_ 2566852992 ptc_1_raw 65535;
+BA_ "GenSigSendType" SG_ 2566852992 ptc_1_raw 7;
+BA_ "CG_VarType" SG_ 2566852992 ptc_1_raw 7;
+BA_ "CanDootHidden" SG_ 2566852736 ptc_0_self_diagnostic_status 0;
+BA_ "CanDootGroup" SG_ 2566852736 ptc_0_self_diagnostic_status 0;
+BA_ "CanDootBroadcast" SG_ 2566852736 ptc_0_self_diagnostic_status 0;
+BA_ "GenSigStartValue" SG_ 2566852736 ptc_0_self_diagnostic_status 7;
+BA_ "GenSigSendType" SG_ 2566852736 ptc_0_self_diagnostic_status 7;
+BA_ "CG_VarType" SG_ 2566852736 ptc_0_self_diagnostic_status 1;
+BA_ "CanDootHidden" SG_ 2566852736 ptc_0_temperature 0;
+BA_ "CanDootGroup" SG_ 2566852736 ptc_0_temperature 0;
+BA_ "CanDootBroadcast" SG_ 2566852736 ptc_0_temperature 0;
+BA_ "GenSigStartValue" SG_ 2566852736 ptc_0_temperature 65535;
+BA_ "GenSigSendType" SG_ 2566852736 ptc_0_temperature 7;
+BA_ "CG_VarType" SG_ 2566852736 ptc_0_temperature 7;
+BA_ "CanDootHidden" SG_ 2566852736 ptc_0_resistance 0;
+BA_ "CanDootGroup" SG_ 2566852736 ptc_0_resistance 0;
+BA_ "CanDootBroadcast" SG_ 2566852736 ptc_0_resistance 0;
+BA_ "GenSigStartValue" SG_ 2566852736 ptc_0_resistance 65535;
+BA_ "GenSigSendType" SG_ 2566852736 ptc_0_resistance 7;
+BA_ "CG_VarType" SG_ 2566852736 ptc_0_resistance 7;
+BA_ "CanDootHidden" SG_ 2566852736 ptc_0_raw 0;
+BA_ "CanDootGroup" SG_ 2566852736 ptc_0_raw 0;
+BA_ "CanDootBroadcast" SG_ 2566852736 ptc_0_raw 0;
+BA_ "GenSigStartValue" SG_ 2566852736 ptc_0_raw 65535;
+BA_ "GenSigSendType" SG_ 2566852736 ptc_0_raw 7;
+BA_ "CG_VarType" SG_ 2566852736 ptc_0_raw 7;
+
