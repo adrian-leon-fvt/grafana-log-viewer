@@ -36,6 +36,7 @@ from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
     LOG_FORMAT,
     server_vm_d65,
+    server_vm_test_dump,
     server_vm_localhost,
     vmapi_import_prometheus,
 )
@@ -1669,6 +1670,11 @@ if __name__ == "__main__":
             "Current streaming execution processes files sequentially."
         ),
     )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Send to test node (server_vm_test_dump) instead of main D65 node.",
+    )
     args = parser.parse_args()
 
     if args.s3_streaming_memory_fraction <= 0 or args.s3_streaming_memory_fraction > 1:
@@ -1678,7 +1684,7 @@ if __name__ == "__main__":
     if args.s3_streaming_max_active_files < 1:
         parser.error("--s3-streaming-max-active-files must be >= 1.")
 
-    server = server_vm_d65
+    server = server_vm_test_dump if args.test else server_vm_d65
 
     # Parse start time
     now = datetime.now().astimezone(ZoneInfo("America/Vancouver"))
