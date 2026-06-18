@@ -62,7 +62,7 @@ def format_duration_seconds(elapsed: float) -> str:
     if secs or parts:
         parts.append(f"{secs:.3f}s")
 
-    return "".join(parts)
+    return "".join(parts) or "0s"
 
 
 def format_time_span(start: datetime, end: datetime) -> str:

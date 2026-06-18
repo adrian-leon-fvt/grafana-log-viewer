@@ -10,6 +10,10 @@ class TimeSpanTest(unittest.TestCase):
         end = datetime(2026, 6, 19, 12, 3, 4, 500000, tzinfo=timezone.utc)
         self.assertEqual(format_time_span(start, end), "1d2h3m4.500s")
 
+    def test_formats_zero_span(self) -> None:
+        moment = datetime(2026, 6, 18, 10, 0, tzinfo=timezone.utc)
+        self.assertEqual(format_time_span(moment, moment), "0s")
+
 
 if __name__ == "__main__":
     unittest.main()
