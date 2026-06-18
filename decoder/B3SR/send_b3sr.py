@@ -3,6 +3,7 @@ import sys
 import time
 import logging
 import io
+import json
 import tempfile
 import ctypes
 import subprocess
@@ -254,6 +255,9 @@ def main_post_s3_streaming_to_victoriametrics(
     max_batch_size: int = 10_000,
     skip_signal_range_check: bool = False,
     posted_after: datetime | None = None,
+    cursor_timestamp: str = "",
+    cursor_key: str = "",
+    cursor_out: str = "",
 ):
     start_ts = time.time()
 
@@ -287,6 +291,22 @@ def main_post_s3_streaming_to_victoriametrics(
 
     if not s3_info_list:
         logging.warning("⚠️ No B3SR MF4 S3 files left after filtering.")
+        return {}
+
+    parsed_cursor_ts = _parse_cursor_timestamp(cursor_timestamp)
+    s3_info_list = [
+        item
+        for item in s3_info_list
+        if _is_after_cursor(
+            item_timestamp=item.get("Timestamp"),
+            item_key=item.get("Key", ""),
+            cursor_timestamp=parsed_cursor_ts,
+            cursor_key=cursor_key,
+        )
+    ]
+
+    if not s3_info_list:
+        logging.warning("⚠️ No B3SR S3 files newer than cursor.")
         return {}
 
     s3_info_list.sort(
@@ -337,6 +357,10 @@ def main_post_s3_streaming_to_victoriametrics(
 
     s3c = create_s3_client(max_pool_connections=max(1, max_active_files))
     total_counts: dict[str, int] = {}
+    span_start: datetime | None = None
+    span_end: datetime | None = None
+    cursor_last_ts: datetime | None = None
+    cursor_last_key = ""
     total = len(s3_info_list)
 
     for idx, item in enumerate(s3_info_list, start=1):
@@ -393,6 +417,19 @@ def main_post_s3_streaming_to_victoriametrics(
                     tmp_path.unlink()
 
         sent = sum(result.values())
+        item_ts = item.get("Timestamp")
+        if isinstance(item_ts, datetime):
+            if span_start is None or item_ts < span_start:
+                span_start = item_ts
+            if span_end is None or item_ts > span_end:
+                span_end = item_ts
+            if (
+                cursor_last_ts is None
+                or item_ts > cursor_last_ts
+                or (item_ts == cursor_last_ts and key > cursor_last_key)
+            ):
+                cursor_last_ts = item_ts
+                cursor_last_key = key
         logging.info(
             f"✅ {count_str} streamed {shortpath(Path(key))} in {get_time_str(start_ts_single)} ({convert_to_eng(sent)} samples)"
         )
@@ -403,9 +440,9 @@ def main_post_s3_streaming_to_victoriametrics(
     total_signals_sent = len(total_counts.keys())
     total_samples_sent = sum(total_counts.values())
     backfill_span = ""
-    if files:
-        start_span = min(files, key=lambda x: x[1])[1]
-        end_span = max(files, key=lambda x: x[1])[1]
+    if span_start and span_end:
+        start_span = span_start
+        end_span = span_end
         backfill_span = format_time_span(start_span, end_span)
     logging.info(
         f"🏁 Streamed {total} B3SR S3 files in {get_time_str(start_ts, end_ts)} "
@@ -414,6 +451,18 @@ def main_post_s3_streaming_to_victoriametrics(
     )
     if backfill_span:
         logging.info("   ↳ backfill span %s", backfill_span)
+    if cursor_out.strip():
+        Path(cursor_out).write_text(
+            json.dumps(
+                {
+                    "last_timestamp": (
+                        cursor_last_ts.isoformat() if cursor_last_ts else ""
+                    ),
+                    "last_key": cursor_last_key,
+                }
+            ),
+            encoding="utf-8",
+        )
 
     return total_counts
 
@@ -642,6 +691,33 @@ def _decode_and_send_b3sr_mdf(
     )
 
 
+def _parse_cursor_timestamp(raw: str) -> datetime | None:
+    value = raw.strip()
+    if not value:
+        return None
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _is_after_cursor(
+    item_timestamp: datetime | None,
+    item_key: str,
+    cursor_timestamp: datetime | None,
+    cursor_key: str,
+) -> bool:
+    if item_timestamp is None:
+        return False
+    if cursor_timestamp is None:
+        return True
+    if item_timestamp > cursor_timestamp:
+        return True
+    if item_timestamp < cursor_timestamp:
+        return False
+    return item_key > cursor_key
+
+
 def parse_time_offset(offset_str: str) -> timedelta:
     """
     Parses a time offset string like '10m', '2h', '1d' and returns a timedelta.
@@ -755,6 +831,24 @@ if __name__ == "__main__":
         default="",
         help="DBC folder path, or 'old'/'compatibility' for workstation lookup. Defaults to decoder/B3SR/dbc.",
     )
+    parser.add_argument(
+        "--cursor-ts",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--cursor-key",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--cursor-out",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
 
     args = parser.parse_args()
     DBC_FOLDER_OVERRIDE = args.dbc_folder
@@ -784,6 +878,9 @@ if __name__ == "__main__":
             decode_overhead_factor=args.decode_overhead_factor,
             max_active_files=args.max_active_files,
             skip_signal_range_check=skip_signal_range_check,
+            cursor_timestamp=args.cursor_ts,
+            cursor_key=args.cursor_key,
+            cursor_out=args.cursor_out,
         )
     else:
         main_post_to_victoriametrics(

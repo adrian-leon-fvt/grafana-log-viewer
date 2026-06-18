@@ -4,6 +4,7 @@ import time
 import logging
 import argparse
 import io
+import json
 import tempfile
 import re
 import ctypes
@@ -898,6 +899,33 @@ def _key_segment_from_s3_key(key: str) -> Literal["Upper", "Lower"] | None:
     return None
 
 
+def _parse_cursor_timestamp(raw: str) -> datetime | None:
+    value = raw.strip()
+    if not value:
+        return None
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _is_after_cursor(
+    item_timestamp: datetime | None,
+    item_key: str,
+    cursor_timestamp: datetime | None,
+    cursor_key: str,
+) -> bool:
+    if item_timestamp is None:
+        return False
+    if cursor_timestamp is None:
+        return True
+    if item_timestamp > cursor_timestamp:
+        return True
+    if item_timestamp < cursor_timestamp:
+        return False
+    return item_key > cursor_key
+
+
 def _decode_and_send_d65_mdf(
     mdf: MDF,
     job: Literal["Upper", "Lower"],
@@ -954,6 +982,10 @@ def main_post_s3_streaming_to_victoriametrics(
     skip_signal_range_check: bool = False,
     **kwargs,
 ) -> tuple[dict[str, int], dict[str, int]]:
+    cursor_timestamp = _parse_cursor_timestamp(kwargs.get("cursor_timestamp", ""))
+    cursor_key = str(kwargs.get("cursor_key", ""))
+    cursor_out = str(kwargs.get("cursor_out", "")).strip()
+
     if s3_info_list is None:
         s3_info_list = get_d65_file_list_from_s3(
             start=start_date,
@@ -986,6 +1018,17 @@ def main_post_s3_streaming_to_victoriametrics(
             for item in s3_info_list
             if _key_segment_from_s3_key(item["Key"]) == "Upper"
         ]
+
+    s3_info_list = [
+        item
+        for item in s3_info_list
+        if _is_after_cursor(
+            item_timestamp=item.get("Timestamp"),
+            item_key=item.get("Key", ""),
+            cursor_timestamp=cursor_timestamp,
+            cursor_key=cursor_key,
+        )
+    ]
 
     send_newest_first = kwargs.get("send_newest_first", True)
     s3_info_list.sort(
@@ -1049,6 +1092,8 @@ def main_post_s3_streaming_to_victoriametrics(
     total_lower_counts: dict[str, int] = {}
     span_start: datetime | None = None
     span_end: datetime | None = None
+    cursor_last_ts: datetime | None = None
+    cursor_last_key = ""
     total = len(s3_info_list)
     all_start_ts = time.time()
 
@@ -1117,6 +1162,15 @@ def main_post_s3_streaming_to_victoriametrics(
                     tmp_path.unlink()
 
         sent = sum(result.values())
+        item_ts = item.get("Timestamp")
+        if isinstance(item_ts, datetime):
+            if (
+                cursor_last_ts is None
+                or item_ts > cursor_last_ts
+                or (item_ts == cursor_last_ts and key > cursor_last_key)
+            ):
+                cursor_last_ts = item_ts
+                cursor_last_key = key
         if current_start and (span_start is None or current_start < span_start):
             span_start = current_start
         if current_end and (span_end is None or current_end > span_end):
@@ -1152,6 +1206,18 @@ def main_post_s3_streaming_to_victoriametrics(
     )
     if backfill_span:
         logging.info("   ↳ backfill span %s", backfill_span)
+    if cursor_out:
+        Path(cursor_out).write_text(
+            json.dumps(
+                {
+                    "last_timestamp": (
+                        cursor_last_ts.isoformat() if cursor_last_ts else ""
+                    ),
+                    "last_key": cursor_last_key,
+                }
+            ),
+            encoding="utf-8",
+        )
 
     return total_lower_counts, total_upper_counts
 
@@ -1747,6 +1813,24 @@ if __name__ == "__main__":
         default="",
         help="DBC folder path, or 'old'/'compatibility' for workstation lookup. Defaults to decoder/D65/dbc.",
     )
+    parser.add_argument(
+        "--cursor-ts",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--cursor-key",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--cursor-out",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
 
     args = parser.parse_args()
     DBC_FOLDER_OVERRIDE = args.dbc_folder
@@ -1887,6 +1971,9 @@ if __name__ == "__main__":
                 skip_signal_range_check=args.backfill,
                 send_newest_first=True,
                 dbc_files_override=dbc_files_override,
+                cursor_timestamp=args.cursor_ts,
+                cursor_key=args.cursor_key,
+                cursor_out=args.cursor_out,
             )
         else:
             main_post_to_victoriametrics(

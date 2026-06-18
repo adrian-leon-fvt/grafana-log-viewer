@@ -17,6 +17,7 @@ cd "$ROOT_DIR"
 
 exec "$PYTHON_BIN" deploy/bin/run_with_cursor.py \
   --state-file "$STATE_DIR/b3sr_cursor.json" \
+  --cursor-output-file "$STATE_DIR/b3sr_cursor.out.json" \
   --default-lookback-seconds "${B3SR_DEFAULT_LOOKBACK_SECONDS:-600}" \
   --overlap-seconds "${B3SR_OVERLAP_SECONDS:-120}" \
   -- \
@@ -25,4 +26,7 @@ exec "$PYTHON_BIN" deploy/bin/run_with_cursor.py \
   --s3-bucket "${B3SR_S3_BUCKET:-b3sr-telematics}" \
   --start "{start}" \
   --end "{end}" \
+  --cursor-ts "{cursor_ts}" \
+  --cursor-key "{cursor_key}" \
+  --cursor-out "{cursor_out}" \
   --streaming-strategy "${B3SR_S3_STREAMING_STRATEGY:-auto}"

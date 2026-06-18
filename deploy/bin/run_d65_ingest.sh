@@ -17,6 +17,7 @@ cd "$ROOT_DIR"
 
 exec "$PYTHON_BIN" deploy/bin/run_with_cursor.py \
   --state-file "$STATE_DIR/d65_cursor.json" \
+  --cursor-output-file "$STATE_DIR/d65_cursor.out.json" \
   --default-lookback-seconds "${D65_DEFAULT_LOOKBACK_SECONDS:-600}" \
   --overlap-seconds "${D65_OVERLAP_SECONDS:-120}" \
   -- \
@@ -24,4 +25,7 @@ exec "$PYTHON_BIN" deploy/bin/run_with_cursor.py \
   --s3-streaming \
   --start "{start}" \
   --end "{end}" \
+  --cursor-ts "{cursor_ts}" \
+  --cursor-key "{cursor_key}" \
+  --cursor-out "{cursor_out}" \
   --s3-streaming-strategy "${D65_S3_STREAMING_STRATEGY:-auto}"

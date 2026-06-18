@@ -3,6 +3,9 @@
 This runs existing Python ingestion scripts on the `victoriametrics` host with
 systemd timers.
 
+Polling uses persisted cursor state (`/var/lib/ingest/*.json`) with overlap
+buffer to avoid timer-drift gaps.
+
 ## First-time server setup
 
 1. Copy env template and fill private values:

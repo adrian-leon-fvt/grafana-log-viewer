@@ -32,6 +32,7 @@ def main() -> int:
         description="Run command with persisted timestamp cursor."
     )
     parser.add_argument("--state-file", required=True, type=Path)
+    parser.add_argument("--cursor-output-file", required=True, type=Path)
     parser.add_argument("--default-lookback-seconds", type=int, default=600)
     parser.add_argument("--overlap-seconds", type=int, default=120)
     parser.add_argument(
@@ -52,6 +53,7 @@ def main() -> int:
     now = datetime.now(timezone.utc)
     state = _load_state(args.state_file)
     last_ts_raw = state.get("last_timestamp")
+    last_key = str(state.get("last_key", ""))
 
     if last_ts_raw:
         start_ts = _parse_iso(last_ts_raw) - timedelta(seconds=args.overlap_seconds)
@@ -61,6 +63,9 @@ def main() -> int:
     replacements = {
         "{start}": start_ts.isoformat(),
         "{end}": now.isoformat(),
+        "{cursor_ts}": str(last_ts_raw or ""),
+        "{cursor_key}": last_key,
+        "{cursor_out}": str(args.cursor_output_file),
     }
     rendered = [replacements.get(token, token) for token in cmd]
 
@@ -68,8 +73,20 @@ def main() -> int:
     if proc.returncode != 0:
         return proc.returncode
 
-    state["last_timestamp"] = now.isoformat()
-    if "last_key" not in state:
+    if args.cursor_output_file.exists():
+        try:
+            output = json.loads(args.cursor_output_file.read_text(encoding="utf-8"))
+            if output.get("last_timestamp"):
+                state["last_timestamp"] = output["last_timestamp"]
+                state["last_key"] = str(output.get("last_key", ""))
+            else:
+                state["last_timestamp"] = now.isoformat()
+                state["last_key"] = ""
+        except Exception:
+            state["last_timestamp"] = now.isoformat()
+            state["last_key"] = ""
+    else:
+        state["last_timestamp"] = now.isoformat()
         state["last_key"] = ""
     _save_state(args.state_file, state)
     return 0
