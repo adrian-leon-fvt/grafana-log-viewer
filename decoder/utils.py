@@ -26,6 +26,45 @@ if __name__ == "__main__":
 from decoder.config import *
 
 
+SUMMARY: int = 25
+"""Per-device / per-batch summary level (shown at some/minimal, hidden at silent)."""
+FINAL_SUMMARY: int = 35
+"""Final overall run total level (shown at all levels including silent)."""
+logging.addLevelName(SUMMARY, "SUMMARY")
+logging.addLevelName(FINAL_SUMMARY, "FINAL_SUMMARY")
+
+_cli_log_level: int | None = None
+
+
+def install_verbosity_level(verbosity: str) -> None:
+    """Set the effective log level from a --verbosity argument.
+
+    debug    → DEBUG   (everything)
+    some     → INFO    (hides per-signal Sending... and S3 scan/discovery)
+    minimal  → SUMMARY (also hides per-signal Sent... and per-file streamed)
+    silent   → WARNING (hides everything except FINAL_SUMMARY and errors)
+    """
+    global _cli_log_level
+    level_map = {
+        "debug": logging.DEBUG,
+        "some": logging.INFO,
+        "minimal": SUMMARY,
+        "silent": logging.WARNING,
+    }
+    _cli_log_level = level_map.get(verbosity, logging.DEBUG)
+    logging.getLogger().setLevel(_cli_log_level)
+
+
+def log_summary(msg: object, *args: object, **kwargs: object) -> None:
+    """Log at SUMMARY level (per-device/batch totals)."""
+    logging.log(SUMMARY, msg, *args, **kwargs)
+
+
+def log_final(msg: object, *args: object, **kwargs: object) -> None:
+    """Log at FINAL_SUMMARY level (overall run totals; shown even in silent)."""
+    logging.log(FINAL_SUMMARY, msg, *args, **kwargs)
+
+
 def setup_simple_logger(
     logger: logging.Logger,
     level: int = logging.INFO,
@@ -38,7 +77,7 @@ def setup_simple_logger(
     if not logger.hasHandlers():
         logger.addHandler(handler)
     logger.propagate = False
-    logger.setLevel(level)
+    logger.setLevel(_cli_log_level if _cli_log_level is not None else level)
 
 
 def get_time_str(start_time: float, end_ts: float | None = None) -> str:
