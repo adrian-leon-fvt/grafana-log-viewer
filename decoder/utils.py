@@ -18,6 +18,7 @@ from itertools import chain
 from can import LogReader, Logger
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
+from typing import Any
 
 if __name__ == "__main__":
     sys.path.append(str(Path(__file__).parent.parent))
@@ -400,6 +401,85 @@ def get_metrics_from_vm(
                 with ret_lock:
                     ret[key] = value
     return ret
+
+
+def _escape_vm_label_value(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _build_vm_selector(
+    job: str,
+    metric_name: str = "",
+    label_filters: dict[str, str] | None = None,
+) -> str:
+    filters = {"job": job, **(label_filters or {})}
+    selector = ",".join(
+        f'{key}="{_escape_vm_label_value(str(value))}"'
+        for key, value in filters.items()
+        if str(value).strip()
+    )
+    if metric_name.strip():
+        return f'{metric_name}{{{selector}}}' if selector else metric_name
+    return f"{{{selector}}}"
+
+
+def get_latest_vm_job_timestamp(
+    server: str,
+    job: str,
+    metric_name: str = "",
+    label_filters: dict[str, str] | None = None,
+    lookback: str = "365d",
+    timeout: float = 10.0,
+) -> dict[str, Any]:
+    """
+    Fast latest-sample lookup for one VM job.
+
+    Uses one instant query with a wide lookback window so VictoriaMetrics can
+    search for the most recent raw sample without a range-scan loop.
+    """
+    selector = _build_vm_selector(
+        job=job, metric_name=metric_name, label_filters=label_filters
+    )
+    query = f"max(timestamp({selector}))"
+
+    try:
+        resp = requests.get(
+            server + vmapi_query,
+            params={"query": query, "step": lookback},
+            timeout=timeout,
+        )
+        if resp.status_code != 200:
+            return {
+                "has_data": False,
+                "timestamp": None,
+                "query": query,
+                "error": f"status_code={resp.status_code}",
+            }
+
+        payload = resp.json()
+        result = payload.get("data", {}).get("result", [])
+        if not result:
+            return {"has_data": False, "timestamp": None, "query": query}
+
+        raw_value = result[0].get("value", [None, None])[1]
+        if raw_value in (None, ""):
+            return {"has_data": False, "timestamp": None, "query": query}
+
+        latest_ts = datetime.fromtimestamp(
+            float(raw_value), tz=timezone.utc
+        )
+        return {
+            "has_data": True,
+            "timestamp": latest_ts,
+            "query": query,
+        }
+    except Exception as e:
+        return {
+            "has_data": False,
+            "timestamp": None,
+            "query": query,
+            "error": str(e),
+        }
 
 
 def convert_mf4_to_trc(
