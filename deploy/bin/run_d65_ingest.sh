@@ -2,15 +2,13 @@
 set -euo pipefail
 
 ROOT_DIR="${ROOT_DIR:-/home/ubuntu/ingest/current}"
-STATE_DIR="${STATE_DIR:-/var/lib/ingest}"
+STATE_DIR="${STATE_DIR:-/home/ubuntu/ingest/cursor}"
 PYTHON_BIN="${PYTHON_BIN:-$ROOT_DIR/.venv/bin/python}"
 ENV_FILE="${ENV_FILE:-/etc/ingest/ingest.env}"
 
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Missing env file: $ENV_FILE" >&2
-  exit 2
+if [[ -f "$ENV_FILE" ]]; then
+  source "$ENV_FILE"
 fi
-source "$ENV_FILE"
 
 mkdir -p "$STATE_DIR"
 cd "$ROOT_DIR"

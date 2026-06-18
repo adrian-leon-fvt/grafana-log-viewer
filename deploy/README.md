@@ -3,11 +3,16 @@
 This runs existing Python ingestion scripts on the `victoriametrics` host with
 systemd timers.
 
-Polling uses persisted cursor state (`/var/lib/ingest/*.json`) with overlap
+Polling uses persisted cursor state (`/home/ubuntu/ingest/cursor/*.json`) with overlap
 buffer to avoid timer-drift gaps.
+Cursor files live under `/home/ubuntu/ingest/cursor` so they survive release
+switches and can be copied to new server.
 
 Set `D65_SERVER` and `B3SR_SERVER` in `/etc/ingest/ingest.env` to local/container
 addresses so ingestion avoids tailnet routing on-host.
+
+`/etc/ingest/ingest.env` is optional. Wrappers run with defaults if file is
+missing.
 
 ## First-time server setup
 

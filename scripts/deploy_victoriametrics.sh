@@ -18,10 +18,21 @@ tar \
   --exclude='venv' \
   --exclude='data' \
   --exclude='__pycache__' \
+  --exclude='decoder/test_*.py' \
+  --exclude='decoder/notebooks' \
   -czf "$TMP_TAR" \
-  decoder deploy requirements.txt scripts
+  decoder/__init__.py \
+  decoder/config.py \
+  decoder/utils.py \
+  decoder/s3_helper.py \
+  decoder/sending.py \
+  decoder/D65 \
+  decoder/B3SR \
+  deploy \
+  requirements.txt \
+  scripts
 
-ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_BASE/releases' '$REMOTE_BASE/shared' /var/log/ingest /var/lib/ingest"
+ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_BASE/releases' '$REMOTE_BASE/shared' '$REMOTE_BASE/cursor' /var/log/ingest"
 scp "$TMP_TAR" "$REMOTE_HOST:$REMOTE_RELEASE.tar.gz"
 ssh "$REMOTE_HOST" "
   set -euo pipefail
