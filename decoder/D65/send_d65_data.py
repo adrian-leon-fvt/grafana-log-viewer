@@ -125,6 +125,15 @@ def resolve_dbc_folder(dbc_folder: str | None = None) -> Path:
     return resolved
 
 
+def _resolve_dbc_file(dbc_folder: str | None, *parts: str) -> Path:
+    base = get_d65_dbc_base_path(dbc_folder)
+    candidate = base.joinpath(*parts)
+    if candidate.exists():
+        return candidate
+    fallback = base.joinpath(parts[-1])
+    return fallback if fallback.exists() else candidate
+
+
 def get_d65_dbc_base_path(dbc_folder: str | None = None) -> Path:
     return resolve_dbc_folder(dbc_folder)
 
@@ -147,19 +156,19 @@ def get_d65_dbc_file(
     if job == "Upper" or job == "Lower":
         return get_d65_dbc_files()[job]
     elif job == "Brightloop":
-        return [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
+        return [_resolve_dbc_file(None, "brightloop", "d65_brightloops.dbc")]
     elif job == "NV":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH0_NV.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH0_NV.dbc")]
     elif job == "Main":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH4_Main.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH4_Main.dbc")]
     elif job == "RCS":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH3_RCS_Module.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH3_RCS_Module.dbc")]
     elif job == "CM":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH5_CM.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH5_CM.dbc")]
     elif job == "EVCC":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH6_EVCC.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH6_EVCC.dbc")]
     elif job == "OneShot":
-        return [Path.joinpath(_d65_loc, "one_shot_updates.dbc")]
+        return [_resolve_dbc_file(None, "one_shot_updates.dbc")]
 
     return []
 
@@ -183,17 +192,13 @@ def get_d65_dbc_files(
         ],
     }
 
-    upper_dbc_files: list[Path] = []
-    upper_dbc_files += [
-        Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Upper"]
+    upper_dbc_files = [
+        _resolve_dbc_file(dbc_folder, dbc) for dbc in d65_dbc_files["Upper"]
     ]
-    upper_dbc_files += [
-        Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")
-    ]
+    upper_dbc_files.append(_resolve_dbc_file(dbc_folder, "d65_brightloops.dbc"))
 
-    lower_dbc_files: list[Path] = []
-    lower_dbc_files += [
-        Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Lower"]
+    lower_dbc_files = [
+        _resolve_dbc_file(dbc_folder, dbc) for dbc in d65_dbc_files["Lower"]
     ]
     # lower_dbc_files += [Path.joinpath(_d65_loc, "one_shot_updates.dbc")]
 
