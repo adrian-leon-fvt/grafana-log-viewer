@@ -66,7 +66,10 @@ def format_duration_seconds(elapsed: float) -> str:
 
 
 def format_time_span(start: datetime, end: datetime) -> str:
-    return format_duration_seconds((end - start).total_seconds())
+    return (
+        f"{start.isoformat()} - {end.isoformat()} "
+        f"({format_duration_seconds((end - start).total_seconds())})"
+    )
 
 
 def parse_time_arg(value: str, now: datetime, allow_today: bool = True) -> datetime:
