@@ -2,6 +2,10 @@ import os
 import sys
 import time
 import logging
+import io
+import tempfile
+import ctypes
+import subprocess
 from pathlib import Path
 
 from datetime import datetime, timedelta, timezone
@@ -12,7 +16,7 @@ from itertools import chain
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Literal, Iterable
+from typing import Literal, Iterable, Any
 
 if __name__ == "__main__":
     sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -214,6 +218,177 @@ def send_files_to_victoriametrics(
     return sent_stats
 
 
+def main_post_s3_streaming_to_victoriametrics(
+    server: str,
+    s3_bucket: str,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+    s3_prefix: str = "",
+    newest_first: bool = True,
+    s3_info_list: list[dict] | None = None,
+    streaming_strategy: Literal["auto", "memory", "tempfile"] = "auto",
+    memory_fraction: float = 0.35,
+    decode_overhead_factor: float = 2.5,
+    max_active_files: int = 1,
+    max_batch_size: int = 10_000,
+    skip_signal_range_check: bool = False,
+    posted_after: datetime | None = None,
+):
+    start_ts = time.time()
+
+    if start_date is None:
+        start_date = datetime.now(tz=timezone.utc) - timedelta(days=1)
+
+    if end_date is None:
+        end_date = datetime.now(tz=timezone.utc)
+
+    if s3_info_list is None:
+        s3_info_list = get_mf4_files_list_from_s3(
+            bucket_name=s3_bucket,
+            start_time=start_date,
+            end_time=end_date,
+            Prefix=s3_prefix,
+            posted_after=posted_after,
+        )
+
+    if not s3_info_list:
+        logging.warning("⚠️ No B3SR S3 files found to stream.")
+        return {}
+
+    s3_info_list = [
+        item
+        for item in s3_info_list
+        if isinstance(item, dict)
+        and isinstance(item.get("Key", None), str)
+        and item["Key"].lower().endswith(".mf4")
+    ]
+
+    if not s3_info_list:
+        logging.warning("⚠️ No B3SR MF4 S3 files left after filtering.")
+        return {}
+
+    s3_info_list.sort(
+        key=lambda x: x.get("Timestamp", datetime.min.replace(tzinfo=timezone.utc)),
+        reverse=newest_first,
+    )
+
+    dbc_files = normalize_dbc_entries([get_dbc_file_path()])
+    if not dbc_files:
+        logging.error("❌ B3SR DBC files could not be normalized.")
+        return {}
+
+    selected_strategy, profile = _select_s3_streaming_strategy(
+        s3_info_list=s3_info_list,
+        requested_strategy=streaming_strategy,
+        memory_fraction=memory_fraction,
+        decode_overhead_factor=decode_overhead_factor,
+        max_active_files=max_active_files,
+    )
+    logging.info(
+        "🧠 B3SR S3 streaming preflight | files=%s largest=%sB "
+        "worst_parallel=%sB projected_peak=%sB available_ram=%sB "
+        "ram_budget=%sB strategy=%s",
+        profile["file_count"],
+        profile["largest_file_bytes"],
+        profile["worst_parallel_bytes"],
+        profile["projected_peak_bytes"],
+        profile["available_ram_bytes"],
+        profile["ram_budget_bytes"],
+        selected_strategy,
+    )
+
+    max_retries = 10
+    retry_interval_seconds = 60
+    for attempt in range(1, max_retries + 1):
+        if is_victoriametrics_online(server):
+            break
+        if attempt < max_retries:
+            logging.warning(
+                f" -> ⚠️ {server} not available (attempt {attempt}/{max_retries}). Retrying in 1 minute..."
+            )
+            time.sleep(retry_interval_seconds)
+        else:
+            logging.error(
+                f" -> ❌ {server} not available after {max_retries} attempts. Exiting..."
+            )
+            exit(1)
+
+    s3c = create_s3_client(max_pool_connections=max(1, max_active_files))
+    total_counts: dict[str, int] = {}
+    total = len(s3_info_list)
+
+    for idx, item in enumerate(s3_info_list, start=1):
+        key = item["Key"]
+        count_str = f"[{idx} of {total}]"
+        start_ts_single = time.time()
+        result: dict[str, int] = {}
+
+        if selected_strategy == "memory":
+            blob = download_file_bytes_from_s3(
+                bucket_name=s3_bucket,
+                key=key,
+                s3_client=s3c,
+            )
+            if blob is None:
+                continue
+            try:
+                with MDF(io.BytesIO(blob)) as mdf:
+                    result = _decode_and_send_b3sr_mdf(
+                        mdf=mdf,
+                        server=server,
+                        dbc_files=dbc_files,
+                        skip_signal_range_check=skip_signal_range_check,
+                        max_batch_size=max_batch_size,
+                    )
+            except Exception as e:
+                logging.error(f"❌ {count_str} Error processing in memory {key}: {e}")
+            del blob
+        else:
+            tmp_path: Path | None = None
+            try:
+                with tempfile.NamedTemporaryFile(suffix=".mf4", delete=False) as tmp_file:
+                    tmp_path = Path(tmp_file.name)
+                ok = download_file_to_path_from_s3(
+                    bucket_name=s3_bucket,
+                    key=key,
+                    local_path=tmp_path,
+                    s3_client=s3c,
+                )
+                if not ok:
+                    continue
+                with MDF(tmp_path) as mdf:
+                    result = _decode_and_send_b3sr_mdf(
+                        mdf=mdf,
+                        server=server,
+                        dbc_files=dbc_files,
+                        skip_signal_range_check=skip_signal_range_check,
+                        max_batch_size=max_batch_size,
+                    )
+            except Exception as e:
+                logging.error(f"❌ {count_str} Error processing temp file {key}: {e}")
+            finally:
+                if tmp_path and tmp_path.exists():
+                    tmp_path.unlink()
+
+        sent = sum(result.values())
+        logging.info(
+            f"✅ {count_str} streamed {shortpath(Path(key))} in {get_time_str(start_ts_single)} ({convert_to_eng(sent)} samples)"
+        )
+        for signal_name, count in result.items():
+            total_counts[signal_name] = total_counts.get(signal_name, 0) + count
+
+    end_ts = time.time()
+    total_signals_sent = len(total_counts.keys())
+    total_samples_sent = sum(total_counts.values())
+    logging.info(
+        f"🏁 Streamed {total} B3SR S3 files in {get_time_str(start_ts, end_ts)} "
+        f"({total_signals_sent} signals | {convert_to_eng(total_samples_sent)} samples | "
+        f"{convert_to_eng(total_samples_sent / max(end_ts - start_ts, 1e-9))} samples/s)."
+    )
+
+    return total_counts
+
+
 def get_files_in_range(
     dir_path: Path, start: datetime, end: datetime
 ) -> list[CSVContent]:
@@ -333,6 +508,125 @@ def parse_time_offset(offset_str: str) -> timedelta:
         raise ValueError(f"Unknown time unit: {unit}")
 
 
+def _get_available_ram_bytes() -> int | None:
+    if os.name == "nt":
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        stat = MEMORYSTATUSEX()
+        stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+            return int(stat.ullAvailPhys)
+        return None
+
+    if sys.platform == "darwin":
+        try:
+            out = subprocess.check_output(
+                ["vm_stat"], text=True, stderr=subprocess.DEVNULL
+            )
+            page_size = 4096
+            m = re.search(r"page size of (\d+) bytes", out)
+            if m:
+                page_size = int(m.group(1))
+
+            pages = 0
+            for key in ("Pages free", "Pages inactive", "Pages speculative"):
+                mm = re.search(rf"{key}:\s+(\d+)\.", out)
+                if mm:
+                    pages += int(mm.group(1))
+            if pages > 0:
+                return int(pages * page_size)
+        except Exception:
+            return None
+
+    try:
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        avail_pages = os.sysconf("SC_AVPHYS_PAGES")
+        return int(page_size * avail_pages)
+    except Exception:
+        return None
+
+
+def _select_s3_streaming_strategy(
+    s3_info_list: list[dict],
+    requested_strategy: Literal["auto", "memory", "tempfile"],
+    memory_fraction: float,
+    decode_overhead_factor: float,
+    max_active_files: int,
+) -> tuple[Literal["memory", "tempfile"], dict[str, int | float | None]]:
+    sizes = [
+        int(item["Size"])
+        for item in s3_info_list
+        if isinstance(item, dict) and "Size" in item
+    ]
+    sizes.sort(reverse=True)
+
+    max_active = max(1, max_active_files)
+    worst_parallel_bytes = sum(sizes[:max_active]) if sizes else 0
+    projected_peak_bytes = int(worst_parallel_bytes * decode_overhead_factor)
+    available_ram_bytes = _get_available_ram_bytes()
+    ram_budget_bytes = (
+        int(available_ram_bytes * memory_fraction)
+        if available_ram_bytes is not None
+        else None
+    )
+
+    if requested_strategy == "memory":
+        selected: Literal["memory", "tempfile"] = "memory"
+    elif requested_strategy == "tempfile":
+        selected = "tempfile"
+    else:
+        if ram_budget_bytes is not None and projected_peak_bytes <= ram_budget_bytes:
+            selected = "memory"
+        else:
+            selected = "tempfile"
+
+    profile: dict[str, int | float | None] = {
+        "file_count": len(sizes),
+        "largest_file_bytes": sizes[0] if sizes else 0,
+        "worst_parallel_bytes": worst_parallel_bytes,
+        "projected_peak_bytes": projected_peak_bytes,
+        "available_ram_bytes": available_ram_bytes,
+        "ram_budget_bytes": ram_budget_bytes,
+        "max_active_files": max_active,
+        "decode_overhead_factor": decode_overhead_factor,
+    }
+    return selected, profile
+
+
+def _decode_and_send_b3sr_mdf(
+    mdf: MDF,
+    server: str,
+    dbc_files: list[DbcFileType],
+    skip_signal_range_check: bool,
+    max_batch_size: int,
+) -> dict[str, int]:
+    decoded = mdf.extract_bus_logging(
+        database_files={"CAN": dbc_files},
+        ignore_value2text_conversion=True,
+    )
+    if not list(decoded.iter_channels()):
+        return {}
+    return send_decoded(
+        decoded=decoded,
+        server=server,
+        job=B3SR_JOB,
+        skip_signal_fn=None,
+        skip_signal_range_check=skip_signal_range_check,
+        batch_size=max_batch_size,
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Send B3SR MF4 files from CANEdge folder to VictoriaMetrics server."
@@ -366,6 +660,53 @@ if __name__ == "__main__":
         action="store_true",
         help="Send to test node (server_vm_test_dump) instead of main B3SR node.",
     )
+    parser.add_argument(
+        "--s3-streaming",
+        action="store_true",
+        help="Stream MF4 files directly from S3 instead of scanning local disk.",
+    )
+    parser.add_argument(
+        "--s3-bucket",
+        type=str,
+        default="",
+        help="S3 bucket for streaming mode.",
+    )
+    parser.add_argument(
+        "--s3-prefix",
+        type=str,
+        default="",
+        help="Optional S3 prefix for streaming mode.",
+    )
+    parser.add_argument(
+        "--streaming-strategy",
+        type=str,
+        choices=["auto", "memory", "tempfile"],
+        default="auto",
+        help="Streaming strategy to use for S3 mode.",
+    )
+    parser.add_argument(
+        "--memory-fraction",
+        type=float,
+        default=0.35,
+        help="Fraction of available RAM allowed for streaming mode.",
+    )
+    parser.add_argument(
+        "--decode-overhead-factor",
+        type=float,
+        default=2.5,
+        help="Decode RAM overhead multiplier for streaming mode.",
+    )
+    parser.add_argument(
+        "--max-active-files",
+        type=int,
+        default=1,
+        help="Max S3 objects to consider in preflight memory estimate.",
+    )
+    parser.add_argument(
+        "--skip-signal-range-check",
+        action="store_true",
+        help="Skip signal range checks while sending decoded data.",
+    )
 
     args = parser.parse_args()
 
@@ -384,9 +725,26 @@ if __name__ == "__main__":
     else:
         end_date = now - parse_time_offset(args.end)
 
-    main_post_to_victoriametrics(
-        server=server,
-        start_date=start_date,
-        end_date=end_date,
-        newest_first=args.oldest_first is False,
-    )
+    if args.s3_streaming:
+        if not args.s3_bucket.strip():
+            parser.error("--s3-bucket is required when --s3-streaming is set")
+        main_post_s3_streaming_to_victoriametrics(
+            server=server,
+            s3_bucket=args.s3_bucket,
+            start_date=start_date,
+            end_date=end_date,
+            s3_prefix=args.s3_prefix,
+            newest_first=args.oldest_first is False,
+            streaming_strategy=args.streaming_strategy,
+            memory_fraction=args.memory_fraction,
+            decode_overhead_factor=args.decode_overhead_factor,
+            max_active_files=args.max_active_files,
+            skip_signal_range_check=args.skip_signal_range_check,
+        )
+    else:
+        main_post_to_victoriametrics(
+            server=server,
+            start_date=start_date,
+            end_date=end_date,
+            newest_first=args.oldest_first is False,
+        )

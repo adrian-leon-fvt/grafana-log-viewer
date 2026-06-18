@@ -102,13 +102,10 @@ def download_files_from_s3(
 
     if isinstance(bucket_name, EESBuckets):
         bucket_name = bucket_name.value[0]
-    elif isinstance(bucket_name, str) and bucket_name in [
-        b.value[0] for b in EESBuckets
-    ]:
-        bucket_name = bucket_name
     else:
-        logging.error(f"❌ Invalid bucket name: {bucket_name}")
-        return count
+        if not isinstance(bucket_name, str) or not bucket_name.strip():
+            logging.error(f"❌ Invalid bucket name: {bucket_name}")
+            return count
 
     s3c = create_s3_client(max_pool_connections=max_workers)
     total_keys = len(keys)
@@ -192,10 +189,7 @@ def download_file_to_path_from_s3(
     """
     if isinstance(bucket_name, EESBuckets):
         bucket_name = bucket_name.value[0]
-    elif not (
-        isinstance(bucket_name, str)
-        and bucket_name in [b.value[0] for b in EESBuckets]
-    ):
+    elif not isinstance(bucket_name, str) or not bucket_name.strip():
         logging.error(f"❌ Invalid bucket name: {bucket_name}")
         return False
 
@@ -228,10 +222,7 @@ def download_file_bytes_from_s3(
     """
     if isinstance(bucket_name, EESBuckets):
         bucket_name = bucket_name.value[0]
-    elif not (
-        isinstance(bucket_name, str)
-        and bucket_name in [b.value[0] for b in EESBuckets]
-    ):
+    elif not isinstance(bucket_name, str) or not bucket_name.strip():
         logging.error(f"❌ Invalid bucket name: {bucket_name}")
         return None
 
@@ -279,11 +270,7 @@ def get_mf4_files_list_from_s3(
 
     if isinstance(bucket_name, EESBuckets):
         bucket_name = bucket_name.value[0]
-    elif isinstance(bucket_name, str) and bucket_name in [
-        b.value[0] for b in EESBuckets
-    ]:
-        bucket_name = bucket_name
-    else:
+    elif not isinstance(bucket_name, str) or not bucket_name.strip():
         logging.error(f"❌ Invalid bucket name: {bucket_name}")
         return []
 
