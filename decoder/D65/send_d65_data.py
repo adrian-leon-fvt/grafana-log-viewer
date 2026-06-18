@@ -1141,16 +1141,17 @@ def main_post_s3_streaming_to_victoriametrics(
     )
     backfill_span = ""
     if span_start and span_end:
-        backfill_span = f" | backfill span {format_time_span(span_start, span_end)}"
+        backfill_span = format_time_span(span_start, span_end)
     logging.info(
-        "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s)%s.",
+        "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s).",
         total,
         get_time_str(all_start_ts, end_ts),
         total_signals_sent,
         convert_to_eng(total_samples_sent),
         convert_to_eng(total_samples_sent / max(end_ts - all_start_ts, 1e-9)),
-        backfill_span,
     )
+    if backfill_span:
+        logging.info("   ↳ backfill span %s", backfill_span)
 
     return total_lower_counts, total_upper_counts
 
@@ -1545,11 +1546,13 @@ def main_post_to_victoriametrics(
     if skip_signal_range_check and files:
         start_span = min(files, key=lambda x: x[2])[2]
         end_span = max(files, key=lambda x: x[2])[2]
-        backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
+        backfill_span = format_time_span(start_span, end_span)
 
     logging.info(
-        f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s){backfill_span}."
+        f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
     )
+    if backfill_span:
+        logging.info("   ↳ backfill span %s", backfill_span)
 
 
 def main_download_files(

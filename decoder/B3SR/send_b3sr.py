@@ -406,12 +406,14 @@ def main_post_s3_streaming_to_victoriametrics(
     if files:
         start_span = min(files, key=lambda x: x[1])[1]
         end_span = max(files, key=lambda x: x[1])[1]
-        backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
+        backfill_span = format_time_span(start_span, end_span)
     logging.info(
         f"🏁 Streamed {total} B3SR S3 files in {get_time_str(start_ts, end_ts)} "
         f"({total_signals_sent} signals | {convert_to_eng(total_samples_sent)} samples | "
-        f"{convert_to_eng(total_samples_sent / max(end_ts - start_ts, 1e-9))} samples/s){backfill_span}."
+        f"{convert_to_eng(total_samples_sent / max(end_ts - start_ts, 1e-9))} samples/s)."
     )
+    if backfill_span:
+        logging.info("   ↳ backfill span %s", backfill_span)
 
     return total_counts
 
@@ -511,12 +513,14 @@ def main_post_to_victoriametrics(
     if files:
         start_span = min(files, key=lambda x: x[1])[1]
         end_span = max(files, key=lambda x: x[1])[1]
-        backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
+        backfill_span = format_time_span(start_span, end_span)
     end_ts = time.time()
 
     logging.info(
-        f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s){backfill_span}."
+        f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
     )
+    if backfill_span:
+        logging.info("   ↳ backfill span %s", backfill_span)
 
 
 def _get_available_ram_bytes() -> int | None:
