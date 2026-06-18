@@ -35,6 +35,11 @@ from decoder.utils import (
     parse_time_arg,
     format_time_span,
     format_bytes,
+    install_verbosity_level,
+    log_summary,
+    log_final,
+    SUMMARY,
+    FINAL_SUMMARY,
 )
 from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
@@ -347,7 +352,7 @@ def build_dbc_override_for_filters(
                 matched_message_lower.update(
                     {m.lower() for m in found_messages}
                 )
-                logging.info(
+                logging.debug(
                     f"🎯 [{job}] Using signal context from {dbc.name}: "
                     f"{selected_frame_count} messages, "
                     f"{len(found_signals)} signal matches, "
@@ -517,7 +522,7 @@ def send_files_to_victoriametrics(
 
                 try:
                     start = time.time()
-                    logging.info(
+                    logging.debug(
                         f" ⏳ {count_str} Decoding file {shortpath(f)} ..."
                     )
                     if k not in ["Upper", "Lower"]:
@@ -533,7 +538,7 @@ def send_files_to_victoriametrics(
                             database_files={"CAN": dbc},
                             ignore_value2text_conversion=True,
                         )
-                        logging.info(
+                        logging.debug(
                             f" ✅ {count_str} Decoded file {shortpath(f)} in {get_time_str(start)}"
                         )
 
@@ -574,22 +579,22 @@ def send_files_to_victoriametrics(
                 yield i, lst[i : i + n]
 
         def process_batch(files, dbc_files, job, stack_msg):
-            logging.info(f" ⏳ {stack_msg}: Stacking {len(files)} files ...")
+            logging.debug(f" ⏳ {stack_msg}: Stacking {len(files)} files ...")
             start = time.time()
             try:
                 mdf = MDF().stack(files)
-                logging.info(
+                logging.debug(
                     f" ✅ {stack_msg}: Stacked {len(files)} files in {get_time_str(start)}"
                 )
 
-                logging.info(f" ⏳ {stack_msg}: Decoding stacked files ...")
+                logging.debug(f" ⏳ {stack_msg}: Decoding stacked files ...")
                 start = time.time()
                 try:
                     decoded = mdf.extract_bus_logging(
                         database_files={"CAN": dbc_files},
                         ignore_value2text_conversion=True,
                     )
-                    logging.info(
+                    logging.debug(
                         f" ✅ {stack_msg}: Decoded stacked files in {get_time_str(start)}"
                     )
                     if not list(decoded.iter_channels()):
@@ -749,7 +754,7 @@ def get_d65_file_list_from_s3(
         if isinstance(posted_after, datetime)
         else ""
     )
-    logging.info(
+    logging.debug(
         f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket betwen {start}-{end}[{posted_str}]."
     )
 
@@ -1058,7 +1063,7 @@ def main_post_s3_streaming_to_victoriametrics(
         decode_overhead_factor=decode_overhead_factor,
         max_active_files=max_active_files,
     )
-    logging.info(
+    logging.debug(
         "🧠 S3 streaming preflight | files=%s largest=%s "
         "worst_parallel=%s projected_peak=%s available_ram=%s "
         "ram_budget=%s strategy=%s",
@@ -1196,7 +1201,7 @@ def main_post_s3_streaming_to_victoriametrics(
     backfill_span = ""
     if span_start and span_end:
         backfill_span = format_time_span(span_start, span_end)
-    logging.info(
+    log_final(
         "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s).",
         total,
         get_time_str(all_start_ts, end_ts),
@@ -1205,7 +1210,7 @@ def main_post_s3_streaming_to_victoriametrics(
         convert_to_eng(total_samples_sent / max(end_ts - all_start_ts, 1e-9)),
     )
     if backfill_span:
-        logging.info("   ↳ backfill span %s", backfill_span)
+        log_final("   ↳ backfill span %s", backfill_span)
     if cursor_out:
         Path(cursor_out).write_text(
             json.dumps(
@@ -1248,10 +1253,10 @@ def download_d65_files_from_s3(
     if s3_csv_file and Path(s3_csv_file).exists():
         s3_csv_file = Path(s3_csv_file)
         if s3_csv_file.suffix.lower() == ".csv":
-            logging.info(f"📃 Reading S3 file list from {s3_csv_file} ...")
+            logging.debug(f"📃 Reading S3 file list from {s3_csv_file} ...")
             start_ts = time.time()
             s3_files = read_s3_file(s3_csv_file, start=start, end=end)
-            logging.info(
+            logging.debug(
                 f"✅ Read {len(s3_files)} files from {s3_csv_file} in {get_time_str(start_ts)}"
             )
             keys.extend(
@@ -1282,11 +1287,11 @@ def download_d65_files_from_s3(
         return
 
     if not download_path.exists():
-        logging.info(f"📁 Creating download directory: {download_path}")
+        logging.debug(f"📁 Creating download directory: {download_path}")
         download_path.mkdir(parents=True, exist_ok=True)
 
     start_ts = time.time()
-    logging.info(f"⬇️ Downloading {len(keys)} files to {download_path} ...")
+    logging.debug(f"⬇️ Downloading {len(keys)} files to {download_path} ...")
     count = download_files_from_s3(
         bucket_name=EESBuckets.S3_BUCKET_D65,
         keys=keys,
@@ -1406,7 +1411,7 @@ def get_all_d65_canedge_files(
     start: datetime, end: datetime, ignore_dchv_files: bool = True
 ) -> list[CSVContent]:
     canedge_folder = get_d65_canedge_folder()
-    logging.info(f" 📁 Reading CANEdge files from {canedge_folder} ...")
+    logging.debug(f" 📁 Reading CANEdge files from {canedge_folder} ...")
     start_ts = time.time()
     canedge_files: list[CSVContent] = get_files_in_range(
         dir_path=canedge_folder,
@@ -1422,7 +1427,7 @@ def get_all_d65_canedge_files(
         ]
         canedge_files = modded
 
-    logging.info(
+    logging.debug(
         f" ✔️  [Rig Crew] Found {len(canedge_files)} files in {get_time_str(start_ts)}"
     )
 
@@ -1434,7 +1439,7 @@ def get_all_d65_cancloud_files(
 ) -> list[CSVContent]:
     cancloud_folder = get_d65_cancloud_folder()
 
-    logging.info(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
+    logging.debug(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
     start_ts = time.time()
     cancloud_files: list[CSVContent] = get_files_in_range(
         dir_path=cancloud_folder,
@@ -1442,7 +1447,7 @@ def get_all_d65_cancloud_files(
         end=end,
     )
 
-    logging.info(
+    logging.debug(
         f" ✔️  [CANCloud] Found {len(cancloud_files)} files in {get_time_str(start_ts)}"
     )
 
@@ -1457,7 +1462,7 @@ def get_all_unique_d65_files(
 ) -> list[CSVContent]:
     cancloud_folder = get_d65_cancloud_folder()
 
-    logging.info(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
+    logging.debug(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
     start_ts = time.time()
     cancloud_files: list[CSVContent] = get_files_in_range(
         dir_path=cancloud_folder,
@@ -1479,7 +1484,7 @@ def main_read_all_files():
     files = get_all_unique_d65_files(sorted=True, start=start, end=end)
 
     for f, k, ts in files:
-        logging.info(f" 📄 {shortpath(f)} | {k} | {ts.isoformat()}")
+        logging.debug(f" 📄 {shortpath(f)} | {k} | {ts.isoformat()}")
 
 
 def main_post_to_victoriametrics(
@@ -1520,7 +1525,7 @@ def main_post_to_victoriametrics(
         files.sort(
             key=lambda x: x[2], reverse=kwargs.get("send_newest_first", True)
         )
-        logging.info(
+        logging.debug(
             f" ✔️  [CANCloud] Using S3 metadata timestamp basis for {len(files)} local files."
         )
     else:
@@ -1550,14 +1555,14 @@ def main_post_to_victoriametrics(
         ([l for l in files if l[1] == "Lower"], "Lower"),
     ]:
         if len(_files) == 0:
-            logging.info(f" ✔️  [{_name}] Found 0 files.")
+            logging.debug(f" ✔️  [{_name}] Found 0 files.")
             continue
         if len(_files) == 1:
-            logging.info(
+            logging.debug(
                 f" ✔️  [{_name}] Found 1 file starting at {_files[0][2].astimezone().isoformat()}."
             )
         else:
-            logging.info(
+            logging.debug(
                 f" ✔️  [{_name}] Found {len(_files)} files from {_files[0][2].astimezone().isoformat()} to {_files[-1][2].astimezone().isoformat()}."
             )
 
@@ -1598,7 +1603,7 @@ def main_post_to_victoriametrics(
         total_signals_sent = len(total_counts.keys())
         total_samples_sent = sum(total_counts.values())
 
-        logging.info(
+        log_summary(
             f" ✔️  [{device}] Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
         )
 
@@ -1614,11 +1619,11 @@ def main_post_to_victoriametrics(
         end_span = max(files, key=lambda x: x[2])[2]
         backfill_span = format_time_span(start_span, end_span)
 
-    logging.info(
+    log_final(
         f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
     )
     if backfill_span:
-        logging.info("   ↳ backfill span %s", backfill_span)
+        log_final("   ↳ backfill span %s", backfill_span)
 
 
 def main_download_files(
@@ -1820,6 +1825,16 @@ if __name__ == "__main__":
         help="DBC folder path, or 'old'/'compatibility' for workstation lookup. Defaults to decoder/D65/dbc.",
     )
     parser.add_argument(
+        "--verbosity",
+        type=str,
+        choices=["debug", "some", "minimal", "silent"],
+        default="debug",
+        help=(
+            "Log verbosity. debug=all, some=hides S3 scan+per-signal Sending..., "
+            "minimal=also hides per-signal Sent..., silent=errors+final summary only."
+        ),
+    )
+    parser.add_argument(
         "--cursor-ts",
         type=str,
         default="",
@@ -1840,6 +1855,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     DBC_FOLDER_OVERRIDE = args.dbc_folder
+    install_verbosity_level(args.verbosity)
 
     if args.s3_streaming_memory_fraction <= 0 or args.s3_streaming_memory_fraction > 1:
         parser.error("--s3-streaming-memory-fraction must be in (0, 1].")
@@ -1949,7 +1965,7 @@ if __name__ == "__main__":
             ignore_lower=effective_ignore_lower,
         )
     elif not args.skip_download:
-        logging.info("⬇️ Starting D65 file download from S3 ...")
+        logging.debug("⬇️ Starting D65 file download from S3 ...")
         s3_info_list_for_post = main_download_files(
             start_date=start_date,
             end_date=end_date,
@@ -1960,7 +1976,7 @@ if __name__ == "__main__":
 
     # main_delete_all_series(server)
     if not args.skip_post:
-        logging.info("🌐 Starting D65 data post to VictoriaMetrics ...")
+        logging.debug("🌐 Starting D65 data post to VictoriaMetrics ...")
         if args.s3_streaming:
             main_post_s3_streaming_to_victoriametrics(
                 server=server,
