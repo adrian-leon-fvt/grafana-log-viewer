@@ -10,7 +10,7 @@ from asammdf import MDF, Signal
 from asammdf.blocks.types import DbcFileType, BusType
 from datetime import datetime, timedelta
 from collections.abc import Iterable
-from typing import Sequence, Callable, Optional, Any, cast
+from typing import Sequence, Callable, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 if __name__ == "__main__":
@@ -20,20 +20,6 @@ from decoder.config import *
 from decoder.utils import *
 from decoder.livelogger.CANReader import CANReader
 from decoder.livelogger.DBCDecoder import DBCDecoder
-
-
-def normalize_dbc_entries(entries: Iterable[DbcFileType | Any]) -> list[DbcFileType]:
-    normalized: list[DbcFileType] = []
-    for entry in entries:
-        if (
-            isinstance(entry, tuple)
-            and len(entry) == 2
-            and isinstance(entry[1], int)
-        ):
-            normalized.append(cast(DbcFileType, entry))
-        else:
-            normalized.append((cast(Any, entry), 0))
-    return normalized
 
 
 def _extend_no_proxy(entries: list[str]) -> None:
@@ -525,9 +511,7 @@ def decode_and_send(
         logger.warning("⚠️ No directory or files specified.")
         return signals_sample_count
 
-    database_files: dict[BusType, Iterable[DbcFileType]] = {
-        "CAN": normalize_dbc_entries(dbc_files)
-    }
+    database_files: dict[BusType, Iterable[DbcFileType]] = {"CAN": dbc_files}
 
     if not dbc_files:
         logger.error("⚠️ No DBC files specified.")

@@ -17,7 +17,6 @@
   - `decoder/B3SR/send_b3sr.py`
   - `decoder/SnowLeopardTMS/send_snow_leopard_tms.py`
   - These scripts resolve source files (local or S3), decode MF4 with DBCs via `asammdf`, and post to VictoriaMetrics.
-  - D65 also supports direct S3 streaming mode (`--s3-streaming`) with preflight strategy selection (`auto|memory|tempfile`).
 - Live paths:
   - `decoder/livelogger/` handles live CAN decode (`CANReader`, `DBCDecoder`, `livestream`).
   - `decoder/GUI/` provides PySide6 UIs for live/file workflows and buffered metric sending (`metrics_manager.py`).
