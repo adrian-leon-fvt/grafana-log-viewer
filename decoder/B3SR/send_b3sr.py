@@ -854,7 +854,7 @@ if __name__ == "__main__":
     DBC_FOLDER_OVERRIDE = args.dbc_folder
     skip_signal_range_check = args.backfill or args.skip_signal_range_check
 
-    server = server_vm_test_dump if args.test else server_vm_b3sr
+    server = server_vm_test_dump if args.test else args.server
 
     # Parse start time
     now = datetime.now().astimezone(ZoneInfo("America/Vancouver"))

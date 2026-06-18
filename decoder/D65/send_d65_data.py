@@ -1691,6 +1691,12 @@ if __name__ == "__main__":
         description="Send D65 data to VictoriaMetrics"
     )
     parser.add_argument(
+        "--server",
+        type=str,
+        default=server_vm_d65,
+        help="VictoriaMetrics server URL override.",
+    )
+    parser.add_argument(
         "--start",
         type=str,
         default="7d",
@@ -1842,7 +1848,7 @@ if __name__ == "__main__":
     if args.s3_streaming_max_active_files < 1:
         parser.error("--s3-streaming-max-active-files must be >= 1.")
 
-    server = server_vm_test_dump if args.test else server_vm_d65
+    server = server_vm_test_dump if args.test else args.server
 
     # Parse start time
     now = datetime.now().astimezone(ZoneInfo("America/Vancouver"))

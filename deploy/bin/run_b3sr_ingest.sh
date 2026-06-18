@@ -22,6 +22,7 @@ exec "$PYTHON_BIN" deploy/bin/run_with_cursor.py \
   --overlap-seconds "${B3SR_OVERLAP_SECONDS:-120}" \
   -- \
   "$PYTHON_BIN" -m decoder.B3SR.send_b3sr \
+  --server "${B3SR_SERVER:-http://localhost:8431}" \
   --s3-streaming \
   --s3-bucket "${B3SR_S3_BUCKET:-b3sr-telematics}" \
   --start "{start}" \

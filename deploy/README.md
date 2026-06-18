@@ -6,6 +6,9 @@ systemd timers.
 Polling uses persisted cursor state (`/var/lib/ingest/*.json`) with overlap
 buffer to avoid timer-drift gaps.
 
+Set `D65_SERVER` and `B3SR_SERVER` in `/etc/ingest/ingest.env` to local/container
+addresses so ingestion avoids tailnet routing on-host.
+
 ## First-time server setup
 
 1. Copy env template and fill private values:

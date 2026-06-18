@@ -22,6 +22,7 @@ exec "$PYTHON_BIN" deploy/bin/run_with_cursor.py \
   --overlap-seconds "${D65_OVERLAP_SECONDS:-120}" \
   -- \
   "$PYTHON_BIN" -m decoder.D65.send_d65_data \
+  --server "${D65_SERVER:-http://localhost:8428}" \
   --s3-streaming \
   --start "{start}" \
   --end "{end}" \
