@@ -180,6 +180,83 @@ def download_files_from_s3(
     return count
 
 
+def download_file_to_path_from_s3(
+    bucket_name: EESBuckets | str,
+    key: str,
+    local_path: Path,
+    max_retries: int = 2,
+    s3_client=None,
+) -> bool:
+    """
+    Download one S3 object key to a local path with retries.
+    """
+    if isinstance(bucket_name, EESBuckets):
+        bucket_name = bucket_name.value[0]
+    elif not (
+        isinstance(bucket_name, str)
+        and bucket_name in [b.value[0] for b in EESBuckets]
+    ):
+        logging.error(f"❌ Invalid bucket name: {bucket_name}")
+        return False
+
+    s3c = s3_client if s3_client is not None else create_s3_client()
+    for attempt in range(1, max_retries + 2):
+        try:
+            s3c.download_file(bucket_name, key, str(local_path))
+            return True
+        except ClientError as e:
+            logging.error(
+                f"❌ Error downloading {key} from bucket '{bucket_name}' (attempt {attempt}): {e}"
+            )
+        except Exception as e:
+            logging.error(
+                f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}"
+            )
+        if attempt <= max_retries:
+            time.sleep(1)
+    return False
+
+
+def download_file_bytes_from_s3(
+    bucket_name: EESBuckets | str,
+    key: str,
+    max_retries: int = 2,
+    s3_client=None,
+) -> bytes | None:
+    """
+    Download one S3 object and return its bytes in memory.
+    """
+    if isinstance(bucket_name, EESBuckets):
+        bucket_name = bucket_name.value[0]
+    elif not (
+        isinstance(bucket_name, str)
+        and bucket_name in [b.value[0] for b in EESBuckets]
+    ):
+        logging.error(f"❌ Invalid bucket name: {bucket_name}")
+        return None
+
+    s3c = s3_client if s3_client is not None else create_s3_client()
+    for attempt in range(1, max_retries + 2):
+        try:
+            resp = s3c.get_object(Bucket=bucket_name, Key=key)
+            body = resp.get("Body", None)
+            if body is None:
+                logging.error(f"❌ Empty body for key {key}")
+                return None
+            return body.read()
+        except ClientError as e:
+            logging.error(
+                f"❌ Error reading {key} from bucket '{bucket_name}' (attempt {attempt}): {e}"
+            )
+        except Exception as e:
+            logging.error(
+                f"❌ Unexpected error reading {key} (attempt {attempt}): {e}"
+            )
+        if attempt <= max_retries:
+            time.sleep(1)
+    return None
+
+
 def get_mf4_files_list_from_s3(
     bucket_name: EESBuckets | str,
     start_time: datetime | str = "",

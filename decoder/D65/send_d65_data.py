@@ -3,7 +3,11 @@ import sys
 import time
 import logging
 import argparse
+import io
+import tempfile
 import re
+import ctypes
+import subprocess
 from copy import deepcopy
 from pathlib import Path
 
@@ -15,7 +19,7 @@ from itertools import chain
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Literal, Iterable, cast
+from typing import Literal, Iterable, Any
 from canmatrix import CanMatrix
 from canmatrix import formats as canmatrix_formats
 
@@ -28,7 +32,7 @@ from decoder.utils import (
     convert_to_eng,
     is_victoriametrics_online,
 )
-from decoder.sending import send_decoded
+from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
     LOG_FORMAT,
     server_vm_d65,
@@ -419,21 +423,6 @@ def send_files_to_victoriametrics(
     Uses ThreadPoolExecutor to send batches in parallel.
     """
 
-    def _normalize_dbc_entries(
-        entries: Iterable[DbcFileType | DBCSource],
-    ) -> list[DbcFileType]:
-        normalized: list[DbcFileType] = []
-        for entry in entries:
-            if (
-                isinstance(entry, tuple)
-                and len(entry) == 2
-                and isinstance(entry[1], int)
-            ):
-                normalized.append(cast(DbcFileType, entry))
-            else:
-                normalized.append((cast(DBCSource, entry), 0))
-        return normalized
-
     dbc_files = get_d65_dbc_files()
     if dbc_files_override := kwargs.get("dbc_files_override", None):
         if "Upper" in dbc_files_override:
@@ -441,10 +430,10 @@ def send_files_to_victoriametrics(
         if "Lower" in dbc_files_override:
             dbc_files["Lower"] = dbc_files_override["Lower"]
 
-    upper_dbc_files: list[DbcFileType] = _normalize_dbc_entries(
+    upper_dbc_files: list[DbcFileType] = normalize_dbc_entries(
         dbc_files["Upper"]
     )
-    lower_dbc_files: list[DbcFileType] = _normalize_dbc_entries(
+    lower_dbc_files: list[DbcFileType] = normalize_dbc_entries(
         dbc_files["Lower"]
     )
 
@@ -749,6 +738,346 @@ def get_d65_file_list_from_s3(
                     )
 
     return files
+
+
+def _get_available_ram_bytes() -> int | None:
+    if os.name == "nt":
+        # https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-memorystatusex
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        stat = MEMORYSTATUSEX()
+        stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+            return int(stat.ullAvailPhys)
+        return None
+
+    if sys.platform == "darwin":
+        try:
+            out = subprocess.check_output(
+                ["vm_stat"], text=True, stderr=subprocess.DEVNULL
+            )
+            page_size = 4096
+            m = re.search(r"page size of (\d+) bytes", out)
+            if m:
+                page_size = int(m.group(1))
+
+            # free + inactive + speculative approximates quickly available RAM.
+            keys = ("Pages free", "Pages inactive", "Pages speculative")
+            pages = 0
+            for key in keys:
+                mm = re.search(rf"{key}:\s+(\d+)\.", out)
+                if mm:
+                    pages += int(mm.group(1))
+            if pages > 0:
+                return int(pages * page_size)
+        except Exception:
+            return None
+
+    try:
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        avail_pages = os.sysconf("SC_AVPHYS_PAGES")
+        return int(page_size * avail_pages)
+    except Exception:
+        return None
+
+
+def _select_s3_streaming_strategy(
+    s3_info_list: list[dict],
+    requested_strategy: Literal["auto", "memory", "tempfile"],
+    memory_fraction: float,
+    decode_overhead_factor: float,
+    max_active_files: int,
+) -> tuple[Literal["memory", "tempfile"], dict[str, int | float | None]]:
+    sizes = [
+        int(item["Size"])
+        for item in s3_info_list
+        if isinstance(item, dict) and "Size" in item
+    ]
+    sizes.sort(reverse=True)
+
+    max_active = max(1, max_active_files)
+    worst_parallel_bytes = sum(sizes[:max_active]) if sizes else 0
+    projected_peak_bytes = int(worst_parallel_bytes * decode_overhead_factor)
+    available_ram_bytes = _get_available_ram_bytes()
+    ram_budget_bytes = (
+        int(available_ram_bytes * memory_fraction)
+        if available_ram_bytes is not None
+        else None
+    )
+
+    if requested_strategy == "memory":
+        selected: Literal["memory", "tempfile"] = "memory"
+    elif requested_strategy == "tempfile":
+        selected = "tempfile"
+    else:
+        if (
+            ram_budget_bytes is not None
+            and projected_peak_bytes <= ram_budget_bytes
+        ):
+            selected = "memory"
+        else:
+            selected = "tempfile"
+
+    profile: dict[str, int | float | None] = {
+        "file_count": len(sizes),
+        "largest_file_bytes": sizes[0] if sizes else 0,
+        "worst_parallel_bytes": worst_parallel_bytes,
+        "projected_peak_bytes": projected_peak_bytes,
+        "available_ram_bytes": available_ram_bytes,
+        "ram_budget_bytes": ram_budget_bytes,
+        "max_active_files": max_active,
+        "decode_overhead_factor": decode_overhead_factor,
+    }
+    return selected, profile
+
+
+def _key_segment_from_s3_key(key: str) -> Literal["Upper", "Lower"] | None:
+    if key.startswith(MAC_UPPER):
+        return "Upper"
+    if key.startswith(MAC_LOWER):
+        return "Lower"
+    return None
+
+
+def _decode_and_send_d65_mdf(
+    mdf: MDF,
+    job: Literal["Upper", "Lower"],
+    server: str,
+    upper_dbc_files: list[DbcFileType],
+    lower_dbc_files: list[DbcFileType],
+    skip_signal_range_check: bool,
+    max_batch_size: int,
+) -> dict[str, int]:
+    dbc_files = upper_dbc_files if job == "Upper" else lower_dbc_files
+    decoded = mdf.extract_bus_logging(
+        database_files={"CAN": dbc_files},
+        ignore_value2text_conversion=True,
+    )
+    if not list(decoded.iter_channels()):
+        return {}
+    return send_decoded(
+        decoded=decoded,
+        server=server,
+        job=job,
+        skip_signal_fn=skip_signal,
+        skip_signal_range_check=skip_signal_range_check,
+        batch_size=max_batch_size,
+    )
+
+
+def main_post_s3_streaming_to_victoriametrics(
+    server: str,
+    start_date: datetime,
+    end_date: datetime,
+    s3_info_list: list[dict] | None = None,
+    ignore_upper: bool = False,
+    ignore_lower: bool = False,
+    streaming_strategy: Literal["auto", "memory", "tempfile"] = "auto",
+    memory_fraction: float = 0.35,
+    decode_overhead_factor: float = 2.5,
+    max_active_files: int = 1,
+    max_batch_size: int = 10_000,
+    skip_signal_range_check: bool = False,
+    **kwargs,
+) -> tuple[dict[str, int], dict[str, int]]:
+    if s3_info_list is None:
+        s3_info_list = get_d65_file_list_from_s3(
+            start=start_date,
+            end=end_date,
+            ignore_upper=ignore_upper,
+            ignore_lower=ignore_lower,
+        )
+
+    if not s3_info_list:
+        logging.warning("⚠️ No S3 files found to stream.")
+        return {}, {}
+
+    s3_info_list = [
+        item
+        for item in s3_info_list
+        if isinstance(item, dict)
+        and isinstance(item.get("Key", None), str)
+        and _key_segment_from_s3_key(item["Key"]) is not None
+    ]
+
+    if ignore_upper:
+        s3_info_list = [
+            item
+            for item in s3_info_list
+            if _key_segment_from_s3_key(item["Key"]) == "Lower"
+        ]
+    if ignore_lower:
+        s3_info_list = [
+            item
+            for item in s3_info_list
+            if _key_segment_from_s3_key(item["Key"]) == "Upper"
+        ]
+
+    send_newest_first = kwargs.get("send_newest_first", True)
+    s3_info_list.sort(
+        key=lambda x: x.get("Timestamp", datetime.min.replace(tzinfo=timezone.utc)),
+        reverse=send_newest_first,
+    )
+
+    if not s3_info_list:
+        logging.warning("⚠️ No S3 files left after filtering.")
+        return {}, {}
+
+    dbc_files = get_d65_dbc_files()
+    dbc_files_override: Any = kwargs.get("dbc_files_override", None)
+    if dbc_files_override:
+        if "Upper" in dbc_files_override:
+            dbc_files["Upper"] = dbc_files_override["Upper"]
+        if "Lower" in dbc_files_override:
+            dbc_files["Lower"] = dbc_files_override["Lower"]
+
+    upper_dbc_files = normalize_dbc_entries(dbc_files["Upper"])
+    lower_dbc_files = normalize_dbc_entries(dbc_files["Lower"])
+
+    selected_strategy, profile = _select_s3_streaming_strategy(
+        s3_info_list=s3_info_list,
+        requested_strategy=streaming_strategy,
+        memory_fraction=memory_fraction,
+        decode_overhead_factor=decode_overhead_factor,
+        max_active_files=max_active_files,
+    )
+    logging.info(
+        "🧠 S3 streaming preflight | files=%s largest=%sB "
+        "worst_parallel=%sB projected_peak=%sB available_ram=%sB "
+        "ram_budget=%sB strategy=%s",
+        profile["file_count"],
+        profile["largest_file_bytes"],
+        profile["worst_parallel_bytes"],
+        profile["projected_peak_bytes"],
+        profile["available_ram_bytes"],
+        profile["ram_budget_bytes"],
+        selected_strategy,
+    )
+
+    max_retries = 10
+    retry_interval_seconds = 60
+    for attempt in range(1, max_retries + 1):
+        if is_victoriametrics_online(server):
+            break
+        if attempt < max_retries:
+            logging.warning(
+                f" -> ⚠️ {server} not available (attempt {attempt}/{max_retries}). Retrying in 1 minute..."
+            )
+            time.sleep(retry_interval_seconds)
+        else:
+            logging.error(
+                f" -> ❌ {server} not available after {max_retries} attempts. Exiting..."
+            )
+            exit(1)
+
+    s3c = create_s3_client(max_pool_connections=max(1, max_active_files))
+    total_upper_counts: dict[str, int] = {}
+    total_lower_counts: dict[str, int] = {}
+    total = len(s3_info_list)
+    all_start_ts = time.time()
+
+    for idx, item in enumerate(s3_info_list, start=1):
+        key = item["Key"]
+        job = _key_segment_from_s3_key(key)
+        if job is None:
+            continue
+
+        count_str = f"[{idx} of {total}]"
+        start_ts = time.time()
+        result: dict[str, int] = {}
+        if selected_strategy == "memory":
+            blob = download_file_bytes_from_s3(
+                bucket_name=EESBuckets.S3_BUCKET_D65,
+                key=key,
+                s3_client=s3c,
+            )
+            if blob is None:
+                continue
+            try:
+                with MDF(io.BytesIO(blob)) as mdf:
+                    result = _decode_and_send_d65_mdf(
+                        mdf=mdf,
+                        job=job,
+                        server=server,
+                        upper_dbc_files=upper_dbc_files,
+                        lower_dbc_files=lower_dbc_files,
+                        skip_signal_range_check=skip_signal_range_check,
+                        max_batch_size=max_batch_size,
+                    )
+            except Exception as e:
+                logging.error(f"❌ {count_str} Error processing in memory {key}: {e}")
+            del blob
+        else:
+            tmp_path: Path | None = None
+            try:
+                with tempfile.NamedTemporaryFile(
+                    suffix=".mf4", delete=False
+                ) as tmp_file:
+                    tmp_path = Path(tmp_file.name)
+                ok = download_file_to_path_from_s3(
+                    bucket_name=EESBuckets.S3_BUCKET_D65,
+                    key=key,
+                    local_path=tmp_path,
+                    s3_client=s3c,
+                )
+                if not ok:
+                    continue
+                with MDF(tmp_path) as mdf:
+                    result = _decode_and_send_d65_mdf(
+                        mdf=mdf,
+                        job=job,
+                        server=server,
+                        upper_dbc_files=upper_dbc_files,
+                        lower_dbc_files=lower_dbc_files,
+                        skip_signal_range_check=skip_signal_range_check,
+                        max_batch_size=max_batch_size,
+                    )
+            except Exception as e:
+                logging.error(f"❌ {count_str} Error processing temp file {key}: {e}")
+            finally:
+                if tmp_path and tmp_path.exists():
+                    tmp_path.unlink()
+
+        sent = sum(result.values())
+        logging.info(
+            f"✅ {count_str} {job} streamed {shortpath(Path(key))} in {get_time_str(start_ts)} ({convert_to_eng(sent)} samples)"
+        )
+        for signal_name, count in result.items():
+            if job == "Upper":
+                total_upper_counts[signal_name] = (
+                    total_upper_counts.get(signal_name, 0) + count
+                )
+            else:
+                total_lower_counts[signal_name] = (
+                    total_lower_counts.get(signal_name, 0) + count
+                )
+
+    end_ts = time.time()
+    total_signals_sent = len(total_upper_counts) + len(total_lower_counts)
+    total_samples_sent = sum(total_upper_counts.values()) + sum(
+        total_lower_counts.values()
+    )
+    logging.info(
+        "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s).",
+        total,
+        get_time_str(all_start_ts, end_ts),
+        total_signals_sent,
+        convert_to_eng(total_samples_sent),
+        convert_to_eng(total_samples_sent / max(end_ts - all_start_ts, 1e-9)),
+    )
+
+    return total_lower_counts, total_upper_counts
 
 
 def download_d65_files_from_s3(
@@ -1078,13 +1407,16 @@ def main_post_to_victoriametrics(
         ([u for u in files if u[1] == "Upper"], "Upper"),
         ([l for l in files if l[1] == "Lower"], "Lower"),
     ]:
+        if len(_files) == 0:
+            logging.info(f" ✔️  [{_name}] Found 0 files.")
+            continue
         if len(_files) == 1:
             logging.info(
-                f" ✔️  [{_name}] Found 1 file starting at {files[0][2].astimezone().isoformat()}."
+                f" ✔️  [{_name}] Found 1 file starting at {_files[0][2].astimezone().isoformat()}."
             )
         else:
             logging.info(
-                f" ✔️  [{_name}] Found {len(files)} files from {files[0][2].astimezone().isoformat()} to {files[-1][2].astimezone().isoformat()}."
+                f" ✔️  [{_name}] Found {len(_files)} files from {_files[0][2].astimezone().isoformat()} to {_files[-1][2].astimezone().isoformat()}."
             )
 
     logging.info(
@@ -1292,7 +1624,59 @@ if __name__ == "__main__":
             "'--messages MsgA MsgB'."
         ),
     )
+    parser.add_argument(
+        "--s3-streaming",
+        action="store_true",
+        help=(
+            "Stream D65 S3 objects directly into decode/send pipeline "
+            "without pre-downloading all files to local storage."
+        ),
+    )
+    parser.add_argument(
+        "--s3-streaming-strategy",
+        type=str,
+        choices=["auto", "memory", "tempfile"],
+        default="auto",
+        help=(
+            "Streaming strategy for S3 object processing. "
+            "'auto' profiles projected memory and chooses memory/tempfile."
+        ),
+    )
+    parser.add_argument(
+        "--s3-streaming-memory-fraction",
+        type=float,
+        default=0.35,
+        help=(
+            "Fraction of available RAM allowed for projected streaming peak "
+            "when strategy=auto."
+        ),
+    )
+    parser.add_argument(
+        "--s3-streaming-decode-overhead",
+        type=float,
+        default=2.5,
+        help=(
+            "Multiplier used in projected RAM peak estimate "
+            "(raw object bytes -> decode peak)."
+        ),
+    )
+    parser.add_argument(
+        "--s3-streaming-max-active-files",
+        type=int,
+        default=1,
+        help=(
+            "Max concurrently active files assumed by preflight RAM estimate. "
+            "Current streaming execution processes files sequentially."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.s3_streaming_memory_fraction <= 0 or args.s3_streaming_memory_fraction > 1:
+        parser.error("--s3-streaming-memory-fraction must be in (0, 1].")
+    if args.s3_streaming_decode_overhead <= 0:
+        parser.error("--s3-streaming-decode-overhead must be > 0.")
+    if args.s3_streaming_max_active_files < 1:
+        parser.error("--s3-streaming-max-active-files must be >= 1.")
 
     server = server_vm_d65
 
@@ -1387,7 +1771,20 @@ if __name__ == "__main__":
 
     s3_info_list_for_post: list[dict] | None = None
 
-    if not args.skip_download:
+    if args.s3_streaming:
+        if args.skip_download:
+            logging.info(
+                "ℹ️ --s3-streaming enabled; ignoring --skip_download and using "
+                "S3 key list without bulk download."
+            )
+        s3_info_list_for_post = get_d65_file_list_from_s3(
+            start=start_date,
+            end=end_date,
+            posted_after=posted_after,
+            ignore_upper=effective_ignore_upper,
+            ignore_lower=effective_ignore_lower,
+        )
+    elif not args.skip_download:
         logging.info("⬇️ Starting D65 file download from S3 ...")
         s3_info_list_for_post = main_download_files(
             start_date=start_date,
@@ -1400,17 +1797,35 @@ if __name__ == "__main__":
     # main_delete_all_series(server)
     if not args.skip_post:
         logging.info("🌐 Starting D65 data post to VictoriaMetrics ...")
-        main_post_to_victoriametrics(
-            server=server,
-            start_date=start_date,
-            end_date=end_date,
-            ignore_upper=effective_ignore_upper,
-            ignore_lower=effective_ignore_lower,
-            s3_info_list=s3_info_list_for_post,
-            send_newest_first=True,
-            dbc_files_override=dbc_files_override,
-            # dbc_files_override={
-            #     "Upper": [],
-            #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
-            # },
-        )
+        if args.s3_streaming:
+            main_post_s3_streaming_to_victoriametrics(
+                server=server,
+                start_date=start_date,
+                end_date=end_date,
+                ignore_upper=effective_ignore_upper,
+                ignore_lower=effective_ignore_lower,
+                s3_info_list=s3_info_list_for_post,
+                streaming_strategy=args.s3_streaming_strategy,
+                memory_fraction=args.s3_streaming_memory_fraction,
+                decode_overhead_factor=args.s3_streaming_decode_overhead,
+                max_active_files=args.s3_streaming_max_active_files,
+                max_batch_size=10_000,
+                skip_signal_range_check=False,
+                send_newest_first=True,
+                dbc_files_override=dbc_files_override,
+            )
+        else:
+            main_post_to_victoriametrics(
+                server=server,
+                start_date=start_date,
+                end_date=end_date,
+                ignore_upper=effective_ignore_upper,
+                ignore_lower=effective_ignore_lower,
+                s3_info_list=s3_info_list_for_post,
+                send_newest_first=True,
+                dbc_files_override=dbc_files_override,
+                # dbc_files_override={
+                #     "Upper": [],
+                #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
+                # },
+            )
