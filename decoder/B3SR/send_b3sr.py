@@ -30,6 +30,9 @@ from decoder.utils import (
     parse_time_arg,
     format_time_span,
     format_bytes,
+    install_verbosity_level,
+    log_final,
+    FINAL_SUMMARY,
 )
 from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
@@ -139,7 +142,7 @@ def send_files_to_victoriametrics(
 
                 try:
                     start = time.time()
-                    logging.info(
+                    logging.debug(
                         f" ⏳ {count_str} Decoding file {shortpath(f)} ..."
                     )
                     decoded = mdf.extract_bus_logging(
@@ -147,7 +150,7 @@ def send_files_to_victoriametrics(
                         ignore_value2text_conversion=True,
                     )
 
-                    logging.info(
+                    logging.debug(
                         f" ✅ {count_str} Decoded file {shortpath(f)} in {get_time_str(start)}"
                     )
 
@@ -186,14 +189,14 @@ def send_files_to_victoriametrics(
                 yield i, lst[i : i + n]
 
         def process_batch(files, stack_msg):
-            logging.info(f" ⏳ {stack_msg} Stacking {len(files)} files ...")
+            logging.debug(f" ⏳ {stack_msg} Stacking {len(files)} files ...")
             start = time.time()
             try:
                 mdf = MDF().stack(files)
-                logging.info(
+                logging.debug(
                     f" ✅ {stack_msg} Stacked {len(files)} files in {get_time_str(start)}"
                 )
-                logging.info(f" ⏳ {stack_msg} Decoding stacked MDF ...")
+                logging.debug(f" ⏳ {stack_msg} Decoding stacked MDF ...")
                 start = time.time()
 
                 try:
@@ -202,7 +205,7 @@ def send_files_to_victoriametrics(
                         ignore_value2text_conversion=True,
                     )
 
-                    logging.info(
+                    logging.debug(
                         f" ✅ {stack_msg} Decoded stacked MDF in {get_time_str(start)}"
                     )
 
@@ -326,7 +329,7 @@ def main_post_s3_streaming_to_victoriametrics(
         decode_overhead_factor=decode_overhead_factor,
         max_active_files=max_active_files,
     )
-    logging.info(
+    logging.debug(
         "🧠 B3SR S3 streaming preflight | files=%s largest=%s "
         "worst_parallel=%s projected_peak=%s available_ram=%s "
         "ram_budget=%s strategy=%s",
@@ -444,13 +447,13 @@ def main_post_s3_streaming_to_victoriametrics(
         start_span = span_start
         end_span = span_end
         backfill_span = format_time_span(start_span, end_span)
-    logging.info(
+    log_final(
         f"🏁 Streamed {total} B3SR S3 files in {get_time_str(start_ts, end_ts)} "
         f"({total_signals_sent} signals | {convert_to_eng(total_samples_sent)} samples | "
         f"{convert_to_eng(total_samples_sent / max(end_ts - start_ts, 1e-9))} samples/s)."
     )
     if backfill_span:
-        logging.info("   ↳ backfill span %s", backfill_span)
+        log_final("   ↳ backfill span %s", backfill_span)
     if cursor_out.strip():
         Path(cursor_out).write_text(
             json.dumps(
@@ -527,7 +530,7 @@ def main_post_to_victoriametrics(
     if end_date is None:
         end_date = datetime.now(tz=timezone.utc)
 
-    logging.info(
+    logging.debug(
         f" 📂 Scanning {shortpath(canedge_folder)} for B3SR MF4 files ..."
     )
 
@@ -538,7 +541,7 @@ def main_post_to_victoriametrics(
     if newest_first:
         files.sort(key=lambda x: x[1], reverse=True)
 
-    logging.info(
+    logging.debug(
         f" ✅ Found {len(files)} B3SR MF4 files between {start_date} and {end_date} in {get_time_str(start_ts)}"
     )
 
@@ -565,11 +568,11 @@ def main_post_to_victoriametrics(
         backfill_span = format_time_span(start_span, end_span)
     end_ts = time.time()
 
-    logging.info(
+    log_final(
         f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
     )
     if backfill_span:
-        logging.info("   ↳ backfill span %s", backfill_span)
+        log_final("   ↳ backfill span %s", backfill_span)
 
 
 def _get_available_ram_bytes() -> int | None:
@@ -832,6 +835,16 @@ if __name__ == "__main__":
         help="DBC folder path, or 'old'/'compatibility' for workstation lookup. Defaults to decoder/B3SR/dbc.",
     )
     parser.add_argument(
+        "--verbosity",
+        type=str,
+        choices=["debug", "some", "minimal", "silent"],
+        default="debug",
+        help=(
+            "Log verbosity. debug=all, some=hides S3 scan+per-signal Sending..., "
+            "minimal=also hides per-signal Sent..., silent=errors+final summary only."
+        ),
+    )
+    parser.add_argument(
         "--cursor-ts",
         type=str,
         default="",
@@ -852,6 +865,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     DBC_FOLDER_OVERRIDE = args.dbc_folder
+    install_verbosity_level(args.verbosity)
     skip_signal_range_check = args.backfill or args.skip_signal_range_check
 
     server = server_vm_test_dump if args.test else args.server
