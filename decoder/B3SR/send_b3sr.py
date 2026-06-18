@@ -23,7 +23,7 @@ from decoder.utils import (
     convert_to_eng,
     is_victoriametrics_online,
 )
-from decoder.sending import send_decoded
+from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
     LOG_FORMAT,
     server_vm_b3sr,
@@ -100,6 +100,8 @@ def send_files_to_victoriametrics(
         stack_size = 1
         logging.warning(" ⚠️ stack_size cannot be less than 1, setting to 1.")
 
+    can_dbc_files = normalize_dbc_entries([dbc_file])
+
     total_files = len(files)
     if stack_size == 1:
         for i, (f, d) in enumerate(files):
@@ -114,7 +116,7 @@ def send_files_to_victoriametrics(
                         f" ⏳ {count_str} Decoding file {shortpath(f)} ..."
                     )
                     decoded = mdf.extract_bus_logging(
-                        database_files={"CAN": [(dbc_file, 0)]},
+                        database_files={"CAN": can_dbc_files},
                         ignore_value2text_conversion=True,
                     )
 
@@ -169,7 +171,7 @@ def send_files_to_victoriametrics(
 
                 try:
                     decoded = mdf.extract_bus_logging(
-                        database_files={"CAN": [(dbc_file, 0)]},
+                        database_files={"CAN": can_dbc_files},
                         ignore_value2text_conversion=True,
                     )
 
