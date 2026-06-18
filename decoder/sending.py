@@ -274,7 +274,7 @@ def send_signal(
     _sig_end_str = start_time + timedelta(seconds=_signal.timestamps[-1])
     _time_str = f"{_sig_start_str.isoformat()} - {_sig_end_str.isoformat()}, {len(_signal.timestamps)} samples"
 
-    logger.info(f"  📨 Sending {metric_name} [{_time_str}] ...")
+    logger.debug(f"  📨 Sending {metric_name} [{_time_str}] ...")
     start = time.time()
     batch: list[str] = []
     for sample, ts in zip(_signal.samples, _signal.timestamps):
@@ -358,7 +358,7 @@ def send_signal_using_json_lines(
         _signal = _apply_job_watermark(signal, start_time, job_watermark)
 
     if _signal is None or len(_signal.timestamps) < 1:
-        logger.info(f"  ☑️ No new data for {metric_name}, skipping ...")
+        logger.debug(f"  ☑️ No new data for {metric_name}, skipping ...")
         return num_of_samples_sent
 
     unit = _signal.unit if _signal.unit else ""
@@ -378,12 +378,12 @@ def send_signal_using_json_lines(
     _time_str = f"{_sig_start_str.isoformat()} - {_sig_end_str.isoformat()}, {len(timestamps)} samples"
 
     if len(values) < 1 or len(timestamps) < 1:
-        logger.info(
+        logger.debug(
             f"  ℹ️ No valid numeric data for {metric_name}, skipping ..."
         )
         return num_of_samples_sent
 
-    logger.info(f"  📨 Sending {metric_name} [{_time_str}] ...")
+    logger.debug(f"  📨 Sending {metric_name} [{_time_str}] ...")
     lines, counts = make_list_of_vm_json_line_format(
         metric_name=metric_name,
         message=message,
@@ -448,7 +448,7 @@ def send_file(
     logger = logging.getLogger("send_file")
     setup_simple_logger(logger, format=LOG_FORMAT)
 
-    logger.info(f"Sending {filename}")
+    logger.debug(f"Sending {filename}")
     signals_sample_count: dict[str, int] = {}
     if not filename.exists():
         logger.warning(f"📃 File {filename} does not exist.")
