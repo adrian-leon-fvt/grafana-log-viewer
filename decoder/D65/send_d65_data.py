@@ -33,6 +33,7 @@ from decoder.utils import (
     is_victoriametrics_online,
     parse_time_arg,
     format_time_span,
+    format_bytes,
 )
 from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
@@ -905,15 +906,29 @@ def _decode_and_send_d65_mdf(
     lower_dbc_files: list[DbcFileType],
     skip_signal_range_check: bool,
     max_batch_size: int,
-) -> dict[str, int]:
+) -> tuple[dict[str, int], datetime | None, datetime | None]:
     dbc_files = upper_dbc_files if job == "Upper" else lower_dbc_files
     decoded = mdf.extract_bus_logging(
         database_files={"CAN": dbc_files},
         ignore_value2text_conversion=True,
     )
-    if not list(decoded.iter_channels()):
-        return {}
-    return send_decoded(
+    channels = list(decoded.iter_channels())
+    if not channels:
+        return {}, None, None
+
+    span_start: datetime | None = None
+    span_end: datetime | None = None
+    for signal in channels:
+        if len(signal.timestamps) < 1:
+            continue
+        sig_start = decoded.start_time + timedelta(seconds=signal.timestamps[0])
+        sig_end = decoded.start_time + timedelta(seconds=signal.timestamps[-1])
+        if span_start is None or sig_start < span_start:
+            span_start = sig_start
+        if span_end is None or sig_end > span_end:
+            span_end = sig_end
+
+    counts = send_decoded(
         decoded=decoded,
         server=server,
         job=job,
@@ -921,6 +936,7 @@ def _decode_and_send_d65_mdf(
         skip_signal_range_check=skip_signal_range_check,
         batch_size=max_batch_size,
     )
+    return counts, span_start, span_end
 
 
 def main_post_s3_streaming_to_victoriametrics(
@@ -1000,15 +1016,15 @@ def main_post_s3_streaming_to_victoriametrics(
         max_active_files=max_active_files,
     )
     logging.info(
-        "🧠 S3 streaming preflight | files=%s largest=%sB "
-        "worst_parallel=%sB projected_peak=%sB available_ram=%sB "
-        "ram_budget=%sB strategy=%s",
+        "🧠 S3 streaming preflight | files=%s largest=%s "
+        "worst_parallel=%s projected_peak=%s available_ram=%s "
+        "ram_budget=%s strategy=%s",
         profile["file_count"],
-        profile["largest_file_bytes"],
-        profile["worst_parallel_bytes"],
-        profile["projected_peak_bytes"],
-        profile["available_ram_bytes"],
-        profile["ram_budget_bytes"],
+        format_bytes(profile["largest_file_bytes"]),
+        format_bytes(profile["worst_parallel_bytes"]),
+        format_bytes(profile["projected_peak_bytes"]),
+        format_bytes(profile["available_ram_bytes"]),
+        format_bytes(profile["ram_budget_bytes"]),
         selected_strategy,
     )
 
@@ -1031,6 +1047,8 @@ def main_post_s3_streaming_to_victoriametrics(
     s3c = create_s3_client(max_pool_connections=max(1, max_active_files))
     total_upper_counts: dict[str, int] = {}
     total_lower_counts: dict[str, int] = {}
+    span_start: datetime | None = None
+    span_end: datetime | None = None
     total = len(s3_info_list)
     all_start_ts = time.time()
 
@@ -1043,6 +1061,8 @@ def main_post_s3_streaming_to_victoriametrics(
         count_str = f"[{idx} of {total}]"
         start_ts = time.time()
         result: dict[str, int] = {}
+        current_start: datetime | None = None
+        current_end: datetime | None = None
         if selected_strategy == "memory":
             blob = download_file_bytes_from_s3(
                 bucket_name=EESBuckets.S3_BUCKET_D65,
@@ -1053,7 +1073,7 @@ def main_post_s3_streaming_to_victoriametrics(
                 continue
             try:
                 with MDF(io.BytesIO(blob)) as mdf:
-                    result = _decode_and_send_d65_mdf(
+                    result, current_start, current_end = _decode_and_send_d65_mdf(
                         mdf=mdf,
                         job=job,
                         server=server,
@@ -1081,7 +1101,7 @@ def main_post_s3_streaming_to_victoriametrics(
                 if not ok:
                     continue
                 with MDF(tmp_path) as mdf:
-                    result = _decode_and_send_d65_mdf(
+                    result, current_start, current_end = _decode_and_send_d65_mdf(
                         mdf=mdf,
                         job=job,
                         server=server,
@@ -1097,6 +1117,10 @@ def main_post_s3_streaming_to_victoriametrics(
                     tmp_path.unlink()
 
         sent = sum(result.values())
+        if current_start and (span_start is None or current_start < span_start):
+            span_start = current_start
+        if current_end and (span_end is None or current_end > span_end):
+            span_end = current_end
         logging.info(
             f"✅ {count_str} {job} streamed {shortpath(Path(key))} in {get_time_str(start_ts)} ({convert_to_eng(sent)} samples)"
         )
@@ -1116,10 +1140,8 @@ def main_post_s3_streaming_to_victoriametrics(
         total_lower_counts.values()
     )
     backfill_span = ""
-    if s3_info_list:
-        start_span = min(s3_info_list, key=lambda x: x["Timestamp"])["Timestamp"]
-        end_span = max(s3_info_list, key=lambda x: x["Timestamp"])["Timestamp"]
-        backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
+    if span_start and span_end:
+        backfill_span = f" | backfill span {format_time_span(span_start, span_end)}"
     logging.info(
         "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s)%s.",
         total,

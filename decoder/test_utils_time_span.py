@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timezone
 
-from decoder.utils import format_time_span
+from decoder.utils import format_time_span, format_bytes
 
 
 class TimeSpanTest(unittest.TestCase):
@@ -20,6 +20,10 @@ class TimeSpanTest(unittest.TestCase):
             format_time_span(moment, moment),
             "2026-06-18T10:00:00+00:00 - 2026-06-18T10:00:00+00:00 (0s)",
         )
+
+    def test_formats_human_bytes(self) -> None:
+        self.assertEqual(format_bytes(9877790), "9.420MiB")
+        self.assertEqual(format_bytes(None), "n/a")
 
 
 if __name__ == "__main__":

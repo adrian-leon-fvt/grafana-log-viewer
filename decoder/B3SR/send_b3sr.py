@@ -28,6 +28,7 @@ from decoder.utils import (
     is_victoriametrics_online,
     parse_time_arg,
     format_time_span,
+    format_bytes,
 )
 from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
@@ -306,15 +307,15 @@ def main_post_s3_streaming_to_victoriametrics(
         max_active_files=max_active_files,
     )
     logging.info(
-        "🧠 B3SR S3 streaming preflight | files=%s largest=%sB "
-        "worst_parallel=%sB projected_peak=%sB available_ram=%sB "
-        "ram_budget=%sB strategy=%s",
+        "🧠 B3SR S3 streaming preflight | files=%s largest=%s "
+        "worst_parallel=%s projected_peak=%s available_ram=%s "
+        "ram_budget=%s strategy=%s",
         profile["file_count"],
-        profile["largest_file_bytes"],
-        profile["worst_parallel_bytes"],
-        profile["projected_peak_bytes"],
-        profile["available_ram_bytes"],
-        profile["ram_budget_bytes"],
+        format_bytes(profile["largest_file_bytes"]),
+        format_bytes(profile["worst_parallel_bytes"]),
+        format_bytes(profile["projected_peak_bytes"]),
+        format_bytes(profile["available_ram_bytes"]),
+        format_bytes(profile["ram_budget_bytes"]),
         selected_strategy,
     )
 

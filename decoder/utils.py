@@ -72,6 +72,20 @@ def format_time_span(start: datetime, end: datetime) -> str:
     )
 
 
+def format_bytes(value: int | None) -> str:
+    if value is None:
+        return "n/a"
+    size = float(value)
+    units = ["B", "KiB", "MiB", "GiB", "TiB"]
+    unit_idx = 0
+    while size >= 1024.0 and unit_idx < len(units) - 1:
+        size /= 1024.0
+        unit_idx += 1
+    if unit_idx == 0:
+        return f"{int(size)}{units[unit_idx]}"
+    return f"{size:.3f}{units[unit_idx]}"
+
+
 def parse_time_arg(value: str, now: datetime, allow_today: bool = True) -> datetime:
     value = value.strip()
     if value == "now":
