@@ -32,6 +32,7 @@ from decoder.utils import (
     convert_to_eng,
     is_victoriametrics_online,
     parse_time_arg,
+    format_time_span,
 )
 from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
@@ -1114,13 +1115,19 @@ def main_post_s3_streaming_to_victoriametrics(
     total_samples_sent = sum(total_upper_counts.values()) + sum(
         total_lower_counts.values()
     )
+    backfill_span = ""
+    if skip_signal_range_check and files:
+        start_span = min(files, key=lambda x: x[2])[2]
+        end_span = max(files, key=lambda x: x[2])[2]
+        backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
     logging.info(
-        "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s).",
+        "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s)%s.",
         total,
         get_time_str(all_start_ts, end_ts),
         total_signals_sent,
         convert_to_eng(total_samples_sent),
         convert_to_eng(total_samples_sent / max(end_ts - all_start_ts, 1e-9)),
+        backfill_span,
     )
 
     return total_lower_counts, total_upper_counts
@@ -1512,9 +1519,14 @@ def main_post_to_victoriametrics(
     total_samples_sent = sum(total_lower_counts.values()) + sum(
         total_upper_counts.values()
     )
+    backfill_span = ""
+    if skip_signal_range_check and files:
+        start_span = min(files, key=lambda x: x[2])[2]
+        end_span = max(files, key=lambda x: x[2])[2]
+        backfill_span = f" | backfill span {format_time_span(start_span, end_span)}"
 
     logging.info(
-        f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
+        f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s){backfill_span}."
     )
 
 

@@ -44,6 +44,10 @@ def setup_simple_logger(
 def get_time_str(start_time: float, end_ts: float | None = None) -> str:
     _end_ts = time.time() if end_ts is None else end_ts
     elapsed = _end_ts - start_time
+    return format_duration_seconds(elapsed)
+
+
+def format_duration_seconds(elapsed: float) -> str:
     days, rem = divmod(elapsed, 86400)
     hours, rem = divmod(rem, 3600)
     mins, secs = divmod(rem, 60)
@@ -59,6 +63,10 @@ def get_time_str(start_time: float, end_ts: float | None = None) -> str:
         parts.append(f"{secs:.3f}s")
 
     return "".join(parts)
+
+
+def format_time_span(start: datetime, end: datetime) -> str:
+    return format_duration_seconds((end - start).total_seconds())
 
 
 def parse_time_arg(value: str, now: datetime, allow_today: bool = True) -> datetime:
