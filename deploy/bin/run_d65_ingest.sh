@@ -15,7 +15,7 @@ fi
 if [[ -d "${HOME}/.aws" ]]; then
   docker_args+=(-v "${HOME}/.aws:/root/.aws:ro")
 fi
-for var in AWS_S3_TLS_INSECURE AWS_S3_CA_BUNDLE REQUESTS_CA_BUNDLE SSL_CERT_FILE CURL_CA_BUNDLE; do
+for var in AWS_S3_TLS_INSECURE AWS_CA_BUNDLE AWS_S3_CA_BUNDLE REQUESTS_CA_BUNDLE SSL_CERT_FILE CURL_CA_BUNDLE; do
   if [[ -n "${!var:-}" ]]; then
     docker_args+=(-e "$var=${!var}")
     if [[ "$var" == *_BUNDLE ]] && [[ -f "${!var}" ]]; then

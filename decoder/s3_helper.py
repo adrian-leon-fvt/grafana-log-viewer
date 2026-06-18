@@ -26,6 +26,7 @@ def _resolve_s3_verify_setting() -> bool | str:
     """
     Resolve boto3/botocore 'verify' behavior from environment:
     - AWS_S3_TLS_INSECURE=true  -> verify=False
+    - AWS_CA_BUNDLE=/path       -> verify=/path (if file exists)
     - AWS_S3_CA_BUNDLE=/path    -> verify=/path (if file exists)
     - default                   -> verify=True (botocore/certifi defaults)
     """
@@ -36,12 +37,14 @@ def _resolve_s3_verify_setting() -> bool | str:
         )
         return False
 
-    ca_bundle = os.getenv("AWS_S3_CA_BUNDLE", "").strip()
-    if ca_bundle:
+    for env_name in ("AWS_CA_BUNDLE", "AWS_S3_CA_BUNDLE"):
+        ca_bundle = os.getenv(env_name, "").strip()
+        if not ca_bundle:
+            continue
         if Path(ca_bundle).exists():
             return ca_bundle
         logging.warning(
-            f"⚠️ AWS_S3_CA_BUNDLE was set but file not found: {ca_bundle}. Falling back to default CA trust."
+            f"⚠️ {env_name} was set but file not found: {ca_bundle}. Falling back to default CA trust."
         )
 
     return True
