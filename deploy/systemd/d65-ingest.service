@@ -5,14 +5,12 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=ubuntu
-Group=ubuntu
 WorkingDirectory=/home/ubuntu/ingest/current
 EnvironmentFile=-/etc/ingest/ingest.env
 ExecStart=/home/ubuntu/ingest/current/deploy/bin/run_d65_ingest.sh
-StandardOutput=append:/var/log/ingest/d65.log
-StandardError=append:/var/log/ingest/d65.log
+StandardOutput=append:/home/ubuntu/ingest/logs/d65.log
+StandardError=append:/home/ubuntu/ingest/logs/d65.log
 Nice=10
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

@@ -15,7 +15,7 @@ ssh "$REMOTE_HOST" "
   target='$REMOTE_BASE/releases/$TARGET_RELEASE'
   test -d \"\$target\"
   ln -sfn \"\$target\" '$REMOTE_BASE/current'
-  sudo systemctl restart d65-ingest.service b3sr-ingest.service
+  systemctl --user restart d65-ingest.service b3sr-ingest.service
 "
 
 echo "Rolled back to release $TARGET_RELEASE on $REMOTE_HOST"

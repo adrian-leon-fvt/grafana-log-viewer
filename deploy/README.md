@@ -2,6 +2,8 @@
 
 This runs existing Python ingestion scripts on the `victoriametrics` host with
 systemd timers.
+Runtime dependencies are installed in Docker image `ingest-runner:current` at
+deploy time (no host Python/venv dependency).
 
 Polling uses persisted cursor state (`/home/ubuntu/ingest/cursor/*.json`) with overlap
 buffer to avoid timer-drift gaps.
@@ -20,7 +22,7 @@ missing.
    - `sudo mkdir -p /etc/ingest`
    - `sudo cp /home/ubuntu/ingest/current/deploy/env/ingest.env.example /etc/ingest/ingest.env`
 2. Ensure log/state dirs exist:
-   - `sudo mkdir -p /var/log/ingest /var/lib/ingest`
+   - `mkdir -p /home/ubuntu/ingest/logs /home/ubuntu/ingest/cursor`
 
 ## Deploy from local machine
 
@@ -32,10 +34,10 @@ missing.
 
 ```bash
 tailscale ssh ubuntu@victoriametrics
-sudo systemctl list-timers | grep ingest
-sudo systemctl status d65-ingest.service b3sr-ingest.service
-tail -n 200 /var/log/ingest/d65.log
-tail -n 200 /var/log/ingest/b3sr.log
+systemctl --user list-timers | grep ingest
+systemctl --user status d65-ingest.service b3sr-ingest.service
+tail -n 200 /home/ubuntu/ingest/logs/d65.log
+tail -n 200 /home/ubuntu/ingest/logs/b3sr.log
 ```
 
 ## Rollback
