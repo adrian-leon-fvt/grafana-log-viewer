@@ -141,7 +141,7 @@ def download_files_from_s3(
             try:
                 start_ts = time.time()
                 s3c.download_file(bucket_name, key, str(local_path))
-                logging.info(
+                logging.debug(
                     f"✅ Downloaded {key} successfully in {get_time_str(start_ts)}."
                 )
                 return True
@@ -154,7 +154,7 @@ def download_files_from_s3(
                     f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}"
                 )
             if attempt <= max_retries:
-                logging.info(
+                logging.debug(
                     f"🔄 Retrying download for {key} (attempt {attempt + 1})..."
                 )
                 time.sleep(1)
@@ -169,7 +169,7 @@ def download_files_from_s3(
             keys_to_download.append(key)
 
     if skipped_existing_keys:
-        logging.info(
+        logging.debug(
             f"⏭️ Skipping {len(skipped_existing_keys)}/{total_keys} files that already exist locally."
         )
 
@@ -344,7 +344,7 @@ def get_mf4_files_list_from_s3(
         )
 
         def process_object(obj, idx: int, total: int) -> dict:
-            logging.info(f"🔍 [{idx+1:4d}/{total:4d}]: {obj['Key']}")
+            logging.debug(f"🔍 [{idx+1:4d}/{total:4d}]: {obj['Key']}")
             key = obj["Key"]
             if key.lower().endswith(".mf4"):
                 last_modified = obj["LastModified"]
@@ -372,7 +372,7 @@ def get_mf4_files_list_from_s3(
         for page in page_iterator:
             count = 0
             start_ts = time.time()
-            logging.info(
+            logging.debug(
                 f"➡️ Processing page with {len(page.get('Contents', []))} items..."
             )
 
@@ -390,10 +390,10 @@ def get_mf4_files_list_from_s3(
                         mf4_files.append(result)
                         count += 1
 
-            logging.info(
+            logging.debug(
                 f"✅ Processed {count} items in {get_time_str(start_ts)} seconds."
             )
-        logging.info(
+        logging.debug(
             f"🏁 Total time to process all pages: {get_time_str(total_ts)} seconds."
         )
 
@@ -451,7 +451,7 @@ def get_new_mf4_files_summary_from_s3(
 def main():
     buckets = get_bucket_names()
     for bucket in buckets:
-        logging.info(f"🪣  {bucket}")
+        logging.debug(f"🪣  {bucket}")
 
 
 if __name__ == "__main__":
