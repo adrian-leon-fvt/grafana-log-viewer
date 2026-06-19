@@ -39,4 +39,5 @@ exec docker run "${docker_args[@]}" \
   --cursor-ts "{cursor_ts}" \
   --cursor-key "{cursor_key}" \
   --cursor-out "{cursor_out}" \
+  --verbosity "minimal" \
   --s3-streaming-strategy "${D65_S3_STREAMING_STRATEGY:-auto}"

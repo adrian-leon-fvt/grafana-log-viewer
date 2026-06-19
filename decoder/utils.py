@@ -54,6 +54,10 @@ def install_verbosity_level(verbosity: str) -> None:
     _cli_log_level = level_map.get(verbosity, logging.DEBUG)
     logging.getLogger().setLevel(_cli_log_level)
 
+    aws_level = logging.DEBUG if _cli_log_level == logging.DEBUG else logging.WARNING
+    for name in ("boto3", "botocore", "s3transfer", "urllib3"):
+        logging.getLogger(name).setLevel(aws_level)
+
 
 def log_summary(msg: object, *args: object, **kwargs: object) -> None:
     """Log at SUMMARY level (per-device/batch totals)."""
