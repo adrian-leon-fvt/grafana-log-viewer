@@ -1,7 +1,7 @@
-# Ingest automation (Option 1)
+# Ingest automation
 
 This runs existing Python ingestion scripts on the `victoriametrics` host with
-systemd timers.
+systemd user timers.
 Runtime dependencies are installed in Docker image `ingest-runner:current` at
 deploy time (no host Python/venv dependency).
 
@@ -13,16 +13,18 @@ switches and can be copied to new server.
 Set `D65_SERVER` and `B3SR_SERVER` in `/etc/ingest/ingest.env` to local/container
 addresses so ingestion avoids tailnet routing on-host.
 
-`/etc/ingest/ingest.env` is optional. Wrappers run with defaults if file is
-missing.
-
 ## First-time server setup
 
-1. Copy env template and fill private values:
-   - `sudo mkdir -p /etc/ingest`
-   - `sudo cp /home/ubuntu/ingest/current/deploy/env/ingest.env.example /etc/ingest/ingest.env`
-2. Ensure log/state dirs exist:
-   - `mkdir -p /home/ubuntu/ingest/logs /home/ubuntu/ingest/cursor`
+The deploy script creates the release/cursor/log directories, installs the
+systemd user units, and enables the timers automatically. The only manual
+first-time step is providing the env file:
+
+- `sudo mkdir -p /etc/ingest`
+- `sudo cp /home/ubuntu/ingest/current/deploy/env/ingest.env.example /etc/ingest/ingest.env`
+- Edit `/etc/ingest/ingest.env` and fill in private values.
+
+`/etc/ingest/ingest.env` is optional; wrappers run with built-in defaults if it
+is missing.
 
 ## Deploy from local machine
 
