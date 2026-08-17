@@ -515,6 +515,22 @@ def get_files_in_range(
     return files_in_range
 
 
+def check_new_b3sr_files_in_s3(
+    bucket_name: EESBuckets | str,
+    start: datetime | str = "",
+    end: datetime | str = "",
+    posted_after: datetime | None = None,
+    **kwargs,
+) -> dict:
+    return get_new_mf4_files_summary_from_s3(
+        bucket_names=bucket_name,
+        start_time=start,
+        end_time=end,
+        posted_after=posted_after,
+        **kwargs,
+    )
+
+
 def main_post_to_victoriametrics(
     server: str,
     start_date: datetime | None = None,
