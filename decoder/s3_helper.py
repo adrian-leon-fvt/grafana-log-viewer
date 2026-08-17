@@ -299,6 +299,118 @@ def get_mf4_files_list_from_s3(
     return []
 
 
+def check_new_mf4_files_in_s3(
+    bucket_names: EESBuckets | str | list[EESBuckets | str],
+    start_time: datetime | str = "",
+    end_time: datetime | str = "",
+    sample_keys_per_bucket: int = 3,
+    **kwargs,
+) -> dict:
+    """
+    Check whether new MF4 files exist for one or more S3 buckets.
+
+    :param bucket_names: One bucket or list of buckets to check.
+    :param start_time: Start time for filtering files (datetime or ISO 8601 string).
+    :param end_time: End time for filtering files (datetime or ISO 8601 string).
+    :param sample_keys_per_bucket: Number of keys to include per bucket in result.
+    :return: {
+        "has_new_files": bool,
+        "total_count": int,
+        "by_bucket": {
+            bucket_name: {
+                "has_new_files": bool,
+                "count": int,
+                "sample_keys": list[str],
+            }
+        },
+    }
+    """
+
+    def _normalize_utc(value: datetime | str | None) -> datetime | None:
+        if value is None or value == "":
+            return None
+        if isinstance(value, str):
+            value = datetime.fromisoformat(value)
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
+    if isinstance(bucket_names, (EESBuckets, str)):
+        buckets = [bucket_names]
+    else:
+        buckets = bucket_names
+
+    start_utc = _normalize_utc(start_time)
+    end_utc = _normalize_utc(end_time)
+    posted_after_utc = _normalize_utc(kwargs.pop("posted_after", None))
+    prefix = kwargs.pop("Prefix", "")
+    page_size = int(kwargs.pop("page_size", 1000))
+
+    summary: dict[str, dict] = {}
+    total_count = 0
+    safe_sample_keys = max(0, sample_keys_per_bucket)
+    s3c = client("s3")
+
+    for bucket in buckets:
+        bucket_label = bucket.value[0] if isinstance(bucket, EESBuckets) else bucket
+        if not isinstance(bucket_label, str):
+            logging.error(f"❌ Invalid bucket name: {bucket}")
+            summary[str(bucket)] = {
+                "has_new_files": False,
+                "count": 0,
+                "sample_keys": [],
+            }
+            continue
+
+        count = 0
+        sample_keys: list[str] = []
+        paginator = s3c.get_paginator("list_objects_v2")
+        page_iterator = paginator.paginate(
+            Bucket=bucket_label,
+            Prefix=prefix,
+            PaginationConfig={"PageSize": page_size},
+        )
+
+        for page in page_iterator:
+            contents = page.get("Contents", [])
+            for obj in contents:
+                key = str(obj.get("Key", ""))
+                if not key.lower().endswith(".mf4"):
+                    continue
+
+                last_modified = obj.get("LastModified")
+                if not isinstance(last_modified, datetime):
+                    continue
+                if last_modified.tzinfo is None:
+                    last_modified = last_modified.replace(tzinfo=timezone.utc)
+                else:
+                    last_modified = last_modified.astimezone(timezone.utc)
+
+                if posted_after_utc and last_modified < posted_after_utc:
+                    continue
+                if start_utc and last_modified < start_utc:
+                    continue
+                if end_utc and last_modified > end_utc:
+                    continue
+
+                count += 1
+                if len(sample_keys) < safe_sample_keys:
+                    sample_keys.append(key)
+
+        total_count += count
+        summary[bucket_label] = {
+            "has_new_files": count > 0,
+            "count": count,
+            "sample_keys": sample_keys,
+        }
+
+    return {
+        "has_new_files": total_count > 0,
+        "total_count": total_count,
+        "by_bucket": summary,
+    }
+
+
 def main():
     buckets = get_bucket_names()
     for bucket in buckets:

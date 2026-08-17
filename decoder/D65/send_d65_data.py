@@ -749,6 +749,30 @@ def get_d65_file_list_from_s3(
     return files
 
 
+def check_new_d65_files_in_s3(
+    start: datetime | str = "",
+    end: datetime | str = "",
+    posted_after: datetime | None = None,
+    ignore_upper: bool = False,
+    ignore_lower: bool = False,
+    **kwargs,
+) -> dict:
+    prefix = ""
+    if ignore_upper and not ignore_lower:
+        prefix = MAC_LOWER
+    elif ignore_lower and not ignore_upper:
+        prefix = MAC_UPPER
+
+    return check_new_mf4_files_in_s3(
+        bucket_names=EESBuckets.S3_BUCKET_D65,
+        start_time=start,
+        end_time=end,
+        posted_after=posted_after,
+        Prefix=prefix,
+        **kwargs,
+    )
+
+
 def download_d65_files_from_s3(
     download_path: Path,
     start: datetime | str = "",
