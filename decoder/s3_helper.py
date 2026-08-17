@@ -1,12 +1,14 @@
 import sys
 import time
 import logging
+import os
 
 from boto3 import client
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from enum import Enum
 from zoneinfo import ZoneInfo
+from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -18,6 +20,46 @@ from decoder.utils import *
 from decoder.config import *
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+
+
+def _resolve_s3_verify_setting() -> bool | str:
+    """
+    Resolve boto3/botocore 'verify' behavior from environment:
+    - AWS_S3_TLS_INSECURE=true  -> verify=False
+    - AWS_CA_BUNDLE=/path       -> verify=/path (if file exists)
+    - AWS_S3_CA_BUNDLE=/path    -> verify=/path (if file exists)
+    - default                   -> verify=True (botocore/certifi defaults)
+    """
+    insecure = os.getenv("AWS_S3_TLS_INSECURE", "").strip().lower()
+    if insecure in {"1", "true", "yes", "on"}:
+        logging.warning(
+            "⚠️ AWS_S3_TLS_INSECURE enabled; TLS certificate validation is disabled"
+        )
+        return False
+
+    for env_name in ("AWS_CA_BUNDLE", "AWS_S3_CA_BUNDLE"):
+        ca_bundle = os.getenv(env_name, "").strip()
+        if not ca_bundle:
+            continue
+        if Path(ca_bundle).exists():
+            return ca_bundle
+        logging.warning(
+            f"⚠️ {env_name} was set but file not found: {ca_bundle}. Falling back to default CA trust."
+        )
+
+    return True
+
+
+def create_s3_client(max_pool_connections: int | None = None):
+    verify = _resolve_s3_verify_setting()
+    config = (
+        Config(max_pool_connections=max_pool_connections)
+        if max_pool_connections is not None
+        else None
+    )
+    if config is None:
+        return client("s3", verify=verify)
+    return client("s3", config=config, verify=verify)
 
 
 class EESBuckets(Enum):
@@ -34,13 +76,34 @@ def get_bucket_names() -> list[str]:
     """
 
     try:
-        s3 = client("s3")
+        s3 = create_s3_client()
         response = s3.list_buckets()
         buckets = [bucket["Name"] for bucket in response.get("Buckets", [])]
         return buckets
     except ClientError as e:
         logging.error(f"Error fetching buckets: {e}")
         return []
+
+
+def _normalize_bucket_names(bucket_names: EESBuckets | str | Iterable[EESBuckets | str]) -> list[EESBuckets | str]:
+    if isinstance(bucket_names, (str, EESBuckets)):
+        return [bucket_names]
+    return list(bucket_names)
+
+
+def _parse_s3_timestamp(timestamp: str) -> datetime:
+    normalized = timestamp.strip()
+    if normalized.endswith("Z"):
+        normalized = normalized[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(normalized).astimezone(
+            ZoneInfo("America/Vancouver")
+        )
+    except (ValueError, TypeError):
+        parsed = datetime.strptime(timestamp.strip("Z"), "%Y%m%dT%H%M%S")
+        return parsed.replace(tzinfo=timezone.utc).astimezone(
+            ZoneInfo("America/Vancouver")
+        )
 
 
 def download_files_from_s3(
@@ -64,15 +127,12 @@ def download_files_from_s3(
 
     if isinstance(bucket_name, EESBuckets):
         bucket_name = bucket_name.value[0]
-    elif isinstance(bucket_name, str) and bucket_name in [
-        b.value[0] for b in EESBuckets
-    ]:
-        bucket_name = bucket_name
     else:
-        logging.error(f"❌ Invalid bucket name: {bucket_name}")
-        return count
+        if not isinstance(bucket_name, str) or not bucket_name.strip():
+            logging.error(f"❌ Invalid bucket name: {bucket_name}")
+            return count
 
-    s3c = client("s3", config=Config(max_pool_connections=max_workers))
+    s3c = create_s3_client(max_pool_connections=max_workers)
     total_keys = len(keys)
 
     def processed_path(key: str) -> Path:
@@ -84,7 +144,7 @@ def download_files_from_s3(
             try:
                 start_ts = time.time()
                 s3c.download_file(bucket_name, key, str(local_path))
-                logging.info(
+                logging.debug(
                     f"✅ Downloaded {key} successfully in {get_time_str(start_ts)}."
                 )
                 return True
@@ -97,7 +157,7 @@ def download_files_from_s3(
                     f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}"
                 )
             if attempt <= max_retries:
-                logging.info(
+                logging.debug(
                     f"🔄 Retrying download for {key} (attempt {attempt + 1})..."
                 )
                 time.sleep(1)
@@ -112,7 +172,7 @@ def download_files_from_s3(
             keys_to_download.append(key)
 
     if skipped_existing_keys:
-        logging.info(
+        logging.debug(
             f"⏭️ Skipping {len(skipped_existing_keys)}/{total_keys} files that already exist locally."
         )
 
@@ -142,6 +202,77 @@ def download_files_from_s3(
     return count
 
 
+def download_file_to_path_from_s3(
+    bucket_name: EESBuckets | str,
+    key: str,
+    local_path: Path,
+    max_retries: int = 2,
+    s3_client=None,
+) -> bool:
+    """
+    Download one S3 object key to a local path with retries.
+    """
+    if isinstance(bucket_name, EESBuckets):
+        bucket_name = bucket_name.value[0]
+    elif not isinstance(bucket_name, str) or not bucket_name.strip():
+        logging.error(f"❌ Invalid bucket name: {bucket_name}")
+        return False
+
+    s3c = s3_client if s3_client is not None else create_s3_client()
+    for attempt in range(1, max_retries + 2):
+        try:
+            s3c.download_file(bucket_name, key, str(local_path))
+            return True
+        except ClientError as e:
+            logging.error(
+                f"❌ Error downloading {key} from bucket '{bucket_name}' (attempt {attempt}): {e}"
+            )
+        except Exception as e:
+            logging.error(
+                f"❌ Unexpected error downloading {key} (attempt {attempt}): {e}"
+            )
+        if attempt <= max_retries:
+            time.sleep(1)
+    return False
+
+
+def download_file_bytes_from_s3(
+    bucket_name: EESBuckets | str,
+    key: str,
+    max_retries: int = 2,
+    s3_client=None,
+) -> bytes | None:
+    """
+    Download one S3 object and return its bytes in memory.
+    """
+    if isinstance(bucket_name, EESBuckets):
+        bucket_name = bucket_name.value[0]
+    elif not isinstance(bucket_name, str) or not bucket_name.strip():
+        logging.error(f"❌ Invalid bucket name: {bucket_name}")
+        return None
+
+    s3c = s3_client if s3_client is not None else create_s3_client()
+    for attempt in range(1, max_retries + 2):
+        try:
+            resp = s3c.get_object(Bucket=bucket_name, Key=key)
+            body = resp.get("Body", None)
+            if body is None:
+                logging.error(f"❌ Empty body for key {key}")
+                return None
+            return body.read()
+        except ClientError as e:
+            logging.error(
+                f"❌ Error reading {key} from bucket '{bucket_name}' (attempt {attempt}): {e}"
+            )
+        except Exception as e:
+            logging.error(
+                f"❌ Unexpected error reading {key} (attempt {attempt}): {e}"
+            )
+        if attempt <= max_retries:
+            time.sleep(1)
+    return None
+
+
 def get_mf4_files_list_from_s3(
     bucket_name: EESBuckets | str,
     start_time: datetime | str = "",
@@ -164,11 +295,7 @@ def get_mf4_files_list_from_s3(
 
     if isinstance(bucket_name, EESBuckets):
         bucket_name = bucket_name.value[0]
-    elif isinstance(bucket_name, str) and bucket_name in [
-        b.value[0] for b in EESBuckets
-    ]:
-        bucket_name = bucket_name
-    else:
+    elif not isinstance(bucket_name, str) or not bucket_name.strip():
         logging.error(f"❌ Invalid bucket name: {bucket_name}")
         return []
 
@@ -197,33 +324,16 @@ def get_mf4_files_list_from_s3(
                 logging.warning(f"⚠️ No timestamp metadata for {key}")
                 return None
 
-            timestamp = resp["Metadata"]["timestamp"]
-            try:
-                # Try parsing with timezone info first
-                timestamp = datetime.fromisoformat(timestamp).astimezone(
-                    ZoneInfo("America/Vancouver")
-                )
-            except (ValueError, TypeError):
-                try:
-                    # Fall back to parsing without timezone
-                    timestamp = (
-                        datetime.strptime(timestamp.strip("Z"), "%Y%m%dT%H%M%S")
-                        .replace(tzinfo=timezone.utc)
-                        .astimezone(ZoneInfo("America/Vancouver"))
-                    )
-                except ValueError as e:
-                    logging.error(
-                        f"❌ Failed to parse timestamp '{timestamp}': {e}"
-                    )
-                    return None
-
-            return timestamp
+            return _parse_s3_timestamp(resp["Metadata"]["timestamp"])
         except KeyError:
             logging.warning(f"⚠️ No metadata for {key}")
             return None
+        except ValueError as e:
+            logging.error(f"❌ Failed to parse timestamp '{resp.get('Metadata', {}).get('timestamp')}': {e}")
+            return None
 
     try:
-        s3c = client("s3")
+        s3c = create_s3_client()
         paginator = s3c.get_paginator("list_objects_v2")
         page_iterator = paginator.paginate(
             Bucket=bucket_name,
@@ -237,7 +347,7 @@ def get_mf4_files_list_from_s3(
         )
 
         def process_object(obj, idx: int, total: int) -> dict:
-            logging.info(f"🔍 [{idx+1:4d}/{total:4d}]: {obj['Key']}")
+            logging.debug(f"🔍 [{idx+1:4d}/{total:4d}]: {obj['Key']}")
             key = obj["Key"]
             if key.lower().endswith(".mf4"):
                 last_modified = obj["LastModified"]
@@ -265,7 +375,7 @@ def get_mf4_files_list_from_s3(
         for page in page_iterator:
             count = 0
             start_ts = time.time()
-            logging.info(
+            logging.debug(
                 f"➡️ Processing page with {len(page.get('Contents', []))} items..."
             )
 
@@ -283,10 +393,10 @@ def get_mf4_files_list_from_s3(
                         mf4_files.append(result)
                         count += 1
 
-            logging.info(
+            logging.debug(
                 f"✅ Processed {count} items in {get_time_str(start_ts)} seconds."
             )
-        logging.info(
+        logging.debug(
             f"🏁 Total time to process all pages: {get_time_str(total_ts)} seconds."
         )
 
@@ -299,122 +409,52 @@ def get_mf4_files_list_from_s3(
     return []
 
 
-def check_new_mf4_files_in_s3(
-    bucket_names: EESBuckets | str | list[EESBuckets | str],
+def get_new_mf4_files_summary_from_s3(
+    bucket_names: EESBuckets | str | Iterable[EESBuckets | str],
     start_time: datetime | str = "",
     end_time: datetime | str = "",
-    sample_keys_per_bucket: int = 3,
     **kwargs,
 ) -> dict:
     """
-    Check whether new MF4 files exist for one or more S3 buckets.
-
-    :param bucket_names: One bucket or list of buckets to check.
-    :param start_time: Start time for filtering files (datetime or ISO 8601 string).
-    :param end_time: End time for filtering files (datetime or ISO 8601 string).
-    :param sample_keys_per_bucket: Number of keys to include per bucket in result.
-    :return: {
-        "has_new_files": bool,
-        "total_count": int,
-        "by_bucket": {
-            bucket_name: {
-                "has_new_files": bool,
-                "count": int,
-                "sample_keys": list[str],
-            }
-        },
-    }
+    Check one or more buckets for new MF4 files in a window.
     """
-
-    def _normalize_utc(value: datetime | str | None) -> datetime | None:
-        if value is None or value == "":
-            return None
-        if isinstance(value, str):
-            value = datetime.fromisoformat(value)
-        if value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
-        return value.astimezone(timezone.utc)
-
-    if isinstance(bucket_names, (EESBuckets, str)):
-        buckets = [bucket_names]
-    else:
-        buckets = bucket_names
-
-    start_utc = _normalize_utc(start_time)
-    end_utc = _normalize_utc(end_time)
-    posted_after_utc = _normalize_utc(kwargs.pop("posted_after", None))
-    prefix = kwargs.pop("Prefix", "")
-    page_size = int(kwargs.pop("page_size", 1000))
-
-    summary: dict[str, dict] = {}
-    total_count = 0
-    safe_sample_keys = max(0, sample_keys_per_bucket)
-    s3c = client("s3")
-
-    for bucket in buckets:
-        bucket_label = bucket.value[0] if isinstance(bucket, EESBuckets) else bucket
-        if not isinstance(bucket_label, str):
-            logging.error(f"❌ Invalid bucket name: {bucket}")
-            summary[str(bucket)] = {
-                "has_new_files": False,
-                "count": 0,
-                "sample_keys": [],
-            }
-            continue
-
-        count = 0
-        sample_keys: list[str] = []
-        paginator = s3c.get_paginator("list_objects_v2")
-        page_iterator = paginator.paginate(
-            Bucket=bucket_label,
-            Prefix=prefix,
-            PaginationConfig={"PageSize": page_size},
-        )
-
-        for page in page_iterator:
-            contents = page.get("Contents", [])
-            for obj in contents:
-                key = str(obj.get("Key", ""))
-                if not key.lower().endswith(".mf4"):
-                    continue
-
-                last_modified = obj.get("LastModified")
-                if not isinstance(last_modified, datetime):
-                    continue
-                if last_modified.tzinfo is None:
-                    last_modified = last_modified.replace(tzinfo=timezone.utc)
-                else:
-                    last_modified = last_modified.astimezone(timezone.utc)
-
-                if posted_after_utc and last_modified < posted_after_utc:
-                    continue
-                if start_utc and last_modified < start_utc:
-                    continue
-                if end_utc and last_modified > end_utc:
-                    continue
-
-                count += 1
-                if len(sample_keys) < safe_sample_keys:
-                    sample_keys.append(key)
-
-        total_count += count
-        summary[bucket_label] = {
-            "has_new_files": count > 0,
-            "count": count,
-            "sample_keys": sample_keys,
-        }
-
-    return {
-        "has_new_files": total_count > 0,
-        "total_count": total_count,
-        "by_bucket": summary,
+    summary: dict = {
+        "has_new_files": False,
+        "total_count": 0,
+        "buckets": {},
     }
+
+    for bucket_name in _normalize_bucket_names(bucket_names):
+        files = get_mf4_files_list_from_s3(
+            bucket_name=bucket_name,
+            start_time=start_time,
+            end_time=end_time,
+            **kwargs,
+        )
+        bucket_key = (
+            bucket_name.value[0]
+            if isinstance(bucket_name, EESBuckets)
+            else str(bucket_name)
+        )
+        summary["buckets"][bucket_key] = {
+            "count": len(files),
+            "keys": [
+                item["Key"]
+                for item in files
+                if isinstance(item, dict) and "Key" in item
+            ],
+            "files": files,
+        }
+        summary["total_count"] += len(files)
+
+    summary["has_new_files"] = summary["total_count"] > 0
+    return summary
 
 
 def main():
     buckets = get_bucket_names()
     for bucket in buckets:
-        logging.info(f"🪣  {bucket}")
+        logging.debug(f"🪣  {bucket}")
 
 
 if __name__ == "__main__":

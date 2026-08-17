@@ -3,7 +3,12 @@ import sys
 import time
 import logging
 import argparse
+import io
+import json
+import tempfile
 import re
+import ctypes
+import subprocess
 from copy import deepcopy
 from pathlib import Path
 
@@ -15,7 +20,7 @@ from itertools import chain
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Literal, Iterable, cast
+from typing import Literal, Iterable, Any
 from canmatrix import CanMatrix
 from canmatrix import formats as canmatrix_formats
 
@@ -27,11 +32,20 @@ from decoder.utils import (
     get_time_str,
     convert_to_eng,
     is_victoriametrics_online,
+    parse_time_arg,
+    format_time_span,
+    format_bytes,
+    install_verbosity_level,
+    log_summary,
+    log_final,
+    SUMMARY,
+    FINAL_SUMMARY,
 )
-from decoder.sending import send_decoded
+from decoder.sending import send_decoded, normalize_dbc_entries
 from decoder.config import (
     LOG_FORMAT,
     server_vm_d65,
+    server_vm_test_dump,
     server_vm_localhost,
     vmapi_import_prometheus,
 )
@@ -41,6 +55,7 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 CSVContent = tuple[Path, Literal["Upper", "Lower"], datetime]
 DBCSource = str | os.PathLike[str] | CanMatrix
+DBC_FOLDER_OVERRIDE: str | None = None
 
 MAC_UPPER = "6C1D6B77"
 MAC_LOWER = "5A72CE4C"
@@ -77,6 +92,8 @@ def skip_signal(name: str) -> bool:
         "NSerial",
         "NChecksum",
         "NMultiplexer",
+        "S2C_sp_param_id",
+        "C2S_fp_param_id"
     ]
 
     if name in SIGNALS_TO_SKIP:
@@ -94,17 +111,40 @@ def skip_signal(name: str) -> bool:
     return False
 
 
-def get_d65_dbc_base_path() -> Path:
-    # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
-    _d65_loc = Path.joinpath(
+def resolve_dbc_folder(dbc_folder: str | None = None) -> Path:
+    value = DBC_FOLDER_OVERRIDE if dbc_folder is None else dbc_folder
+    default_folder = Path(__file__).resolve().parent / "dbc"
+    legacy_folder = Path.joinpath(
         Path.home(), "ttc500_shell/apps/ttc_590_d65_ctrl_app/dbc"
     )
-    if os.name == "nt":  # Override if on windows
-        _d65_loc = Path(
+    if os.name == "nt":
+        legacy_folder = Path(
             r"\\wsl$\Ubuntu-22.04-fvt-v5\home\default\ttc500_shell\apps\ttc_590_d65_ctrl_app\dbc"
         )
 
-    return _d65_loc
+    if value is None or not str(value).strip():
+        return default_folder
+
+    if str(value).strip().lower() in {"old", "compatibility"}:
+        return legacy_folder
+
+    resolved = Path(os.path.expanduser(os.path.expandvars(str(value).strip())))
+    if not resolved.is_absolute():
+        resolved = Path.cwd() / resolved
+    return resolved
+
+
+def _resolve_dbc_file(dbc_folder: str | None, *parts: str) -> Path:
+    base = get_d65_dbc_base_path(dbc_folder)
+    candidate = base.joinpath(*parts)
+    if candidate.exists():
+        return candidate
+    fallback = base.joinpath(parts[-1])
+    return fallback if fallback.exists() else candidate
+
+
+def get_d65_dbc_base_path(dbc_folder: str | None = None) -> Path:
+    return resolve_dbc_folder(dbc_folder)
 
 
 def get_d65_dbc_file(
@@ -123,28 +163,29 @@ def get_d65_dbc_file(
     _d65_loc = get_d65_dbc_base_path()
 
     if job == "Upper" or job == "Lower":
-        get_d65_dbc_files()[job]
+        return get_d65_dbc_files()[job]
     elif job == "Brightloop":
-        return [Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")]
+        return [_resolve_dbc_file(None, "brightloop", "d65_brightloops.dbc")]
     elif job == "NV":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH0_NV.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH0_NV.dbc")]
     elif job == "Main":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH4_Main.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH4_Main.dbc")]
     elif job == "RCS":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH3_RCS_Module.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH3_RCS_Module.dbc")]
     elif job == "CM":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH5_CM.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH5_CM.dbc")]
     elif job == "EVCC":
-        return [Path.joinpath(_d65_loc, "busses", "D65_CH6_EVCC.dbc")]
+        return [_resolve_dbc_file(None, "busses", "D65_CH6_EVCC.dbc")]
     elif job == "OneShot":
-        return [Path.joinpath(_d65_loc, "one_shot_updates.dbc")]
+        return [_resolve_dbc_file(None, "one_shot_updates.dbc")]
 
     return []
 
 
-def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
-    # ‼️‼️‼️ Point these to where the D65 DBC files are located ‼️‼️‼️
-    _d65_loc = get_d65_dbc_base_path()
+def get_d65_dbc_files(
+    dbc_folder: str | None = None,
+) -> dict[Literal["Upper", "Lower"], list[Path]]:
+    _d65_loc = get_d65_dbc_base_path(dbc_folder)
 
     d65_dbc_files = {
         "Lower": [
@@ -160,17 +201,13 @@ def get_d65_dbc_files() -> dict[Literal["Upper", "Lower"], list[Path]]:
         ],
     }
 
-    upper_dbc_files: list[Path] = []
-    upper_dbc_files += [
-        Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Upper"]
+    upper_dbc_files = [
+        _resolve_dbc_file(dbc_folder, dbc) for dbc in d65_dbc_files["Upper"]
     ]
-    upper_dbc_files += [
-        Path.joinpath(_d65_loc, "brightloop", "d65_brightloops.dbc")
-    ]
+    upper_dbc_files.append(_resolve_dbc_file(dbc_folder, "d65_brightloops.dbc"))
 
-    lower_dbc_files: list[Path] = []
-    lower_dbc_files += [
-        Path.joinpath(_d65_loc, "busses", dbc) for dbc in d65_dbc_files["Lower"]
+    lower_dbc_files = [
+        _resolve_dbc_file(dbc_folder, dbc) for dbc in d65_dbc_files["Lower"]
     ]
     # lower_dbc_files += [Path.joinpath(_d65_loc, "one_shot_updates.dbc")]
 
@@ -315,7 +352,7 @@ def build_dbc_override_for_filters(
                 matched_message_lower.update(
                     {m.lower() for m in found_messages}
                 )
-                logging.info(
+                logging.debug(
                     f"🎯 [{job}] Using signal context from {dbc.name}: "
                     f"{selected_frame_count} messages, "
                     f"{len(found_signals)} signal matches, "
@@ -353,6 +390,28 @@ def parse_include_arg(raw_values: list[str] | None) -> list[str]:
 
     # Preserve input order but remove duplicates.
     return list(dict.fromkeys(parsed))
+
+
+def parse_time_offset(offset_str: str) -> timedelta:
+    """
+    Parses a time offset string like '10m', '2h', '1d' and returns a timedelta.
+    Only supports negative offsets.
+    """
+    match = re.match(r"(\d+)([smhd])", offset_str)
+    if not match:
+        raise ValueError(f"Invalid offset format: {offset_str}")
+    value, unit = match.groups()
+    value = int(value)
+    if unit == "s":
+        return timedelta(seconds=value)
+    elif unit == "m":
+        return timedelta(minutes=value)
+    elif unit == "h":
+        return timedelta(hours=value)
+    elif unit == "d":
+        return timedelta(days=value)
+    else:
+        raise ValueError(f"Unknown time unit: {unit}")
 
 
 def get_upper_dbc_files() -> Iterable[DbcFileType]:
@@ -417,21 +476,6 @@ def send_files_to_victoriametrics(
     Uses ThreadPoolExecutor to send batches in parallel.
     """
 
-    def _normalize_dbc_entries(
-        entries: Iterable[DbcFileType | DBCSource],
-    ) -> list[DbcFileType]:
-        normalized: list[DbcFileType] = []
-        for entry in entries:
-            if (
-                isinstance(entry, tuple)
-                and len(entry) == 2
-                and isinstance(entry[1], int)
-            ):
-                normalized.append(cast(DbcFileType, entry))
-            else:
-                normalized.append((cast(DBCSource, entry), 0))
-        return normalized
-
     dbc_files = get_d65_dbc_files()
     if dbc_files_override := kwargs.get("dbc_files_override", None):
         if "Upper" in dbc_files_override:
@@ -439,10 +483,10 @@ def send_files_to_victoriametrics(
         if "Lower" in dbc_files_override:
             dbc_files["Lower"] = dbc_files_override["Lower"]
 
-    upper_dbc_files: list[DbcFileType] = _normalize_dbc_entries(
+    upper_dbc_files: list[DbcFileType] = normalize_dbc_entries(
         dbc_files["Upper"]
     )
-    lower_dbc_files: list[DbcFileType] = _normalize_dbc_entries(
+    lower_dbc_files: list[DbcFileType] = normalize_dbc_entries(
         dbc_files["Lower"]
     )
 
@@ -478,7 +522,7 @@ def send_files_to_victoriametrics(
 
                 try:
                     start = time.time()
-                    logging.info(
+                    logging.debug(
                         f" ⏳ {count_str} Decoding file {shortpath(f)} ..."
                     )
                     if k not in ["Upper", "Lower"]:
@@ -494,7 +538,7 @@ def send_files_to_victoriametrics(
                             database_files={"CAN": dbc},
                             ignore_value2text_conversion=True,
                         )
-                        logging.info(
+                        logging.debug(
                             f" ✅ {count_str} Decoded file {shortpath(f)} in {get_time_str(start)}"
                         )
 
@@ -535,22 +579,22 @@ def send_files_to_victoriametrics(
                 yield i, lst[i : i + n]
 
         def process_batch(files, dbc_files, job, stack_msg):
-            logging.info(f" ⏳ {stack_msg}: Stacking {len(files)} files ...")
+            logging.debug(f" ⏳ {stack_msg}: Stacking {len(files)} files ...")
             start = time.time()
             try:
                 mdf = MDF().stack(files)
-                logging.info(
+                logging.debug(
                     f" ✅ {stack_msg}: Stacked {len(files)} files in {get_time_str(start)}"
                 )
 
-                logging.info(f" ⏳ {stack_msg}: Decoding stacked files ...")
+                logging.debug(f" ⏳ {stack_msg}: Decoding stacked files ...")
                 start = time.time()
                 try:
                     decoded = mdf.extract_bus_logging(
                         database_files={"CAN": dbc_files},
                         ignore_value2text_conversion=True,
                     )
-                    logging.info(
+                    logging.debug(
                         f" ✅ {stack_msg}: Decoded stacked files in {get_time_str(start)}"
                     )
                     if not list(decoded.iter_channels()):
@@ -694,8 +738,8 @@ def get_d65_file_list_from_s3(
         prefix = MAC_LOWER
     elif ignore_lower and not ignore_upper:
         prefix = MAC_UPPER
-    files = get_mf4_files_list_from_s3(
-        bucket_name=EESBuckets.S3_BUCKET_D65,
+    summary = get_new_mf4_files_summary_from_s3(
+        bucket_names=EESBuckets.S3_BUCKET_D65,
         start_time=start,
         end_time=end,
         max_workers=max_workers,
@@ -703,13 +747,14 @@ def get_d65_file_list_from_s3(
         Prefix=prefix,
         **kwargs,
     )
+    files = summary["buckets"][EESBuckets.S3_BUCKET_D65.value[0]]["files"]
 
     posted_str = (
         f" | posted_after={posted_after.astimezone().isoformat()}"
         if isinstance(posted_after, datetime)
         else ""
     )
-    logging.info(
+    logging.debug(
         f" 🪣 Found {len(files)} .mf4 files in D65 S3 bucket betwen {start}-{end}[{posted_str}]."
     )
 
@@ -763,7 +808,7 @@ def check_new_d65_files_in_s3(
     elif ignore_lower and not ignore_upper:
         prefix = MAC_UPPER
 
-    return check_new_mf4_files_in_s3(
+    return get_new_mf4_files_summary_from_s3(
         bucket_names=EESBuckets.S3_BUCKET_D65,
         start_time=start,
         end_time=end,
@@ -771,6 +816,439 @@ def check_new_d65_files_in_s3(
         Prefix=prefix,
         **kwargs,
     )
+
+
+def _get_available_ram_bytes() -> int | None:
+    if os.name == "nt":
+        # https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-memorystatusex
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        stat = MEMORYSTATUSEX()
+        stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+            return int(stat.ullAvailPhys)
+        return None
+
+    if sys.platform == "darwin":
+        try:
+            out = subprocess.check_output(
+                ["vm_stat"], text=True, stderr=subprocess.DEVNULL
+            )
+            page_size = 4096
+            m = re.search(r"page size of (\d+) bytes", out)
+            if m:
+                page_size = int(m.group(1))
+
+            # free + inactive + speculative approximates quickly available RAM.
+            keys = ("Pages free", "Pages inactive", "Pages speculative")
+            pages = 0
+            for key in keys:
+                mm = re.search(rf"{key}:\s+(\d+)\.", out)
+                if mm:
+                    pages += int(mm.group(1))
+            if pages > 0:
+                return int(pages * page_size)
+        except Exception:
+            return None
+
+    try:
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        avail_pages = os.sysconf("SC_AVPHYS_PAGES")
+        return int(page_size * avail_pages)
+    except Exception:
+        return None
+
+
+def _select_s3_streaming_strategy(
+    s3_info_list: list[dict],
+    requested_strategy: Literal["auto", "memory", "tempfile"],
+    memory_fraction: float,
+    decode_overhead_factor: float,
+    max_active_files: int,
+) -> tuple[Literal["memory", "tempfile"], dict[str, int | float | None]]:
+    sizes = [
+        int(item["Size"])
+        for item in s3_info_list
+        if isinstance(item, dict) and "Size" in item
+    ]
+    sizes.sort(reverse=True)
+
+    max_active = max(1, max_active_files)
+    worst_parallel_bytes = sum(sizes[:max_active]) if sizes else 0
+    projected_peak_bytes = int(worst_parallel_bytes * decode_overhead_factor)
+    available_ram_bytes = _get_available_ram_bytes()
+    ram_budget_bytes = (
+        int(available_ram_bytes * memory_fraction)
+        if available_ram_bytes is not None
+        else None
+    )
+
+    if requested_strategy == "memory":
+        selected: Literal["memory", "tempfile"] = "memory"
+    elif requested_strategy == "tempfile":
+        selected = "tempfile"
+    else:
+        if (
+            ram_budget_bytes is not None
+            and projected_peak_bytes <= ram_budget_bytes
+        ):
+            selected = "memory"
+        else:
+            selected = "tempfile"
+
+    profile: dict[str, int | float | None] = {
+        "file_count": len(sizes),
+        "largest_file_bytes": sizes[0] if sizes else 0,
+        "worst_parallel_bytes": worst_parallel_bytes,
+        "projected_peak_bytes": projected_peak_bytes,
+        "available_ram_bytes": available_ram_bytes,
+        "ram_budget_bytes": ram_budget_bytes,
+        "max_active_files": max_active,
+        "decode_overhead_factor": decode_overhead_factor,
+    }
+    return selected, profile
+
+
+def _key_segment_from_s3_key(key: str) -> Literal["Upper", "Lower"] | None:
+    if key.startswith(MAC_UPPER):
+        return "Upper"
+    if key.startswith(MAC_LOWER):
+        return "Lower"
+    return None
+
+
+def _parse_cursor_timestamp(raw: str) -> datetime | None:
+    value = raw.strip()
+    if not value:
+        return None
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _is_after_cursor(
+    item_timestamp: datetime | None,
+    item_key: str,
+    cursor_timestamp: datetime | None,
+    cursor_key: str,
+) -> bool:
+    if item_timestamp is None:
+        return False
+    if cursor_timestamp is None:
+        return True
+    if item_timestamp > cursor_timestamp:
+        return True
+    if item_timestamp < cursor_timestamp:
+        return False
+    return item_key > cursor_key
+
+
+def _decode_and_send_d65_mdf(
+    mdf: MDF,
+    job: Literal["Upper", "Lower"],
+    server: str,
+    upper_dbc_files: list[DbcFileType],
+    lower_dbc_files: list[DbcFileType],
+    skip_signal_range_check: bool,
+    max_batch_size: int,
+) -> tuple[dict[str, int], datetime | None, datetime | None]:
+    dbc_files = upper_dbc_files if job == "Upper" else lower_dbc_files
+    decoded = mdf.extract_bus_logging(
+        database_files={"CAN": dbc_files},
+        ignore_value2text_conversion=True,
+    )
+    channels = list(decoded.iter_channels())
+    if not channels:
+        return {}, None, None
+
+    span_start: datetime | None = None
+    span_end: datetime | None = None
+    for signal in channels:
+        if len(signal.timestamps) < 1:
+            continue
+        sig_start = decoded.start_time + timedelta(seconds=signal.timestamps[0])
+        sig_end = decoded.start_time + timedelta(seconds=signal.timestamps[-1])
+        if span_start is None or sig_start < span_start:
+            span_start = sig_start
+        if span_end is None or sig_end > span_end:
+            span_end = sig_end
+
+    counts = send_decoded(
+        decoded=decoded,
+        server=server,
+        job=job,
+        skip_signal_fn=skip_signal,
+        skip_signal_range_check=skip_signal_range_check,
+        batch_size=max_batch_size,
+    )
+    return counts, span_start, span_end
+
+
+def main_post_s3_streaming_to_victoriametrics(
+    server: str,
+    start_date: datetime,
+    end_date: datetime,
+    s3_info_list: list[dict] | None = None,
+    ignore_upper: bool = False,
+    ignore_lower: bool = False,
+    streaming_strategy: Literal["auto", "memory", "tempfile"] = "auto",
+    memory_fraction: float = 0.35,
+    decode_overhead_factor: float = 2.5,
+    max_active_files: int = 1,
+    max_batch_size: int = 10_000,
+    skip_signal_range_check: bool = False,
+    **kwargs,
+) -> tuple[dict[str, int], dict[str, int]]:
+    cursor_timestamp = _parse_cursor_timestamp(kwargs.get("cursor_timestamp", ""))
+    cursor_key = str(kwargs.get("cursor_key", ""))
+    cursor_out = str(kwargs.get("cursor_out", "")).strip()
+
+    if s3_info_list is None:
+        s3_info_list = get_d65_file_list_from_s3(
+            start=start_date,
+            end=end_date,
+            ignore_upper=ignore_upper,
+            ignore_lower=ignore_lower,
+        )
+
+    if not s3_info_list:
+        logging.warning("⚠️ No S3 files found to stream.")
+        return {}, {}
+
+    s3_info_list = [
+        item
+        for item in s3_info_list
+        if isinstance(item, dict)
+        and isinstance(item.get("Key", None), str)
+        and _key_segment_from_s3_key(item["Key"]) is not None
+    ]
+
+    if ignore_upper:
+        s3_info_list = [
+            item
+            for item in s3_info_list
+            if _key_segment_from_s3_key(item["Key"]) == "Lower"
+        ]
+    if ignore_lower:
+        s3_info_list = [
+            item
+            for item in s3_info_list
+            if _key_segment_from_s3_key(item["Key"]) == "Upper"
+        ]
+
+    s3_info_list = [
+        item
+        for item in s3_info_list
+        if _is_after_cursor(
+            item_timestamp=item.get("Timestamp"),
+            item_key=item.get("Key", ""),
+            cursor_timestamp=cursor_timestamp,
+            cursor_key=cursor_key,
+        )
+    ]
+
+    send_newest_first = kwargs.get("send_newest_first", True)
+    s3_info_list.sort(
+        key=lambda x: x.get("Timestamp", datetime.min.replace(tzinfo=timezone.utc)),
+        reverse=send_newest_first,
+    )
+
+    if not s3_info_list:
+        logging.warning("⚠️ No S3 files left after filtering.")
+        return {}, {}
+
+    dbc_files = get_d65_dbc_files()
+    dbc_files_override: Any = kwargs.get("dbc_files_override", None)
+    if dbc_files_override:
+        if "Upper" in dbc_files_override:
+            dbc_files["Upper"] = dbc_files_override["Upper"]
+        if "Lower" in dbc_files_override:
+            dbc_files["Lower"] = dbc_files_override["Lower"]
+
+    upper_dbc_files = normalize_dbc_entries(dbc_files["Upper"])
+    lower_dbc_files = normalize_dbc_entries(dbc_files["Lower"])
+
+    selected_strategy, profile = _select_s3_streaming_strategy(
+        s3_info_list=s3_info_list,
+        requested_strategy=streaming_strategy,
+        memory_fraction=memory_fraction,
+        decode_overhead_factor=decode_overhead_factor,
+        max_active_files=max_active_files,
+    )
+    logging.debug(
+        "🧠 S3 streaming preflight | files=%s largest=%s "
+        "worst_parallel=%s projected_peak=%s available_ram=%s "
+        "ram_budget=%s strategy=%s",
+        profile["file_count"],
+        format_bytes(profile["largest_file_bytes"]),
+        format_bytes(profile["worst_parallel_bytes"]),
+        format_bytes(profile["projected_peak_bytes"]),
+        format_bytes(profile["available_ram_bytes"]),
+        format_bytes(profile["ram_budget_bytes"]),
+        selected_strategy,
+    )
+
+    max_retries = 10
+    retry_interval_seconds = 60
+    for attempt in range(1, max_retries + 1):
+        if is_victoriametrics_online(server):
+            break
+        if attempt < max_retries:
+            logging.warning(
+                f" -> ⚠️ {server} not available (attempt {attempt}/{max_retries}). Retrying in 1 minute..."
+            )
+            time.sleep(retry_interval_seconds)
+        else:
+            logging.error(
+                f" -> ❌ {server} not available after {max_retries} attempts. Exiting..."
+            )
+            exit(1)
+
+    s3c = create_s3_client(max_pool_connections=max(1, max_active_files))
+    total_upper_counts: dict[str, int] = {}
+    total_lower_counts: dict[str, int] = {}
+    span_start: datetime | None = None
+    span_end: datetime | None = None
+    cursor_last_ts: datetime | None = None
+    cursor_last_key = ""
+    total = len(s3_info_list)
+    all_start_ts = time.time()
+
+    for idx, item in enumerate(s3_info_list, start=1):
+        key = item["Key"]
+        job = _key_segment_from_s3_key(key)
+        if job is None:
+            continue
+
+        count_str = f"[{idx} of {total}]"
+        start_ts = time.time()
+        result: dict[str, int] = {}
+        current_start: datetime | None = None
+        current_end: datetime | None = None
+        if selected_strategy == "memory":
+            blob = download_file_bytes_from_s3(
+                bucket_name=EESBuckets.S3_BUCKET_D65,
+                key=key,
+                s3_client=s3c,
+            )
+            if blob is None:
+                continue
+            try:
+                with MDF(io.BytesIO(blob)) as mdf:
+                    result, current_start, current_end = _decode_and_send_d65_mdf(
+                        mdf=mdf,
+                        job=job,
+                        server=server,
+                        upper_dbc_files=upper_dbc_files,
+                        lower_dbc_files=lower_dbc_files,
+                        skip_signal_range_check=skip_signal_range_check,
+                        max_batch_size=max_batch_size,
+                    )
+            except Exception as e:
+                logging.error(f"❌ {count_str} Error processing in memory {key}: {e}")
+            del blob
+        else:
+            tmp_path: Path | None = None
+            try:
+                with tempfile.NamedTemporaryFile(
+                    suffix=".mf4", delete=False
+                ) as tmp_file:
+                    tmp_path = Path(tmp_file.name)
+                ok = download_file_to_path_from_s3(
+                    bucket_name=EESBuckets.S3_BUCKET_D65,
+                    key=key,
+                    local_path=tmp_path,
+                    s3_client=s3c,
+                )
+                if not ok:
+                    continue
+                with MDF(tmp_path) as mdf:
+                    result, current_start, current_end = _decode_and_send_d65_mdf(
+                        mdf=mdf,
+                        job=job,
+                        server=server,
+                        upper_dbc_files=upper_dbc_files,
+                        lower_dbc_files=lower_dbc_files,
+                        skip_signal_range_check=skip_signal_range_check,
+                        max_batch_size=max_batch_size,
+                    )
+            except Exception as e:
+                logging.error(f"❌ {count_str} Error processing temp file {key}: {e}")
+            finally:
+                if tmp_path and tmp_path.exists():
+                    tmp_path.unlink()
+
+        sent = sum(result.values())
+        item_ts = item.get("Timestamp")
+        if isinstance(item_ts, datetime):
+            if (
+                cursor_last_ts is None
+                or item_ts > cursor_last_ts
+                or (item_ts == cursor_last_ts and key > cursor_last_key)
+            ):
+                cursor_last_ts = item_ts
+                cursor_last_key = key
+        if current_start and (span_start is None or current_start < span_start):
+            span_start = current_start
+        if current_end and (span_end is None or current_end > span_end):
+            span_end = current_end
+        logging.info(
+            f"✅ {count_str} {job} streamed {shortpath(Path(key))} in {get_time_str(start_ts)} ({convert_to_eng(sent)} samples)"
+        )
+        for signal_name, count in result.items():
+            if job == "Upper":
+                total_upper_counts[signal_name] = (
+                    total_upper_counts.get(signal_name, 0) + count
+                )
+            else:
+                total_lower_counts[signal_name] = (
+                    total_lower_counts.get(signal_name, 0) + count
+                )
+
+    end_ts = time.time()
+    total_signals_sent = len(total_upper_counts) + len(total_lower_counts)
+    total_samples_sent = sum(total_upper_counts.values()) + sum(
+        total_lower_counts.values()
+    )
+    backfill_span = ""
+    if span_start and span_end:
+        backfill_span = format_time_span(span_start, span_end)
+    log_final(
+        "🏁 Streamed %s S3 files in %s (%s signals | %s samples | %s samples/s).",
+        total,
+        get_time_str(all_start_ts, end_ts),
+        total_signals_sent,
+        convert_to_eng(total_samples_sent),
+        convert_to_eng(total_samples_sent / max(end_ts - all_start_ts, 1e-9)),
+    )
+    if backfill_span:
+        log_final("   ↳ backfill span %s", backfill_span)
+    if cursor_out:
+        Path(cursor_out).write_text(
+            json.dumps(
+                {
+                    "last_timestamp": (
+                        cursor_last_ts.isoformat() if cursor_last_ts else ""
+                    ),
+                    "last_key": cursor_last_key,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    return total_lower_counts, total_upper_counts
 
 
 def download_d65_files_from_s3(
@@ -799,10 +1277,10 @@ def download_d65_files_from_s3(
     if s3_csv_file and Path(s3_csv_file).exists():
         s3_csv_file = Path(s3_csv_file)
         if s3_csv_file.suffix.lower() == ".csv":
-            logging.info(f"📃 Reading S3 file list from {s3_csv_file} ...")
+            logging.debug(f"📃 Reading S3 file list from {s3_csv_file} ...")
             start_ts = time.time()
             s3_files = read_s3_file(s3_csv_file, start=start, end=end)
-            logging.info(
+            logging.debug(
                 f"✅ Read {len(s3_files)} files from {s3_csv_file} in {get_time_str(start_ts)}"
             )
             keys.extend(
@@ -833,11 +1311,11 @@ def download_d65_files_from_s3(
         return
 
     if not download_path.exists():
-        logging.info(f"📁 Creating download directory: {download_path}")
+        logging.debug(f"📁 Creating download directory: {download_path}")
         download_path.mkdir(parents=True, exist_ok=True)
 
     start_ts = time.time()
-    logging.info(f"⬇️ Downloading {len(keys)} files to {download_path} ...")
+    logging.debug(f"⬇️ Downloading {len(keys)} files to {download_path} ...")
     count = download_files_from_s3(
         bucket_name=EESBuckets.S3_BUCKET_D65,
         keys=keys,
@@ -957,7 +1435,7 @@ def get_all_d65_canedge_files(
     start: datetime, end: datetime, ignore_dchv_files: bool = True
 ) -> list[CSVContent]:
     canedge_folder = get_d65_canedge_folder()
-    logging.info(f" 📁 Reading CANEdge files from {canedge_folder} ...")
+    logging.debug(f" 📁 Reading CANEdge files from {canedge_folder} ...")
     start_ts = time.time()
     canedge_files: list[CSVContent] = get_files_in_range(
         dir_path=canedge_folder,
@@ -973,7 +1451,7 @@ def get_all_d65_canedge_files(
         ]
         canedge_files = modded
 
-    logging.info(
+    logging.debug(
         f" ✔️  [Rig Crew] Found {len(canedge_files)} files in {get_time_str(start_ts)}"
     )
 
@@ -985,7 +1463,7 @@ def get_all_d65_cancloud_files(
 ) -> list[CSVContent]:
     cancloud_folder = get_d65_cancloud_folder()
 
-    logging.info(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
+    logging.debug(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
     start_ts = time.time()
     cancloud_files: list[CSVContent] = get_files_in_range(
         dir_path=cancloud_folder,
@@ -993,7 +1471,7 @@ def get_all_d65_cancloud_files(
         end=end,
     )
 
-    logging.info(
+    logging.debug(
         f" ✔️  [CANCloud] Found {len(cancloud_files)} files in {get_time_str(start_ts)}"
     )
 
@@ -1008,7 +1486,7 @@ def get_all_unique_d65_files(
 ) -> list[CSVContent]:
     cancloud_folder = get_d65_cancloud_folder()
 
-    logging.info(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
+    logging.debug(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
     start_ts = time.time()
     cancloud_files: list[CSVContent] = get_files_in_range(
         dir_path=cancloud_folder,
@@ -1030,7 +1508,7 @@ def main_read_all_files():
     files = get_all_unique_d65_files(sorted=True, start=start, end=end)
 
     for f, k, ts in files:
-        logging.info(f" 📄 {shortpath(f)} | {k} | {ts.isoformat()}")
+        logging.debug(f" 📄 {shortpath(f)} | {k} | {ts.isoformat()}")
 
 
 def main_post_to_victoriametrics(
@@ -1071,7 +1549,7 @@ def main_post_to_victoriametrics(
         files.sort(
             key=lambda x: x[2], reverse=kwargs.get("send_newest_first", True)
         )
-        logging.info(
+        logging.debug(
             f" ✔️  [CANCloud] Using S3 metadata timestamp basis for {len(files)} local files."
         )
     else:
@@ -1100,13 +1578,16 @@ def main_post_to_victoriametrics(
         ([u for u in files if u[1] == "Upper"], "Upper"),
         ([l for l in files if l[1] == "Lower"], "Lower"),
     ]:
+        if len(_files) == 0:
+            logging.debug(f" ✔️  [{_name}] Found 0 files.")
+            continue
         if len(_files) == 1:
-            logging.info(
-                f" ✔️  [{_name}] Found 1 file starting at {files[0][2].astimezone().isoformat()}."
+            logging.debug(
+                f" ✔️  [{_name}] Found 1 file starting at {_files[0][2].astimezone().isoformat()}."
             )
         else:
-            logging.info(
-                f" ✔️  [{_name}] Found {len(files)} files from {files[0][2].astimezone().isoformat()} to {files[-1][2].astimezone().isoformat()}."
+            logging.debug(
+                f" ✔️  [{_name}] Found {len(_files)} files from {_files[0][2].astimezone().isoformat()} to {_files[-1][2].astimezone().isoformat()}."
             )
 
     logging.info(
@@ -1129,11 +1610,12 @@ def main_post_to_victoriametrics(
             exit(1)
 
     logging.info(f" -> ✅ {server} is online. Sending files...")
+    skip_signal_range_check = kwargs.pop("skip_signal_range_check", False)
     total_lower_counts, total_upper_counts = send_files_to_victoriametrics(
         server=server,
         files=files,
         stack_size=20,
-        skip_signal_range_check=False,
+        skip_signal_range_check=skip_signal_range_check,
         **kwargs,
     )
     end_ts = time.time()
@@ -1145,7 +1627,7 @@ def main_post_to_victoriametrics(
         total_signals_sent = len(total_counts.keys())
         total_samples_sent = sum(total_counts.values())
 
-        logging.info(
+        log_summary(
             f" ✔️  [{device}] Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
         )
 
@@ -1155,10 +1637,17 @@ def main_post_to_victoriametrics(
     total_samples_sent = sum(total_lower_counts.values()) + sum(
         total_upper_counts.values()
     )
+    backfill_span = ""
+    if skip_signal_range_check and files:
+        start_span = min(files, key=lambda x: x[2])[2]
+        end_span = max(files, key=lambda x: x[2])[2]
+        backfill_span = format_time_span(start_span, end_span)
 
-    logging.info(
+    log_final(
         f" ✔️  Sent {total_signals_sent} signals {get_time_str(start_ts, end_ts)} ({convert_to_eng(total_samples_sent)} samples | {convert_to_eng(total_samples_sent / (end_ts - start_ts))} samples/s)."
     )
+    if backfill_span:
+        log_final("   ↳ backfill span %s", backfill_span)
 
 
 def main_download_files(
@@ -1226,31 +1715,15 @@ def main_delete_all_series(server: str):
         )
 
 
-def parse_time_offset(offset_str: str) -> timedelta:
-    """
-    Parses a time offset string like '10m', '2h', '1d' and returns a timedelta.
-    Only supports negative offsets.
-    """
-    match = re.match(r"(\d+)([smhd])", offset_str)
-    if not match:
-        raise ValueError(f"Invalid offset format: {offset_str}")
-    value, unit = match.groups()
-    value = int(value)
-    if unit == "s":
-        return timedelta(seconds=value)
-    elif unit == "m":
-        return timedelta(minutes=value)
-    elif unit == "h":
-        return timedelta(hours=value)
-    elif unit == "d":
-        return timedelta(days=value)
-    else:
-        raise ValueError(f"Unknown time unit: {unit}")
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Send D65 data to VictoriaMetrics"
+    )
+    parser.add_argument(
+        "--server",
+        type=str,
+        default=server_vm_d65,
+        help="VictoriaMetrics server URL override.",
     )
     parser.add_argument(
         "--start",
@@ -1287,6 +1760,11 @@ if __name__ == "__main__":
         help="Don't post signals to VictoriaMetrics",
     )
     parser.add_argument(
+        "--backfill",
+        action="store_true",
+        help="Send all data without checking VictoriaMetrics for existing samples.",
+    )
+    parser.add_argument(
         "--posted-within",
         type=str,
         default="",
@@ -1314,22 +1792,110 @@ if __name__ == "__main__":
             "'--messages MsgA MsgB'."
         ),
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--s3-streaming",
+        action="store_true",
+        help=(
+            "Stream D65 S3 objects directly into decode/send pipeline "
+            "without pre-downloading all files to local storage."
+        ),
+    )
+    parser.add_argument(
+        "--s3-streaming-strategy",
+        type=str,
+        choices=["auto", "memory", "tempfile"],
+        default="auto",
+        help=(
+            "Streaming strategy for S3 object processing. "
+            "'auto' profiles projected memory and chooses memory/tempfile."
+        ),
+    )
+    parser.add_argument(
+        "--s3-streaming-memory-fraction",
+        type=float,
+        default=0.35,
+        help=(
+            "Fraction of available RAM allowed for projected streaming peak "
+            "when strategy=auto."
+        ),
+    )
+    parser.add_argument(
+        "--s3-streaming-decode-overhead",
+        type=float,
+        default=2.5,
+        help=(
+            "Multiplier used in projected RAM peak estimate "
+            "(raw object bytes -> decode peak)."
+        ),
+    )
+    parser.add_argument(
+        "--s3-streaming-max-active-files",
+        type=int,
+        default=1,
+        help=(
+            "Max concurrently active files assumed by preflight RAM estimate. "
+            "Current streaming execution processes files sequentially."
+        ),
+    )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Send to test node (server_vm_test_dump) instead of main D65 node.",
+    )
+    parser.add_argument(
+        "--dbc-folder",
+        type=str,
+        default="",
+        help="DBC folder path, or 'old'/'compatibility' for workstation lookup. Defaults to decoder/D65/dbc.",
+    )
+    parser.add_argument(
+        "--verbosity",
+        type=str,
+        choices=["debug", "some", "minimal", "silent"],
+        default="debug",
+        help=(
+            "Log verbosity. debug=all, some=hides S3 scan+per-signal Sending..., "
+            "minimal=also hides per-signal Sent..., silent=errors+final summary only."
+        ),
+    )
+    parser.add_argument(
+        "--cursor-ts",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--cursor-key",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--cursor-out",
+        type=str,
+        default="",
+        help=argparse.SUPPRESS,
+    )
 
-    server = server_vm_d65
+    args = parser.parse_args()
+    DBC_FOLDER_OVERRIDE = args.dbc_folder
+    install_verbosity_level(args.verbosity)
+
+    if args.s3_streaming_memory_fraction <= 0 or args.s3_streaming_memory_fraction > 1:
+        parser.error("--s3-streaming-memory-fraction must be in (0, 1].")
+    if args.s3_streaming_decode_overhead <= 0:
+        parser.error("--s3-streaming-decode-overhead must be > 0.")
+    if args.s3_streaming_max_active_files < 1:
+        parser.error("--s3-streaming-max-active-files must be >= 1.")
+
+    server = server_vm_test_dump if args.test else args.server
 
     # Parse start time
     now = datetime.now().astimezone(ZoneInfo("America/Vancouver"))
-    if args.start == "today":
-        start_date = datetime.today().astimezone(now.tzinfo)
-    else:
-        start_date = now - parse_time_offset(args.start)
+    start_date = parse_time_arg(args.start, now)
 
     # Parse end time
-    if args.end == "now":
-        end_date = now
-    else:
-        end_date = now - parse_time_offset(args.end)
+    end_date = parse_time_arg(args.end, now, allow_today=False)
 
     posted_after: datetime | None = None
     if args.posted_within:
@@ -1409,8 +1975,21 @@ if __name__ == "__main__":
 
     s3_info_list_for_post: list[dict] | None = None
 
-    if not args.skip_download:
-        logging.info("⬇️ Starting D65 file download from S3 ...")
+    if args.s3_streaming:
+        if args.skip_download:
+            logging.info(
+                "ℹ️ --s3-streaming enabled; ignoring --skip_download and using "
+                "S3 key list without bulk download."
+            )
+        s3_info_list_for_post = get_d65_file_list_from_s3(
+            start=start_date,
+            end=end_date,
+            posted_after=posted_after,
+            ignore_upper=effective_ignore_upper,
+            ignore_lower=effective_ignore_lower,
+        )
+    elif not args.skip_download:
+        logging.debug("⬇️ Starting D65 file download from S3 ...")
         s3_info_list_for_post = main_download_files(
             start_date=start_date,
             end_date=end_date,
@@ -1421,18 +2000,40 @@ if __name__ == "__main__":
 
     # main_delete_all_series(server)
     if not args.skip_post:
-        logging.info("🌐 Starting D65 data post to VictoriaMetrics ...")
-        main_post_to_victoriametrics(
-            server=server,
-            start_date=start_date,
-            end_date=end_date,
-            ignore_upper=effective_ignore_upper,
-            ignore_lower=effective_ignore_lower,
-            s3_info_list=s3_info_list_for_post,
-            send_newest_first=True,
-            dbc_files_override=dbc_files_override,
-            # dbc_files_override={
-            #     "Upper": [],
-            #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
-            # },
-        )
+        logging.debug("🌐 Starting D65 data post to VictoriaMetrics ...")
+        if args.s3_streaming:
+            main_post_s3_streaming_to_victoriametrics(
+                server=server,
+                start_date=start_date,
+                end_date=end_date,
+                ignore_upper=effective_ignore_upper,
+                ignore_lower=effective_ignore_lower,
+                s3_info_list=s3_info_list_for_post,
+                streaming_strategy=args.s3_streaming_strategy,
+                memory_fraction=args.s3_streaming_memory_fraction,
+                decode_overhead_factor=args.s3_streaming_decode_overhead,
+                max_active_files=args.s3_streaming_max_active_files,
+                max_batch_size=10_000,
+                skip_signal_range_check=args.backfill,
+                send_newest_first=True,
+                dbc_files_override=dbc_files_override,
+                cursor_timestamp=args.cursor_ts,
+                cursor_key=args.cursor_key,
+                cursor_out=args.cursor_out,
+            )
+        else:
+            main_post_to_victoriametrics(
+                server=server,
+                start_date=start_date,
+                end_date=end_date,
+                ignore_upper=effective_ignore_upper,
+                ignore_lower=effective_ignore_lower,
+                s3_info_list=s3_info_list_for_post,
+                send_newest_first=True,
+                dbc_files_override=dbc_files_override,
+                skip_signal_range_check=args.backfill,
+                # dbc_files_override={
+                #     "Upper": [],
+                #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
+                # },
+            )

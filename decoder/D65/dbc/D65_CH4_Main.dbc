@@ -1,0 +1,1689 @@
+VERSION "created by canmatrix"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: IMD_StandAlone Master IMD EVCU DCDC2 DCDC1 BCL25_700_8 ECU HMI RCS
+
+
+BO_ 2556487144 AC_Comp_238_A: 8 Vector__XXX
+ SG_ AC_compressor_power_limit : 40|8@1+ (0.1,0) [0|25.5] "kw" Vector__XXX
+ SG_ AC_compressor_immediate_shutdown : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ AC_compressor_enable : 24|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ AC_speed_of_compressor : 0|16@1+ (1,0) [0|65534] "rpm" Vector__XXX
+
+BO_ 2555439333 AC_Comp_248_B: 8 Vector__XXX
+ SG_ Comp_Input_DC_Voltage : 56|8@1+ (4,0) [0|1016] "V" Vector__XXX
+ SG_ Comp_Input_DC_Current : 48|8@1+ (0.1,0) [0|25.4] "A" Vector__XXX
+ SG_ Comp_IPM_temperature : 40|8@1+ (1,-40) [-40|215] "C" Vector__XXX
+ SG_ Comp_compressor_error : 32|8@1+ (1,0) [0|254] "" Vector__XXX
+ SG_ Comp_compressor_status : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ Comp_phase_Current : 16|8@1+ (0.5,0) [0|127.5] "A" Vector__XXX
+ SG_ Comp_speed_of_compressor : 0|16@1+ (1,0) [0|65534] "rpm" Vector__XXX
+
+BO_ 2566902224 BCL_Bdc_BuckBoost_Status: 8 BCL25_700_8
+ SG_ BCL_Bdc_BuckBoost_Shtdwn_Rsn : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BCL_Bdc_BuckBoost_State : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2566903504 BCL_Bdc_Current: 8 BCL25_700_8
+ SG_ BCL_Bdc_Curr_L3_RMS : 32|16@1+ (0.05,0) [0|100] "A" Vector__XXX
+ SG_ BCL_Bdc_Curr_L2_RMS : 16|16@1+ (0.05,0) [0|100] "A" Vector__XXX
+ SG_ BCL_Bdc_Curr_L1_RMS : 0|16@1+ (0.05,0) [0|100] "A" Vector__XXX
+
+BO_ 2566902736 BCL_Bdc_Error_Status: 6 BCL25_700_8
+ SG_ BCL_Bdc_Aux_bOtpRecoveryDis : 45|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Aux_bBtnStartEn : 44|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Aux_bExtCurrSensor : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Aux_bTempDerating : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Aux_b1Phase : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Aux_bBalancing : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Cannot_Start_Rsn : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bTemperatureWarn : 31|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bExportOvrLoadWarn : 30|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bLockFail : 23|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bLVBatOv : 22|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bLVBatUv : 21|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bTemperatureFail : 19|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bCanCrcFail : 18|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bHvilFail : 17|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bFailStartsLim : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bExtCanFail : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bAuxFail : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bEepromCrcFail : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bInvFail : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bBBFail : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bSignalFail : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bExportOvrload : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bHVBattUV : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bHVBattOV : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bPhase3NotOk : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bPhase2NotOk : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bPhase1NotOk : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bFreqNotOk : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bACNotOk : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Error_bLVBatUvCustom : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 2566903760 BCL_Bdc_Hv_Values: 8 BCL25_700_8
+ SG_ BCL_Chg_Ibat_max_available : 32|16@1+ (0.05,0) [0|80] "A" Vector__XXX
+ SG_ BCL_Bdc_Vbat : 16|16@1+ (0.05,0) [0|850] "V" Vector__XXX
+ SG_ BCL_Bdc_Ibat : 0|16@1- (0.05,0) [-70|70] "A" Vector__XXX
+
+BO_ 2566905040 BCL_Bdc_Hvil: 8 BCL25_700_8
+ SG_ BCL_Hvil_Vout : 32|16@1+ (0.05,0) [0|3276.75] "V" Vector__XXX
+ SG_ BCL_Hvil_Vin : 16|16@1+ (0.05,0) [0|3276.75] "V" Vector__XXX
+ SG_ BCL_Hvil_Current : 8|8@1- (1,0) [-128|127] "mA" Vector__XXX
+ SG_ BCL_Bdc_Hvil_bHvilCurrentUnderLi : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Hvil_bHvilCurrentOverLim : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Hvil_bHvilOutOk : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Hvil_bHvillnOk : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Hvil_bHvilCurrentOk : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Hvil_bHvilOk : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 2566902480 BCL_Bdc_Inverter_Status: 8 BCL25_700_8
+ SG_ BCL_Bdc_Inverter_Shtdwn_Rsn : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BCL_Bdc_Inverter_State : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2566904016 BCL_Bdc_J1772: 8 BCL25_700_8
+ SG_ BCL_Chg_Lock_State : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BCL_Chg_Proximity_State : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BCL_Chg_Pilot_Freq : 16|16@1+ (1,0) [0|1500] "Hz" Vector__XXX
+ SG_ BCL_Chg_Pilot_Duty : 8|8@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ BCL_Chg_Evse_Type : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2566904272 BCL_Bdc_Other_Values: 8 BCL25_700_8
+ SG_ BCL_Bdc_LV_Vbat : 16|16@1+ (0.001,0) [0|65.535] "V" Vector__XXX
+ SG_ BCL_Bdc_Freq : 0|16@1+ (0.05,0) [0|300] "Hz" Vector__XXX
+
+BO_ 2566906320 BCL_Bdc_ProprietaryDiag: 8 BCL25_700_8
+ SG_ BCL_Bdc_VbusDc : 16|16@1+ (0.05,0) [0|1000] "V" Vector__XXX
+ SG_ BCL_Bdc_VbusInv : 0|16@1+ (0.05,0) [0|1000] "V" Vector__XXX
+
+BO_ 2565853185 BCL_Bdc_Setpoint: 7 ECU
+ SG_ BCL_Index M : 0|8@1+ (1,0) [0|255] ""  BCL25_700_8
+ SG_ BCL_cmd_Otp_recovery_enable m18 : 8|8@1+ (1,0) [0|2] "" Vector__XXX
+ SG_ BCL_cmd_TempExt_Table_Idx m81 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BCL_cmd_Save_Settings m127 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_cmd_Button_A_Action m17 : 8|8@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ BCL_cmd_CAN_address_new61 m97 : 8|8@1+ (1,0) [0|255] ""  BCL25_700_8
+ SG_ BCL_cmd_Ext_DC_CurrSens_En m8 : 8|8@1+ (1,0) [0|10] ""  BCL25_700_8
+ SG_ BCL_cmd_Hvil_enable m64 : 8|8@1+ (1,0) [0|1] ""  BCL25_700_8
+ SG_ BCL_cmd_CRC_Cntr m16 : 8|8@1+ (1,0) [0|3] ""  BCL25_700_8
+ SG_ BCL_cmd_CAN_address_new60 m96 : 8|8@1+ (1,0) [0|255] ""  BCL25_700_8
+ SG_ BCL_cmd_TempExt_Sensor_Type m80 : 8|8@1+ (1,0) [0|10] ""  BCL25_700_8
+ SG_ BCL_cmd_Motor_Rise_Time m7 : 8|8@1+ (1,0) [0|60] "s"  BCL25_700_8
+ SG_ BCL_cmd_LED_Index m6 : 8|8@1+ (1,0) [0|100] ""  BCL25_700_8
+ SG_ BCL_cmd_EVSE_type_set m11 : 8|8@1+ (1,0) [0|2] "0"  BCL25_700_8
+ SG_ BCL_cmd_LV_Battery_UV_Limit m10 : 8|16@1+ (0.001,0) [0|65] "V"  BCL25_700_8
+ SG_ BCL_cmd_Sleep_Mode m4 : 8|8@1+ (1,0) [0|2] ""  BCL25_700_8
+ SG_ BCL_cmd_Control_pilot_imp m5 : 8|8@1+ (1,0) [0|1] ""  BCL25_700_8
+ SG_ BCL_cmd_wake_out m3 : 8|8@1+ (1,0) [0|1] ""  BCL25_700_8
+ SG_ BCL_cmd_Inv_Vbat_UV_lim m2 : 8|16@1+ (0.05,0) [0|850] "V"  BCL25_700_8
+ SG_ BCL_cmd_Chg_Vbat_lim m1 : 8|16@1+ (0.05,0) [0|850] "V"  BCL25_700_8
+ SG_ BCL_cmd_Enable m0 : 8|8@1+ (1,0) [0|1] ""  BCL25_700_8
+ SG_ BCL_cmd_TempExt_Table_Temp m81 : 16|8@1+ (1,-50) [-50|205] "" Vector__XXX
+ SG_ BCL_cmd_TempExt_Otp_En m80 : 16|8@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ BCL_cmd_Button_B_Action m17 : 16|8@1+ (1,0) [0|10] "" Vector__XXX
+ SG_ BCL_cmd_CAN_address_SN_Upper m97 : 16|32@1+ (1,0) [0|4294967295] ""  BCL25_700_8
+ SG_ BCL_cmd_Ext_DC_CurrSens_Val m8 : 16|16@1+ (0.05,0) [0|60] "A"  BCL25_700_8
+ SG_ BCL_cmd_CAN_address_SN_Lower m96 : 16|32@1+ (1,0) [0|4294967295] ""  BCL25_700_8
+ SG_ BCL_cmd_LED_mode m6 : 16|8@1+ (1,0) [0|2] ""  BCL25_700_8
+ SG_ BCL_cmd_Mode m0 : 16|8@1+ (1,0) [0|255] ""  BCL25_700_8
+ SG_ BCL_cmd_TempExt_Table_Resistance m81 : 24|24@1+ (1,0) [0|16777215] "" Vector__XXX
+ SG_ BCL_cmd_TempExt_Otp m80 : 24|8@1+ (1,-50) [-50|205] "" Vector__XXX
+ SG_ BCL_cmd_Balancing m0 : 24|8@1+ (1,0) [0|1] ""  BCL25_700_8
+ SG_ BCL_cmd_Inv_Freq m2 : 24|8@1+ (1,0) [0|60] "Hz"  BCL25_700_8
+ SG_ BCL_cmd_LED_bright m6 : 24|8@1+ (0.5,0) [0|100] "%"  BCL25_700_8
+ SG_ BCL_cmd_Chg_Ibat_lim m1 : 24|16@1+ (0.05,0) [0|80] "A"  BCL25_700_8
+ SG_ BCL_cmd_Inv_Volt m2 : 32|16@1+ (0.05,0) [0|480] "V"  BCL25_700_8
+ SG_ BCL_cmd_LED_on_time m6 : 32|8@1+ (50,0) [0|12750] "ms"  BCL25_700_8
+ SG_ BCL_cmd_Chg_Iac_Lim m1 : 40|8@1+ (1,0) [0|80] "A"  BCL25_700_8
+ SG_ BCL_cmd_LED_duty m6 : 40|8@1+ (1,0) [0|100] "%"  BCL25_700_8
+
+BO_ 2566904528 BCL_Bdc_Sig_Temperature: 8 BCL25_700_8
+ SG_ BCL_Bdc_Temp_bSigOtp : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Temp_bChassisOtp : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Temp_bBbOtp : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Temp_bInvOtp : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Temp_bSigWarning : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Temp_bChassisWarning : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Temp_bBbOtpWarning : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Temp_bInvWarning : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Temp_Amb : 8|8@1+ (1,-50) [-50|205] "degC" Vector__XXX
+ SG_ BCL_Bdc_Temp_Chassis : 16|8@1+ (1,-50) [-50|205] "degC" Vector__XXX
+ SG_ BCL_Bdc_Temp_Bb : 24|8@1+ (1,-50) [-50|205] "degC" Vector__XXX
+ SG_ BCL_Bdc_Temp_Inv : 32|8@1+ (1,-50) [-50|205] "degC" Vector__XXX
+
+BO_ 2566901968 BCL_Bdc_Signal_Status: 8 BCL25_700_8
+ SG_ BCL_Bdc_bUnitReady : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bModeEnable : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bChargMode : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bCharging : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bExportMode : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bExporting : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bMotor : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bSigFault : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bAuxDis : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bInvNotReady : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bInvSleep : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bInvFault : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bBBNotReady : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bBBSleep : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bBBFault : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bNoEvseMode : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bCtrlProxNotOk : 17|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bCtrlPilotNotOk : 18|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bActuatorUnlock : 19|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bActuatorUnlocked : 20|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bEvseConnectionNotOk : 21|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bCtrlPilotS2NotReq : 22|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bCtrlPilotS2Dis : 23|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bKeySwitch : 24|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bAddr0 : 25|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bAddr1 : 26|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bBtnAOn : 27|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bBtnBOn : 28|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bWakeOutputOn : 29|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_bHvilEn : 30|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_Signal_State : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ BCL_Bdc_ShtDwn_Rsn : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2566904784 BCL_Bdc_Temperature_Ext: 8 BCL25_700_8
+ SG_ BCL_Bdc_TempExt_bOtpCtrlEn : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_TempExt_bOtp : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_TempExt_bOutOfRange : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_TempExt_bSensorShort : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_TempExt_bSensDisconn : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ BCL_Bdc_TempExt_Sensor_Type : 8|8@1+ (1,0) [0|127] "" Vector__XXX
+ SG_ BCL_Bdc_TempExt : 16|8@1+ (1,-50) [-50|205] "degC" Vector__XXX
+ SG_ BCL_Bdc_TempExt_Otp_Lim_Set : 24|8@1+ (1,-50) [-50|205] "degC" Vector__XXX
+
+BO_ 2566905808 BCL_Bdc_Voltage_Line: 8 Vector__XXX
+ SG_ BCL_Bdc_Volt_L12_RMS : 0|16@1+ (0.05,0) [0|600] "V" Vector__XXX
+ SG_ BCL_Bdc_Volt_L23_RMS : 16|16@1+ (0.05,0) [0|600] "V" Vector__XXX
+ SG_ BCL_Bdc_Volt_L31_RMS : 32|16@1+ (0.05,0) [0|600] "V" Vector__XXX
+
+BO_ 2566903248 BCL_Bdc_Voltage_Phase: 8 BCL25_700_8
+ SG_ BCL_Bdc_Volt_L1_RMS : 0|16@1+ (0.05,0) [0|350] "V" Vector__XXX
+ SG_ BCL_Bdc_Volt_L2_RMS : 16|16@1+ (0.05,0) [0|350] "V" Vector__XXX
+ SG_ BCL_Bdc_Volt_L3_RMS : 32|16@1+ (0.05,0) [0|350] "V" Vector__XXX
+
+BO_ 2683179194 C2S_Version: 3 EVCU
+ SG_ C2S_version_major : 0|8@1+ (1,0) [0|255] ""  HMI
+ SG_ C2S_version_minor : 8|8@1+ (1,0) [0|255] ""  HMI
+ SG_ C2S_version_patch : 16|8@1+ (1,0) [0|255] ""  HMI
+
+BO_ 2683177658 C2S_FeedbackParameters: 5 EVCU
+ SG_ C2S_fp_param_id M : 0|8@1+ (1,0) [0|80] ""  HMI
+ SG_ C2S_fp_meb_contactor_fail_timeou m0 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_meb_dcdc_output_voltage m1 : 8|32@1- (0.1,0) [0|0] ""  HMI
+ SG_ C2S_fp_meb_dcdc_output_current m2 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_meb_dcdc_max_bat_chg_curr m3 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_meb_ccs_max_chg_current m4 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_running_off_delay_s m5 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_turn_pulse_on_time_s m6 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_turn_pulse_off_time_s m7 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_slip_ring_temp_thresho m8 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_full_power_current m9 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_max_current_fully_woun m10 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_max_current_slip_ring_ m11 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_fully_wound_current_ma m12 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cr_fully_unwound_current_ m13 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_md_safe_rpm_disable m14 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_md_bus_discharged_v m15 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_md_hours m16 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_md_hydraulic_enable m17 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_md_hydraulic_torque_limit m18 : 8|32@1- (0.1,0) [0|0] ""  HMI
+ SG_ C2S_fp_md_compressor1_enable m19 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_md_compressor1_torque_lim m20 : 8|32@1- (0.1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_fan_enable m21 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_fan_torque_limit m22 : 8|32@1- (0.1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_fan_min_rpm m23 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_fan_max_rpm m24 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_fan_off_threshold_rpm m25 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_fan_purge_speed m26 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_temp_buffer_c m27 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_shutdown_timeout_s m28 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump1_address m29 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump1_enabled m30 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump1_timeout_s m31 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump1_full_flow_rpm m32 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump1_idle_rpm m33 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump2_address m34 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump2_enabled m35 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump2_timeout_s m36 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump2_full_flow_rpm m37 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump2_idle_rpm m38 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump3_address m39 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump3_enabled m40 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump3_timeout_s m41 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump3_full_flow_rpm m42 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump3_idle_rpm m43 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump4_address m44 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump4_enabled m45 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump4_timeout_s m46 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump4_full_flow_rpm m47 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_pump4_idle_rpm m48 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l2_motor_start_cool_te m49 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l2_motor_max_cool_temp m50 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l2_inv_start_cool_temp m51 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l2_inv_max_cool_temp m52 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l2_oil_start_cool_temp m53 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l2_oil_max_cool_temp m54 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l1_dcdc_start_cool_tem m55 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l1_dcdc_max_cool_temp m56 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l1_reel_drv_start_cool m57 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l1_reel_drv_max_cool_t m58 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l1_fan_mtr_start_cool_ m59 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l1_fan_mtr_max_cool_te m60 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l3_dchvi_start_cool_te m61 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l3_dchvi_max_cool_temp m62 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l4_acuhv_start_cool_te m63 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_l4_acuhv_max_cool_temp m64 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_btms_stop_dev_timeout_s m65 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_btms_safe_off_temp_low m66 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_btms_safe_off_temp_high m67 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_btms_pump_speed_pct m68 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_btms_low_power_speed_pct m69 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_hvac_compressor_speed m70 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_hvac_compressor_power m71 : 8|32@1- (0.1,0) [0|0] ""  HMI
+ SG_ C2S_fp_hvac_heater_power_setpoin m72 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_hvac_heater_temp_setpoint m73 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_hvac_pump_duty_cycle m74 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_request_all_params m75 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_fan_pid_kp m76 : 8|32@1- (1,0) [0|0] ""  HMI
+ SG_ C2S_fp_cs_fan_pid_ki m77 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  HMI
+ SG_ C2S_fp_cs_fan_pid_kd m78 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  HMI
+ SG_ C2S_fp_md_hydraulic_runtime_s m79 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  HMI
+ SG_ C2S_fp_md_compressor_runtime_s m80 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  HMI
+
+BO_ 2683180730 C2S_ActiveInfo: 8 EVCU
+ SG_ C2S_failed_to_start_reason : 56|8@1+ (1,0) [0|255] ""  HMI
+ SG_ C2S_waiting_for_hv_reset : 21|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_slip_ring_too_hot : 20|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_must_reverse : 19|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_stopping_main_hydraulic_moto : 18|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_stopping_main_compressor_mot : 17|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_stopping_cabin_hvac_compress : 16|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_stopping_cabin_hvac_heater : 15|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_stopping_cooling_system_fan : 14|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_stopping_cable_reel : 13|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_stopping_btms : 12|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_B460_emulation_active : 11|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_DCHVI_devices_not_synced : 10|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_ACUHV_devices_not_synced : 9|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_AC_devices_offline : 8|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Screen_HV_reset : 7|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_IMD_iso_alarm_is_active : 6|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Not_all_ignitions_are_on : 5|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_HVIL_is_not_closed : 4|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_IMD_not_safe_to_start : 3|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_HVPDU_HV_failed_to_start : 2|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_HVPDU_is_not_off : 1|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_EM_relay_not_closed : 0|1@1+ (1,0) [0|1] ""  HMI
+
+BO_ 2683180986 C2S_CRAndCCSControl: 6 EVCU
+ SG_ C2S_ccs_max_soc : 40|8@1+ (0.5,0) [0|100] "%"  HMI
+ SG_ C2S_ccs_max_charging_voltage : 24|16@1+ (1,0) [0|1024] "V"  HMI
+ SG_ C2S_ccs_max_charging_current : 16|8@1+ (1,0) [0|255] "A"  HMI
+ SG_ C2S_ccs_mode : 10|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_sc3_mode : 8|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_sc2_mode : 6|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_sc1_mode : 4|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_kc2_mode : 2|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_kc1_mode : 0|2@1+ (1,0) [0|3] ""  HMI
+
+BO_ 2683175354 C2S_HVDCPDUControl: 4 EVCU
+ SG_ C2S_HVDC_Ctrl_C5 : 20|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C4 : 18|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C3C2 : 16|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C3C1 : 14|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C3B2 : 12|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C3B1 : 10|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C3A2 : 8|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C3A1 : 6|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C2B : 4|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C2A : 2|2@1+ (1,0) [0|3] ""  HMI
+ SG_ C2S_HVDC_Ctrl_C1 : 0|2@1+ (1,0) [0|3] ""  HMI
+
+BO_ 2683175098 C2S_OtherControl: 4 HMI
+ SG_ C2S_CableReelInterlockOverride : 29|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_PowerSelectionBattery : 28|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_PowerSelectionGrid : 27|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_PowerSelectionCcs : 26|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenCrHeater : 25|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenCrLed : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenCrKc2ReelingOut : 23|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenCrKc1ReelerRun : 22|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_BoschPumpOn : 21|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_BoschPumpOff : 20|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_EnableCableReelCharge : 19|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_EnableCcsCharge : 18|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_HvOverrideBitPos : 17|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_HvResetBitPos : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenPowerCycleBitPos : 15|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_CascadiaDcdcOnBitPos : 14|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_CascadiaDcdcOffBitPos : 13|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_CoolingManualOnBitPos : 12|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_CoolingManualOffBitPos : 11|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_CoolingAutoBitPos : 10|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ResetCcsBitPos : 9|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_PilotRelayBitPos : 8|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenCrManualAutoBitPos : 7|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenCrManualResetBitPos : 6|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenCrManualOutBitPos : 5|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenCrManualInBitPos : 4|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ScreenPurgeFanBitPos : 3|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_ClearErrorsBitPos : 2|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_UseLowPowerBitPos : 1|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ C2S_RestartBitPos : 0|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2683176378 C2S_SMStatuses: 3 EVCU
+ SG_ C2S_CCS_state : 16|8@1+ (1,0) [0|255] ""  HMI
+ SG_ C2S_HVPDU_state : 8|8@1+ (1,0) [0|255] ""  HMI
+ SG_ C2S_EVCU_state : 0|8@1+ (1,0) [0|255] ""  HMI
+
+BO_ 2683175610 C2S_TTCIO1: 8 EVCU
+ SG_ C2S_plug_is_present : 62|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_ccs_release_din : 61|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_estop_pwr_fb2 : 60|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_estop_pwr_fb1 : 59|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_dcdc_en : 58|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_lv_lid : 57|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_estop_monitor : 56|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_ign_vpc2_kl15 : 55|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_ign_vpc1_kl15 : 54|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_inverter_CAN_en : 53|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_inverter_power : 52|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_imd_24v_pwr : 51|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_evcc_power : 50|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_evcc_term15 : 49|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_screen_kl15 : 48|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_ttc_io_1_kl15 : 47|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_keb_kl15 : 46|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_heater_cmd : 45|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_led_cmd : 44|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_KC2_reeling_out_cmd : 43|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_KC1_reeler_run_cmd : 42|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_sc4_reset_pb_cmd : 41|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_sc3_reel_out_cmd : 40|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_sc2_reel_in_cmd : 39|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_sc1_auto_sel_cmd : 38|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_pilot_ctrl_cmd : 37|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_panel_manual_auto_momenta : 36|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_panel_manual_out : 35|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_panel_manual_in : 34|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_panel_manual_reset : 33|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k51_drive_ready : 32|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k52_drive_running : 31|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k61_auto_selected : 30|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k63_manual_out : 29|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k62_manual_in : 28|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k53_motor_overtemp : 27|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k55_drum_empty : 26|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k54_drum_full : 25|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_k56_brake_open_manually : 24|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_cr_arm_limit : 23|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_imd_okhs : 22|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c5_fbk : 21|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c5_cmd : 20|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c4_fbk : 19|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c4_cmd : 18|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3c2_fbk : 17|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3c2_cmd : 16|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3c1_fbk : 15|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3c1_cmd : 14|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3b2_fbk : 13|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3b2_cmd : 12|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3b1_fbk : 11|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3b1_cmd : 10|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3a2_fbk : 9|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3a2_cmd : 8|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3a1_fbk : 7|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c3a1_cmd : 6|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c2b_fbk : 5|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c2b_cmd : 4|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c2a_fbk : 3|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c2a_cmd : 2|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c1_fbk : 1|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_c1_cmd : 0|1@1+ (1,0) [0|1] ""  HMI
+
+BO_ 2683175866 C2S_TTCIO2: 8 EVCU
+ SG_ C2S_y489_bypass : 54|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_y424a_cooldown : 53|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_meb_set_user_selection : 52|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_meb_on_grid : 51|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_meb_on_ccs : 50|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_meb_on_battery : 49|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_blv204_3_connected : 48|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_blv204_2_connected : 47|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_blv204_1_connected : 46|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_blv191_1_connected : 45|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_blv190_3_connected : 44|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_blv190_2_connected : 43|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_blv190_1_connected : 42|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_iso_device_shutdown : 41|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_acdc_has_power : 40|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_rcs_y165_hecl_pump_is_on : 33|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_evcc_is_connected : 32|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_glycol_ls_out : 31|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_pump4_connected : 30|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_pump3_connected : 29|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_pump2_connected : 28|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_pump1_connected : 27|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_expander_connected : 26|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_show_must_reverse_warning : 25|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_reverse_is_allowed : 24|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_forward_is_allowed : 23|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_machine_is_moving : 22|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_machine_is_turning : 21|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_rcs_j1939_connected : 20|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_rcs_modules_connected : 19|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_in_rev : 18|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_in_fwd : 17|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_mode_POSITION : 16|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_mode_DRILL : 15|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_mode_TRAM : 14|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_mode_RRC : 13|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_start_button : 12|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_ac_activation : 11|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_rcs_operator_in_chair : 10|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_rcs_em_relay_closed : 9|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_rcs_start_key : 8|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_err_DCHVI4 : 7|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_err_DCHVI3 : 6|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_err_DCHVI2 : 5|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_err_DCHVI1 : 4|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_err_ACUHV1 : 3|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_err_ACUHV2 : 2|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_err_ACUHV3 : 1|1@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_err_ACUHV4 : 0|1@1+ (1,0) [0|1] ""  HMI
+
+BO_ 2683176122 C2S_TTCIOAnalog: 5 EVCU
+ SG_ C2S_Hyd_Oil_Y424c_Current_In_mA m52 : 8|32@1+ (1,0) [0|65535] "mA"  HMI
+ SG_ C2S_Hyd_Oil_Cooling_Temp m51 : 8|32@1+ (0.0125,-100) [-100|150] "�C"  HMI
+ SG_ C2S_Hyd_Oil_Cooling_Pressure m50 : 8|32@1+ (0.0125,-6.25) [-6.25|50] "bar"  HMI
+ SG_ C2S_RCS_B456_VesselPressure m49 : 8|32@1+ (0.0153,-6.345) [-6.345|55.08] "bar"  HMI
+ SG_ C2S_BL_Max_PowerSharingBatteryV m48 : 8|32@1+ (1,0) [0|1000] "V"  HMI
+ SG_ C2S_Acdc_Total_Power_W m47 : 8|32@1+ (1,0) [0|600000] "W"  HMI
+ SG_ C2S_Water_Mist_Level_10b_Raw m46 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Rcs_Hydraulic_Oil_Temp m45 : 8|32@1+ (0.24,-99.822) [-99.822|160.274] ""  HMI
+ SG_ C2S_Rcs_Compressor_Low_Stage_Tem m44 : 8|32@1+ (0.24,-99.822) [-99.822|160.274] ""  HMI
+ SG_ C2S_Rcs_Compressor_High_Stage_Te m43 : 8|32@1+ (0.254,-99.822) [-99.822|160.274] ""  HMI
+ SG_ C2S_Rcs_Tram_Pressure m42 : 8|32@1+ (0.428,-43.656) [-43.656|394.616] ""  HMI
+ SG_ C2S_Rcs_Ambient_Temperature m41 : 8|32@1+ (0.254,-99.822) [-99.822|160.274] ""  HMI
+ SG_ C2S_Rcs_Heat_Request m40 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Pilot_Diode_Mv m39 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Heat_Valve_Proportion m38 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Sensor_Dhab_Source_Mv m37 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Sensor_Dhab_Low m36 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Sensor_Dhab_High m35 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Dvc1000_3 m34 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Dvc1000_2 m33 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Dvc1000_1 m32 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Bat_Cpu m31 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Bat_K15 m30 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Acdc1_Flow_Out m29 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Motor1_Flow_Out m28 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Aux_In_Pwm m27 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Pump_Bosch_Pwm m26 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_B460_Pwm m25 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_B460_Press_In m24 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Rad_Press_In m23 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Rad_Press_Out m22 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Acdc2_Press_In m21 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Acdc2_Press_Out m20 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Acdc1_Press_In m19 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Acdc1_Press_Out m18 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Dcdc1_Press_Out m17 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Motor1_Press_In m16 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Motor1_Press_Out m15 : 8|32@1+ (1,0) [0|1] ""  HMI
+ SG_ C2S_Cr_Torque m14 : 8|32@1+ (1,0) [0|1] "mA"  HMI
+ SG_ C2S_Cr_Rotary_Sensor_Raw_In_uA m13 : 8|32@1+ (1,0) [0|1] "uA"  HMI
+ SG_ C2S_Cr_Rotary_Sensor_Percent m12 : 8|32@1+ (1,0) [0|1] "%"  HMI
+ SG_ C2S_Cr_Slip_Ring_Temp_5v3 m11 : 8|32@1+ (1,0) [0|1] "mV"  HMI
+ SG_ C2S_Cr_Slip_Ring_Temp_5v2 m10 : 8|32@1+ (1,0) [0|1] "mV"  HMI
+ SG_ C2S_Cr_Slip_Ring_Temp_5v1 m9 : 8|32@1+ (1,0) [0|1] "mV"  HMI
+ SG_ C2S_Cr_Slip_Ring_Sensor_Supply_M m8 : 8|32@1+ (1,0) [0|1] "mV"  HMI
+ SG_ C2S_Acdc2_Temp_Out m7 : 8|32@1+ (1,0) [0|1] "uA"  HMI
+ SG_ C2S_Acdc1_Temp_Out m6 : 8|32@1+ (1,0) [0|1] "uA"  HMI
+ SG_ C2S_Rad_Temp_In m5 : 8|32@1+ (1,0) [0|1] "uA"  HMI
+ SG_ C2S_Rad_Temp_Out m4 : 8|32@1+ (1,0) [0|1] "uA"  HMI
+ SG_ C2S_Motor1_Temp_Out m3 : 8|32@1+ (1,0) [0|1] "uA"  HMI
+ SG_ C2S_Lv_Pdu_Temp m2 : 8|32@1+ (1,0) [0|1] "Ohm"  HMI
+ SG_ C2S_Acdc_Pdu_Temp m1 : 8|32@1+ (1,0) [0|1] "Ohm"  HMI
+ SG_ C2S_Hv_Pdu_Temp m0 : 8|32@1+ (1,0) [0|1] "Ohm"  HMI
+ SG_ C2S_mux M : 0|8@1+ (1,0) [0|255] ""  HMI
+
+BO_ 2566902963 DCDC1_F_W_S_Message: 8 DCDC1
+ SG_ DCDC1_b_flt_InputUV : 0|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_InputOV : 1|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_OutputUV : 2|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_OutputOV : 3|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_OutputOC : 4|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_OTP : 5|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_I2Cfault : 6|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_CANfault : 7|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_EEPROM_CRCfault : 8|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_ShortCircuit : 9|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_ThermistorFault : 10|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_Overload : 11|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_OutputOVlatch : 12|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_flt_ReversPolarity : 13|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_war_CoolantOTP : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_war_CurrentLimiting : 25|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_UnitEnabled : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_Wakeup : 49|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_Fault : 50|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_LatchedFault : 51|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_RemoteShutdown : 52|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_StartUpInitDone : 53|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_InputOk : 54|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_HVIL_OK : 55|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_ReversPolarity : 56|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC1_b_sts_Hiccup : 57|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2566903475 DCDC1_Input_Output: 8 DCDC1
+ SG_ DCDC1_Output_voltage : 0|16@1+ (0.05,0) [0|3276.75] "V"  EVCU
+ SG_ DCDC1_Output_current : 16|16@1+ (0.05,0) [0|3276.75] "A"  EVCU
+ SG_ DCDC1_Input_voltage : 32|16@1+ (0.05,0) [0|3276.75] "V"  EVCU
+ SG_ DCDC1_Temperature_Coolant : 48|16@1- (0.1,0) [-200|200] "deg C"  EVCU
+
+BO_ 2565845761 DCDC1_Setpoints: 8 EVCU
+ SG_ DCDC1_Set_index_byte M : 0|8@1+ (1,0) [0|255] ""  DCDC1
+ SG_ DCDC1_Remote_shutdown_sp m41 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ DCDC1_Temperature_coolant_fault m2 : 8|16@1- (0.1,0) [50|110] "deg C"  DCDC1
+ SG_ DCDC1_Output_voltage_UV_fault m1 : 8|16@1+ (0.05,0) [20|31.95] "V"  DCDC1
+ SG_ DCDC1_Output_Voltage_setpoint m0 : 8|16@1+ (0.05,0) [22|32] "V"  DCDC1
+ SG_ DCDC1_SRS_Batch_no m41 : 16|32@1+ (1,0) [0|4294967295] "" Vector__XXX
+ SG_ DCDC1_Temp_coolant_warning m2 : 24|16@1- (0.1,0) [40|100] "deg C"  DCDC1
+ SG_ DCDC1_Output_voltage_OV_fault m1 : 24|16@1+ (0.05,0) [22.05|36] "V"  DCDC1
+ SG_ DCDC1_Output_current_limit m0 : 24|16@1+ (0.05,0) [100|149] "A"  DCDC1
+ SG_ DCDC1_b_sts_RemoteShutdown m0 : 40|1@1+ (1,0) [0|1] ""  DCDC1
+ SG_ DCDC1_SRS_Serial_no m41 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 2566902961 DCDC2_F_W_S_Message: 8 DCDC2
+ SG_ DCDC2_b_flt_InputUV : 0|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_InputOV : 1|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_OutputUV : 2|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_OutputOV : 3|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_OutputOC : 4|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_OTP : 5|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_I2Cfault : 6|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_CANfault : 7|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_EEPROM_CRCfault : 8|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_ShortCircuit : 9|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_ThermistorFault : 10|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_Overload : 11|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_OutputOVlatch : 12|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_flt_ReversPolarity : 13|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_war_CoolantOTP : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_war_CurrentLimiting : 25|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_UnitEnabled : 48|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_Wakeup : 49|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_Fault : 50|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_LatchedFault : 51|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_RemoteShutdown : 52|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_StartUpInitDone : 53|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_InputOk : 54|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_HVIL_OK : 55|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_ReversPolarity : 56|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ DCDC2_b_sts_Hiccup : 57|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2566903473 DCDC2_Input_Output: 8 DCDC2
+ SG_ DCDC2_Output_voltage : 0|16@1+ (0.05,0) [0|3276.75] "V"  EVCU
+ SG_ DCDC2_Output_current : 16|16@1+ (0.05,0) [0|3276.75] "A"  EVCU
+ SG_ DCDC2_Input_voltage : 32|16@1+ (0.05,0) [0|3276.75] "V"  EVCU
+ SG_ DCDC2_Temperature_Coolant : 48|16@1- (0.1,0) [-200|200] "deg C"  EVCU
+
+BO_ 2565845249 DCDC2_Setpoints: 8 EVCU
+ SG_ DCDC2_Set_index_byte M : 0|8@1+ (1,0) [0|255] ""  DCDC2
+ SG_ DCDC2_Remote_shutdown_sp m41 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ DCDC2_Temperature_coolant_fault m2 : 8|16@1- (0.1,0) [50|110] "deg C"  DCDC2
+ SG_ DCDC2_Output_voltage_UV_fault m1 : 8|16@1+ (0.05,0) [20|31.95] "V"  DCDC2
+ SG_ DCDC2_Output_Voltage_setpoint m0 : 8|16@1+ (0.05,0) [22|32] "V"  DCDC2
+ SG_ DCDC2_SRS_Batch_no m41 : 16|32@1+ (1,0) [0|4294967295] "" Vector__XXX
+ SG_ DCDC1_Temp_coolant_warning m2 : 24|16@1- (0.1,0) [40|100] "deg C"  DCDC2
+ SG_ DCDC2_Output_voltage_OV_fault m1 : 24|16@1+ (0.05,0) [22.05|36] "V"  DCDC2
+ SG_ DCDC2_Output_current_limit m0 : 24|16@1+ (0.05,0) [100|149] "A"  DCDC2
+ SG_ DCDC2_b_sts_RemoteShutdown m0 : 40|1@1+ (1,0) [0|1] ""  DCDC2
+ SG_ DCDC2_SRS_Serial_no m41 : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 2566853076 IMD_InfoGeneral: 7 IMD
+ SG_ IMD_G_Isolation_R_iso_Corrected : 0|16@1+ (1,0) [0|37500] "kOhm" Vector__XXX
+ SG_ IMD_G_Isolation_R_iso_Status : 16|2@1+ (1,0) [0|2] "" Vector__XXX
+ SG_ IMD_G_Isolation_Counter : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit00 : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit01 : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit02 : 34|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit03 : 35|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit04 : 36|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit05 : 37|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit06 : 38|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit07 : 39|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit08 : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit09 : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit10 : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit11 : 43|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit12 : 44|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit13 : 45|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit14 : 46|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_G_Warning_Alarm_Status_Bit15 : 47|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_G_Device_Activity : 48|8@1+ (1,0) [0|4] "" Vector__XXX
+
+BO_ 2566853332 IMD_InfoIsolationDetail: 8 IMD
+ SG_ IMD_G_Isolation_R_iso_neg : 0|16@1+ (1,0) [0|50000] "kOhm" Vector__XXX
+ SG_ IMD_G_Isolation_R_iso_pos : 16|16@1+ (1,0) [0|50000] "kOhm" Vector__XXX
+ SG_ IMD_G_Isolation_R_iso_Original : 32|16@1+ (1,0) [0|64255] "kOhm" Vector__XXX
+ SG_ IMD_G_Isolation_Counter_Detail : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ IMD_G_Isolation_Quality : 56|8@1+ (1,0) [0|100] "%" Vector__XXX
+
+BO_ 2566853844 IMD_InfoItSystem: 7 IMD
+ SG_ IMD_G_Capacity : 0|16@1+ (0.1,0) [0.1|20] "uF" Vector__XXX
+ SG_ IMD_G_Capacity_Counter : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ IMD_G_Unbalance : 24|8@1+ (1,0) [0|250] "%" Vector__XXX
+ SG_ IMD_G_Unbalance_Counter : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ IMD_G_HV_Frequency : 40|16@1+ (0.0078125,0) [0|501.9921875] "Hz" Vector__XXX
+
+BO_ 2566853588 IMD_InfoVoltage: 7 IMD
+ SG_ IMD_G_Voltage_HV : 0|16@1+ (0.05,-1606) [-1150|1150] "V" Vector__XXX
+ SG_ IMD_G_Voltage_HVneg_Earth : 16|16@1+ (0.05,-1606) [-1150|1150] "V" Vector__XXX
+ SG_ IMD_G_Voltage_HVpos_Earth : 32|16@1+ (0.05,-1606) [-1150|1150] "V" Vector__XXX
+ SG_ IMD_G_Voltage_Counter : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 2565854231 IMD_Request: 5 Master
+ SG_ IMD_Req_Request_Index M : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Earthlift_Status m112 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Warning_Alarm_Status m108 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Status_Lock m106 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Device_Activity m104 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Voltage_Thrs m102 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Voltage_Mode m100 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Voltage_HVpos_Earth m98 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Voltage_HVneg_Earth m96 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Voltage_HV m94 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Voltage_Counter m92 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_HV_Frequency m90 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Selftest_Period m88 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Capacity_Counter m84 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Capacity m82 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_Time_elapsed m80 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_R_iso_Origin m78 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_R_iso_Correc m76 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_Thrs_Warning m74 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_Thrs_Timeout m72 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_Thrs_Error m70 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_R_iso_Status m68 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_R_iso_pos m66 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_R_iso_neg m64 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_Quality m62 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_Power_On_Pro m58 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_Active_Profi m56 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Isolation_Counter m54 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Device_Error m52 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Selfholding_Iso_Alarm m48 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Unbalance_Thrs m46 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Unbalance_Counter m44 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Unbalance m42 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_DeviceTypePar m38 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_DeviceTy_0000 m36 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Software_Version m34 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Software_D_Number m32 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Software_Build_Number m30 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_SerialNumberP m28 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_SerialNu_0000 m26 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_Item_NumberPa m24 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_Item_Num_0000 m22 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_AH_NumberPart m20 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_AH_Numbe_0000 m18 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Hardware_AH_History m16 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Bootloader_Version m14 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Bootloader_D_Number m12 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_G_Bootloader_BuildNumber m10 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Req_S_Earthlift_Status m113 : 8|2@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Req_S_Factory_Reset m111 : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Req_S_Status_Lock m107 : 8|2@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Req_S_Voltage_Thrs m103 : 8|16@1+ (1,0) [0|1000] "V" Vector__XXX
+ SG_ IMD_Req_S_Voltage_Mode m101 : 8|2@1+ (1,0) [0|2] "" Vector__XXX
+ SG_ IMD_Req_S_Selftest_Period m89 : 8|16@1+ (10,0) [10|642550] "s" Vector__XXX
+ SG_ IMD_Req_S_Selftest_Trigger m87 : 8|8@1+ (1,0) [0|2] "" Vector__XXX
+ SG_ IMD_Req_S_Isolation_Thrs_Warning m75 : 8|16@1+ (1,0) [30|2000] "kOhm" Vector__XXX
+ SG_ IMD_Req_S_Isolation_Thrs_Timeout m73 : 8|16@1+ (1,0) [0|64225] "s" Vector__XXX
+ SG_ IMD_Req_S_Isolation_Thrs_Error m71 : 8|16@1+ (1,0) [30|2000] "kOhm" Vector__XXX
+ SG_ IMD_Req_S_Isolation_Power_On_Pro m59 : 8|8@1+ (1,0) [0|6] "" Vector__XXX
+ SG_ IMD_Req_S_Isolation_Active_Profi m57 : 8|8@1+ (1,0) [0|6] "" Vector__XXX
+ SG_ IMD_Req_S_Selfholding_IsoAlarm_R m51 : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Req_S_Selfholding_Iso_Alarm m49 : 8|2@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Req_S_Unbalance_Thrs m47 : 8|8@1+ (1,0) [0|45] "%" Vector__XXX
+
+BO_ 2565806036 IMD_Response: 8 IMD_StandAlone
+ SG_ IMD_Rsp_Response_Index M : 0|8@1+ (1,0) [0|0] ""  Master
+ SG_ IMD_Rsp_G_Earthlift_Status m112 : 8|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Status_B m108 : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Status_Lock m106 : 8|2@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Activity m104 : 8|8@1+ (1,0) [0|4] "" Vector__XXX
+ SG_ IMD_Rsp_G_Voltage_Thrs m102 : 8|16@1+ (1,0) [0|1000] "V" Vector__XXX
+ SG_ IMD_Rsp_G_Voltage_Mode m100 : 8|2@1+ (1,0) [0|2] "" Vector__XXX
+ SG_ IMD_Rsp_G_Voltage_HVpos_Earth m98 : 8|16@1+ (0.05,-1606) [-1150|1150] "V" Vector__XXX
+ SG_ IMD_Rsp_G_Voltage_HVneg_Earth m96 : 8|16@1+ (0.05,-1606) [-1150|1150] "V" Vector__XXX
+ SG_ IMD_Rsp_G_Voltage_HV m94 : 8|16@1+ (0.05,-1606) [-1150|1150] "V" Vector__XXX
+ SG_ IMD_Rsp_G_Voltage_Counter m92 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ IMD_Rsp_G_HV_Frequency m90 : 8|16@1+ (0.0078125,0) [0|501.9921875] "Hz" Vector__XXX
+ SG_ IMD_Rsp_G_Selftest_Period m88 : 8|16@1+ (10,0) [10|642550] "s" Vector__XXX
+ SG_ IMD_Rsp_G_Capacity_Counter m84 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ IMD_Rsp_G_Capacity m82 : 8|16@1+ (0.1,0) [0.1|20] "uF" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_Time_elapsed m80 : 8|16@1+ (1,0) [0|64255] "s" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_R_iso_Origin m78 : 8|16@1+ (1,0) [0|64255] "kOhm" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_R_iso_Correc m76 : 8|16@1+ (1,0) [0|37500] "kOhm" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_Thrs_Warning m74 : 8|16@1+ (1,0) [30|2000] "kOhm" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_Thrs_Timeout m72 : 8|16@1+ (1,0) [0|64225] "s" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_Thrs_Error m70 : 8|16@1+ (1,0) [30|2000] "kOhm" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_R_iso_Status m68 : 8|2@1+ (1,0) [0|2] "" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_R_iso_pos m66 : 8|16@1+ (1,0) [0|50000] "kOhm" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_R_iso_neg m64 : 8|16@1+ (1,0) [0|50000] "kOhm" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_Quality m62 : 8|8@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_Power_On_Pro m58 : 8|8@1+ (1,0) [0|6] "" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_Active_Profi m56 : 8|8@1+ (1,0) [0|6] "" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_Counter m54 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit00 m52 : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Selfholding_Iso_Alarm m48 : 8|2@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Unbalance_Thrs m46 : 8|8@1+ (1,0) [0|45] "%" Vector__XXX
+ SG_ IMD_Rsp_G_Unbalance_Counter m44 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ IMD_Rsp_G_Unbalance m42 : 8|8@1+ (1,0) [0|250] "%" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_DeviceTypePar m38 : 8|56@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_DeviceTy_0000 m36 : 8|56@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Software_Version m34 : 8|16@1+ (1,0) [0|64255] "" Vector__XXX
+ SG_ IMD_Rsp_G_Software_D_Number m32 : 8|16@1+ (1,0) [0|656] "" Vector__XXX
+ SG_ IMD_Rsp_G_Software_Build_Number m30 : 8|16@1+ (1,0) [0|64255] "" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_SerialNumberP m28 : 8|56@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_SerialNu_0000 m26 : 8|56@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_Item_NumberPa m24 : 8|56@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_Item_Num_0000 m22 : 8|56@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_AH_NumberPart m20 : 8|56@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_AH_Numbe_0000 m18 : 8|56@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Hardware_AH_History m16 : 8|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Bootloader_Version m14 : 8|16@1+ (1,0) [0|65534] "" Vector__XXX
+ SG_ IMD_Rsp_G_Bootloader_D_Number m12 : 8|16@1+ (1,0) [0|684] "" Vector__XXX
+ SG_ IMD_Rsp_G_Bootloader_BuildNumber m10 : 8|16@1+ (1,0) [0|65534] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0000 m108 : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit01 m52 : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Earthlift_Status_Unuse m112 : 10|6@1+ (1,0) [63|63] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0001 m108 : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Status_Lock_Unused m106 : 10|6@1+ (1,0) [0|63] "" Vector__XXX
+ SG_ IMD_Rsp_G_Voltage_Mode_Unused m100 : 10|6@1+ (1,0) [0|63] "" Vector__XXX
+ SG_ IMD_Rsp_G_Isolation_R_iso_S_0000 m68 : 10|6@1+ (1,0) [63|63] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit02 m52 : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Req_G_Selfholding_Iso_Alarm_ m48 : 10|6@1+ (1,0) [63|63] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0002 m108 : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit03 m52 : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0003 m108 : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit04 m52 : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0004 m108 : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit05 m52 : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0005 m108 : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit06 m52 : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0006 m108 : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit07 m52 : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0007 m108 : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit08 m52 : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0008 m108 : 17|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit09 m52 : 17|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0009 m108 : 18|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit10 m52 : 18|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0010 m108 : 19|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit11 m52 : 19|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0011 m108 : 20|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit12 m52 : 20|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0012 m108 : 21|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit13 m52 : 21|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0013 m108 : 22|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit14 m52 : 22|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Warning_Alarm_Sta_0014 m108 : 23|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit15 m52 : 23|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit16 m52 : 24|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit17 m52 : 25|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit18 m52 : 26|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit19 m52 : 27|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit20 m52 : 28|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit21 m52 : 29|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit22 m52 : 30|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit23 m52 : 31|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit24 m52 : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit25 m52 : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit26 m52 : 34|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit27 m52 : 35|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit28 m52 : 36|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit29 m52 : 37|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit30 m52 : 38|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ IMD_Rsp_G_Device_Error_Bit31 m52 : 39|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 2683176894 S2C_CompressorControl: 8 HMI
+ SG_ S2C_CmpCtl_active_discharge : 35|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_CmpCtl_enable : 34|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_CmpCtl_mode : 32|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_CmpCtl_torque : 16|16@1+ (1,0) [0|65535] "Nm"  EVCU
+ SG_ S2C_CmpCtl_speed : 0|16@1+ (1,0) [0|65535] "rpm"  EVCU
+
+BO_ 2683180990 S2C_CRAndCCS_Control: 6 EVCU
+ SG_ S2C_ccs_max_soc : 40|8@1+ (0.5,0) [0|100] "%"  HMI
+ SG_ S2C_ccs_max_charging_voltage : 24|16@1+ (1,0) [0|1024] "V"  HMI
+ SG_ S2C_ccs_max_charging_current : 16|8@1+ (1,0) [0|255] "A"  HMI
+ SG_ S2C_CR_calibration_req : 13|1@1+ (1,0) [0|1] ""  HMI
+ SG_ S2C_ccs_mode : 10|2@1+ (1,0) [0|3] ""  HMI
+ SG_ S2C_sc3_mode : 8|2@1+ (1,0) [0|3] ""  HMI
+ SG_ S2C_sc2_mode : 6|2@1+ (1,0) [0|3] ""  HMI
+ SG_ S2C_sc1_mode : 4|2@1+ (1,0) [0|3] ""  HMI
+ SG_ S2C_kc2_mode : 2|2@1+ (1,0) [0|3] ""  HMI
+ SG_ S2C_kc1_mode : 0|2@1+ (1,0) [0|3] ""  HMI
+
+BO_ 2683177406 S2C_DCDCControl: 5 HMI
+ SG_ S2C_control_override : 32|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_output_current : 16|16@1+ (0.1,0) [100|150] "A"  EVCU
+ SG_ S2C_output_voltage : 0|16@1+ (0.1,0) [22|32] "V"  EVCU
+
+BO_ 2683177150 S2C_FanControl: 5 HMI
+ SG_ S2C_FanCtl_active_discharge : 35|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_FanCtl_enable : 34|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_FanCtl_mode : 32|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_FanCtl_torque : 16|16@1+ (1,0) [0|65535] "Nm"  EVCU
+ SG_ S2C_FanCtl_speed : 0|16@1+ (1,0) [0|65535] "rpm"  EVCU
+
+BO_ 2683175358 S2C_HVDCPDUControl: 4 HMI
+ SG_ S2C_HVDC_Ctrl_C5 : 20|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C4 : 18|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C3C2 : 16|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C3C1 : 14|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C3B2 : 12|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C3B1 : 10|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C3A2 : 8|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C3A1 : 6|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C2B : 4|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C2A : 2|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HVDC_Ctrl_C1 : 0|2@1+ (1,0) [0|3] ""  EVCU
+
+BO_ 2683176638 S2C_HydraulicControl: 8 HMI
+ SG_ S2C_HydCtl_hyd_oil_y424c_pwm : 42|4@1+ (10,0) [0|100] "%"  EVCU
+ SG_ S2C_HydCtl_hyd_oil_y489_mode : 40|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HydCtl_hyd_oil_y424a_mode : 38|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HydCtl_hyd_oil_y424c_mode : 36|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HydCtl_active_discharge : 35|1@1+ (1,0) [0|1] ""  HMI
+ SG_ S2C_HydCtl_enable : 34|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_HydCtl_mode : 32|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_HydCtl_torque : 16|16@1+ (1,0) [0|65535] "Nm"  EVCU
+ SG_ S2C_HydCtl_speed : 0|16@1+ (1,0) [0|65535] "rpm"  EVCU
+
+BO_ 2683175102 S2C_OtherControl: 4 HMI
+ SG_ S2C_PowerSelectionBattery : 28|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_PowerSelectionGrid : 27|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_PowerSelectionCcs : 26|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenCrHeater : 25|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenCrLed : 24|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenCrKc2ReelingOut : 23|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenCrKc1ReelerRun : 22|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_BoschPumpOn : 21|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_BoschPumpOff : 20|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_EnableCableReelCharge : 19|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_EnableCcsCharge : 18|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_HvOverrideBitPos : 17|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_HvResetBitPos : 16|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenPowerCycleBitPos : 15|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_CascadiaDcdcOnBitPos : 14|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_CascadiaDcdcOffBitPos : 13|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_CoolingManualOnBitPos : 12|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_CoolingManualOffBitPos : 11|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_CoolingAutoBitPos : 10|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ResetCcsBitPos : 9|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_PilotRelayBitPos : 8|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenCrManualAutoBitPos : 7|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenCrManualResetBitPos : 6|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenCrManualOutBitPos : 5|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenCrManualInBitPos : 4|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ScreenPurgeFanBitPos : 3|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_ClearErrorsBitPos : 2|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_UseLowPowerBitPos : 1|1@1+ (1,0) [0|1] ""  EVCU
+ SG_ S2C_RestartBitPos : 0|1@1+ (1,0) [0|1] ""  EVCU
+
+BO_ 2683177662 S2C_SettingsParameterUpdate: 5 HMI
+ SG_ S2C_sp_param_id M : 0|8@1+ (1,0) [0|80] ""  EVCU
+ SG_ S2C_sp_meb_contactor_fail_timeou m0 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_meb_dcdc_output_voltage m1 : 8|32@1- (0.1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_meb_dcdc_output_current m2 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_meb_dcdc_max_bat_chg_curr m3 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_meb_ccs_max_chg_current m4 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_running_off_delay_s m5 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_turn_pulse_on_time_s m6 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_turn_pulse_off_time_s m7 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_slip_ring_temp_thresho m8 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_full_power_current m9 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_max_current_fully_woun m10 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_max_current_slip_ring_ m11 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_fully_wound_current_ma m12 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cr_fully_unwound_current_ m13 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_md_safe_rpm_disable m14 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_md_bus_discharged_v m15 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_md_hours m16 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_md_hydraulic_enable m17 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_md_hydraulic_torque_limit m18 : 8|32@1- (0.1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_md_compressor1_enable m19 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_md_compressor1_torque_lim m20 : 8|32@1- (0.1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_fan_enable m21 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_fan_torque_limit m22 : 8|32@1- (0.1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_fan_min_rpm m23 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_fan_max_rpm m24 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_fan_off_threshold_rpm m25 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_fan_purge_speed m26 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_temp_buffer_c m27 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_shutdown_timeout_s m28 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump1_address m29 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump1_enabled m30 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump1_timeout_s m31 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump1_full_flow_rpm m32 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump1_idle_rpm m33 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump2_address m34 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump2_enabled m35 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump2_timeout_s m36 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump2_full_flow_rpm m37 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump2_idle_rpm m38 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump3_address m39 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump3_enabled m40 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump3_timeout_s m41 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump3_full_flow_rpm m42 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump3_idle_rpm m43 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump4_address m44 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump4_enabled m45 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump4_timeout_s m46 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump4_full_flow_rpm m47 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_pump4_idle_rpm m48 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l2_motor_start_cool_te m49 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l2_motor_max_cool_temp m50 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l2_inv_start_cool_temp m51 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l2_inv_max_cool_temp m52 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l2_oil_start_cool_temp m53 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l2_oil_max_cool_temp m54 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l1_dcdc_start_cool_tem m55 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l1_dcdc_max_cool_temp m56 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l1_reel_drv_start_cool m57 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l1_reel_drv_max_cool_t m58 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l1_fan_mtr_start_cool_ m59 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l1_fan_mtr_max_cool_te m60 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l3_dchvi_start_cool_te m61 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l3_dchvi_max_cool_temp m62 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l4_acuhv_start_cool_te m63 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_l4_acuhv_max_cool_temp m64 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_btms_stop_dev_timeout_s m65 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_btms_safe_off_temp_low m66 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_btms_safe_off_temp_high m67 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_btms_pump_speed_pct m68 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_btms_low_power_speed_pct m69 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_hvac_compressor_speed m70 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_hvac_compressor_power m71 : 8|32@1- (0.1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_hvac_heater_power_setpoin m72 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_hvac_heater_temp_setpoint m73 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_hvac_pump_duty_cycle m74 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_request_all_params m75 : 8|32@1- (1,0) [0|0] ""  EVCU
+ SG_ S2C_sp_cs_fan_pid_kp m76 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  EVCU
+ SG_ S2C_sp_cs_fan_pid_ki m77 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  EVCU
+ SG_ S2C_sp_cs_fan_pid_kd m78 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  EVCU
+ SG_ S2C_sp_md_hydraulic_runtime_s m79 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  EVCU
+ SG_ S2C_sp_md_compressor_runtime_s m80 : 8|32@1- (1,0) [-3.4E+38|3.4E+38] ""  EVCU
+
+BO_ 2565806336 TMS_Cmd1: 8 Vector__XXX
+ SG_ Cmd_Operating_Mode : 13|3@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Ambient_temp : 48|8@1+ (1,-40) [-40|215] "*C" Vector__XXX
+ SG_ Cmd_Battery_inlet_temp : 32|8@1+ (1,-40) [-40|215] "*C" Vector__XXX
+ SG_ Cmd_Battery_outlet_temp : 40|8@1+ (1,-40) [-40|215] "*C" Vector__XXX
+ SG_ Cooling_Capacity : 24|8@1+ (1,0) [0|100] "Rpm" Vector__XXX
+ SG_ Cmd_Heater_power : 56|3@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Cmd_Pump_Speed : 16|8@1+ (1,0) [0|0] "Rpm" Vector__XXX
+
+BO_ 2566906137 TMS_Rx1: 8 Vector__XXX
+ SG_ Coolant_Level : 0|2@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Fb_Operating_Mode : 13|3@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ System_Status : 8|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ Fb_Condensor_Fan_Speed : 16|8@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ Fb_Pump_Speed : 24|8@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ High_Pressure : 32|8@1+ (2,0) [0|510] "psi" Vector__XXX
+ SG_ Low_Pressure : 48|8@1+ (1,0) [0|255] "psi" Vector__XXX
+ SG_ Suction_temp : 56|8@1+ (1,-40) [-40|215] "*C" Vector__XXX
+
+BO_ 2566906393 TMS_Rx2: 8 Vector__XXX
+ SG_ Glycol_Heater_power : 0|8@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ Coolant_inlet_temp : 32|8@1+ (1,-40) [-40|215] "*C" Vector__XXX
+ SG_ Coolant_outlet_temp : 40|8@1+ (1,-40) [-40|215] "*C" Vector__XXX
+ SG_ Heat_Error : 56|2@1+ (1,0) [0|3] "b" Vector__XXX
+ SG_ HP_Transducer_Sensor_Error : 50|2@1+ (1,0) [0|3] "b" Vector__XXX
+ SG_ LP_Temp_Sensor_Error : 52|2@1+ (1,0) [0|3] "b" Vector__XXX
+ SG_ LP_Transducer_Sensor_Error : 48|2@1+ (1,0) [0|3] "b" Vector__XXX
+ SG_ Safe_to_turn_off : 60|2@1+ (1,0) [0|3] "b" Vector__XXX
+
+BO_ 2566906649 TMS_Rx3: 8 Vector__XXX
+ SG_ Compressor_HV_Current : 8|8@1+ (0.5,0) [0|127.5] "A" Vector__XXX
+ SG_ Compressor_HV_Voltage : 16|8@1+ (5,0) [0|1275] "V" Vector__XXX
+ SG_ Compressor_speed : 0|8@1+ (50,0) [0|8500] "Rpm" Vector__XXX
+ SG_ COMP_Bus_Off : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ COMP_Communication_Fault : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ COMP_Current_Fault : 44|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ COMP_HV_Fault : 45|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ COMP_Internal_Voltage_Fault : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ COMP_Temperature_Fault : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Compressor_State : 46|2@1+ (1,0) [0|3] "" Vector__XXX
+
+BO_ 2565835264 WP120_AC_EMP__MotorCommand: 8 Vector__XXX
+ SG_ AC_OnOffDirection : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ AC_PowerHold : 2|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ AC_MotorSpeed : 8|16@1+ (0.5,0) [0|6000] "RPM" Vector__XXX
+ SG_ AC_PercentRPMSpeed : 24|8@1+ (0.5,0) [0|125] "Pct" Vector__XXX
+
+BO_ 2566857610 WP120_AC_EMP__MotorStatus2: 8 Vector__XXX
+ SG_ AC_OnOffDirectionStatus : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ AC_StatusReasonCode : 2|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ AC_CommandStatus : 6|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ AC_MotorSpeed : 8|16@1+ (0.5,0) [0|6000] "RPM" Vector__XXX
+ SG_ AC_MediumTemperature : 24|16@1+ (0.03125,-273) [-273|300] "C" Vector__XXX
+ SG_ AC_MotorPower : 40|16@1+ (0.5,0) [0|5000] "W" Vector__XXX
+ SG_ AC_MotorServiceIndicator : 56|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ AC_MotorOperatingStatus : 58|2@1+ (1,0) [0|3] "" Vector__XXX
+
+BO_ 2565832960 WP120_BE_EMP__MotorCommand: 8 Vector__XXX
+ SG_ BE_OnOffDirection : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ BE_PowerHold : 2|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ BE_MotorSpeed : 8|16@1+ (0.5,0) [0|6000] "RPM" Vector__XXX
+ SG_ BE_PercentRPMSpeed : 24|8@1+ (0.5,0) [0|125] "Pct" Vector__XXX
+
+BO_ 2566857601 WP120_BE_EMP__MotorStatus2: 8 Vector__XXX
+ SG_ BE_OnOffDirectionStatus : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ BE_StatusReasonCode : 2|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ BE_CommandStatus : 6|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ BE_MotorSpeed : 8|16@1+ (0.5,0) [0|6000] "RPM" Vector__XXX
+ SG_ BE_MediumTemperature : 24|16@1+ (0.03125,-273) [-273|300] "C" Vector__XXX
+ SG_ BE_MotorPower : 40|16@1+ (0.5,0) [0|5000] "W" Vector__XXX
+ SG_ BE_MotorServiceIndicator : 56|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ BE_MotorOperatingStatus : 58|2@1+ (1,0) [0|3] "" Vector__XXX
+
+BO_ 2565832704 WP120_DC_EMP__MotorCommand: 8 Vector__XXX
+ SG_ DC_OnOffDirection : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ DC_PowerHold : 2|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ DC_MotorSpeed : 8|16@1+ (0.5,0) [0|6000] "RPM" Vector__XXX
+ SG_ DC_PercentRPMSpeed : 24|8@1+ (0.5,0) [0|125] "Pct" Vector__XXX
+
+BO_ 2566857600 WP120_DC_EMP__MotorStatus2: 8 Vector__XXX
+ SG_ DC_OnOffDirectionStatus : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ DC_StatusReasonCode : 2|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ DC_CommandStatus : 6|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ DC_MotorSpeed : 8|16@1+ (0.5,0) [0|6000] "RPM" Vector__XXX
+ SG_ DC_MediumTemperature : 24|16@1+ (0.03125,-273) [-273|300] "C" Vector__XXX
+ SG_ DC_MotorPower : 40|16@1+ (0.5,0) [0|5000] "W" Vector__XXX
+ SG_ DC_MotorServiceIndicator : 56|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ DC_MotorOperatingStatus : 58|2@1+ (1,0) [0|3] "" Vector__XXX
+
+BO_ 2565833216 WP120_IM_EMP__MotorCommand: 8 Vector__XXX
+ SG_ IM_OnOffDirection : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ IM_PowerHold : 2|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ IM_MotorSpeed : 8|16@1+ (0.5,0) [0|6000] "RPM" Vector__XXX
+ SG_ IM_PercentRPMSpeed : 24|8@1+ (0.5,0) [0|125] "Pct" Vector__XXX
+
+BO_ 2566857602 WP120_IM_EMP__MotorStatus2: 8 Vector__XXX
+ SG_ IM_OnOffDirectionStatus : 0|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ IM_StatusReasonCode : 2|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ IM_CommandStatus : 6|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ IM_MotorSpeed : 8|16@1+ (0.5,0) [0|6000] "RPM" Vector__XXX
+ SG_ IM_MediumTemperature : 24|16@1+ (0.03125,-273) [-273|300] "C" Vector__XXX
+ SG_ IM_MotorPower : 40|16@1+ (0.5,0) [0|5000] "W" Vector__XXX
+ SG_ IM_MotorServiceIndicator : 56|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ IM_MotorOperatingStatus : 58|2@1+ (1,0) [0|3] "" Vector__XXX
+
+BO_ 2683178942 S2C_DCACControl: 7 HMI
+ SG_ S2C_BCL_Vdc_OL_Setpoint : 0|16@1+ (0.05,0) [0|1000] "V"  EVCU
+ SG_ S2C_BCL_Vdc_UL_Setpoint : 16|16@1+ (0.05,0) [0|1000] "V"  EVCU
+ SG_ S2C_BCL_Iac_Setpoint : 32|16@1+ (1,0) [0|500] "A"  EVCU
+ SG_ S2C_BCL_Mode : 48|2@1+ (1,0) [0|3] ""  EVCU
+ SG_ S2C_BCL_Enable : 50|1@1+ (1,0) [0|1] ""  EVCU
+
+
+
+CM_ BO_ 2556487144 "command from vehicle/system to compressor";
+CM_ SG_ 2556487144 AC_compressor_power_limit "Compressor power limit setting";
+CM_ SG_ 2556487144 AC_compressor_immediate_shutdown "1=on 0=off";
+CM_ SG_ 2556487144 AC_compressor_enable "1=on 0=off";
+CM_ SG_ 2556487144 AC_speed_of_compressor "Compressor speed setting";
+CM_ BO_ 2555439333 "feedback from compressor";
+CM_ SG_ 2555439333 Comp_Input_DC_Voltage "DC Voltage sensor measured value";
+CM_ SG_ 2555439333 Comp_Input_DC_Current "DC Current sensor measured value";
+CM_ SG_ 2555439333 Comp_IPM_temperature "Temperature sensor measured value";
+CM_ SG_ 2555439333 Comp_compressor_error "0x00:No Error
+0x01:Over Current
+0x02:Over Voltage
+0x04:Under Voltage
+0x08:Over temperature
+0x10:Internal fault
+0x20:Communication Error
+0x40:Over Current Lock
+0x80:Over Power Lock";
+CM_ SG_ 2555439333 Comp_compressor_status "0=off��1=running��3=fault";
+CM_ SG_ 2555439333 Comp_phase_Current "Phase Current sensor measured value";
+CM_ SG_ 2555439333 Comp_speed_of_compressor "Actual speed feedback from compressor";
+CM_ SG_ 2565853185 BCL_cmd_EVSE_type_set "1 = EVSE type 1 ( J1772 )
+2 = EVSE type (VDE-AR-E 2623-2-2)";
+CM_ BO_ 2566902963 "Faults, Warnings and Status flags";
+CM_ SG_ 2565845761 DCDC1_Temperature_coolant_fault "the coolant temeperature value treshold. If this temperature is exceeded then coolant fault is generated";
+CM_ SG_ 2565845761 DCDC1_Output_voltage_UV_fault "set the voltage value for treshold of undervoltage error. If ouput voltage falls below this value then undervoltage fault is generated by power supply.";
+CM_ SG_ 2565845761 DCDC1_Output_Voltage_setpoint "set the desired value of power supply output Voltage";
+CM_ SG_ 2565845761 DCDC1_Temp_coolant_warning "the coolant temeperature value treshold. If this temperature is exceeded then coolant warning is generated";
+CM_ SG_ 2565845761 DCDC1_Output_voltage_OV_fault "set the voltage value for treshold of overvoltage error. If output voltage exceeds this value then overvoltage fault is generated by power supply.";
+CM_ SG_ 2565845761 DCDC1_Output_current_limit "set the desired value of power supply output Current limit. Above this value the unit will drop output Voltage according current limiting curve.";
+CM_ BO_ 2566902961 "Faults, Warnings and Status flags";
+CM_ SG_ 2565845249 DCDC2_Temperature_coolant_fault "the coolant temeperature value treshold. If this temperature is exceeded then coolant fault is generated";
+CM_ SG_ 2565845249 DCDC2_Output_voltage_UV_fault "set the voltage value for treshold of undervoltage error. If ouput voltage falls below this value then undervoltage fault is generated by power supply.";
+CM_ SG_ 2565845249 DCDC2_Output_Voltage_setpoint "set the desired value of power supply output Voltage";
+CM_ SG_ 2565845249 DCDC1_Temp_coolant_warning "the coolant temeperature value treshold. If this temperature is exceeded then coolant warning is generated";
+CM_ SG_ 2565845249 DCDC2_Output_voltage_OV_fault "set the voltage value for treshold of overvoltage error. If output voltage exceeds this value then overvoltage fault is generated by power supply.";
+CM_ SG_ 2565845249 DCDC2_Output_current_limit "set the desired value of power supply output Current limit. Above this value the unit will drop output Voltage according current limiting curve.";
+CM_ SG_ 2566853076 IMD_G_Isolation_R_iso_Corrected "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2566853076 IMD_G_Isolation_R_iso_Status "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2566853076 IMD_G_Isolation_Counter "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit00 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit01 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit02 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit03 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit04 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit05 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit06 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit07 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit08 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit09 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit10 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit11 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit12 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit13 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit14 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Warning_Alarm_Status_Bit15 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2566853076 IMD_G_Device_Activity "ValueType: Identifier = 129, Name = SAEct02";
+CM_ SG_ 2566853332 IMD_G_Isolation_R_iso_neg "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2566853332 IMD_G_Isolation_R_iso_pos "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2566853332 IMD_G_Isolation_R_iso_Original "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2566853332 IMD_G_Isolation_Counter_Detail "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2566853332 IMD_G_Isolation_Quality "ValueType: Identifier = 46, Name = SAEpc06";
+CM_ SG_ 2566853844 IMD_G_Capacity "ValueType: Identifier = 283, Name = SAEmd01    ";
+CM_ SG_ 2566853844 IMD_G_Capacity_Counter "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2566853844 IMD_G_Unbalance "ValueType: Identifier = 46, Name = SAEpc06";
+CM_ SG_ 2566853844 IMD_G_Unbalance_Counter "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2566853844 IMD_G_HV_Frequency "ValueType: Identifier = 461, Name = SAEfq04";
+CM_ SG_ 2566853588 IMD_G_Voltage_HV "ValueType: Identifier = 461, Name = SAEfq04";
+CM_ SG_ 2566853588 IMD_G_Voltage_HVneg_Earth "ValueType: Identifier = 461, Name = SAEfq04";
+CM_ SG_ 2566853588 IMD_G_Voltage_HVpos_Earth "ValueType: Identifier = 461, Name = SAEfq04";
+CM_ SG_ 2566853588 IMD_G_Voltage_Counter "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2565854231 IMD_Req_S_Earthlift_Status "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565854231 IMD_Req_S_Factory_Reset "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565854231 IMD_Req_S_Status_Lock "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565854231 IMD_Req_S_Voltage_Thrs "ValueType: Identifier = 145, Name = SAEev02";
+CM_ SG_ 2565854231 IMD_Req_S_Voltage_Mode "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565854231 IMD_Req_S_Selftest_Period "ValueType: Identifier = 464, Name = SAEtm25";
+CM_ SG_ 2565854231 IMD_Req_S_Selftest_Trigger "ValueType: Identifier = 120, Name = SAEcb01";
+CM_ SG_ 2565854231 IMD_Req_S_Isolation_Thrs_Warning "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2565854231 IMD_Req_S_Isolation_Thrs_Timeout "ValueType: Identifier = 64, Name = SAEtm05";
+CM_ SG_ 2565854231 IMD_Req_S_Isolation_Thrs_Error "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2565854231 IMD_Req_S_Isolation_Power_On_Pro "ValueType: Identifier = 129, Name = SAEct02";
+CM_ SG_ 2565854231 IMD_Req_S_Isolation_Active_Profi "ValueType: Identifier = 129, Name = SAEct02";
+CM_ SG_ 2565854231 IMD_Req_S_Selfholding_IsoAlarm_R "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565854231 IMD_Req_S_Selfholding_Iso_Alarm "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565854231 IMD_Req_S_Unbalance_Thrs "ValueType: Identifier = 46, Name = SAEpc06";
+CM_ SG_ 2565806036 IMD_Rsp_G_Earthlift_Status "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Status_B "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Status_Lock "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Activity "ValueType: Identifier = 129, Name = SAEct02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Voltage_Thrs "ValueType: Identifier = 145, Name = SAEev02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Voltage_Mode "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Voltage_HVpos_Earth "ValueType: Identifier = 461, Name = SAEfq04";
+CM_ SG_ 2565806036 IMD_Rsp_G_Voltage_HVneg_Earth "ValueType: Identifier = 461, Name = SAEfq04";
+CM_ SG_ 2565806036 IMD_Rsp_G_Voltage_HV "ValueType: Identifier = 461, Name = SAEfq04";
+CM_ SG_ 2565806036 IMD_Rsp_G_Voltage_Counter "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2565806036 IMD_Rsp_G_HV_Frequency "ValueType: Identifier = 461, Name = SAEfq04";
+CM_ SG_ 2565806036 IMD_Rsp_G_Selftest_Period "ValueType: Identifier = 464, Name = SAEtm25";
+CM_ SG_ 2565806036 IMD_Rsp_G_Capacity_Counter "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Capacity "ValueType: Identifier = 283, Name = SAEmd01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_Time_elapsed "ValueType: Identifier = 64, Name = SAEtm05";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_Origin "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_Correc "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_Thrs_Warning "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_Thrs_Timeout "ValueType: Identifier = 64, Name = SAEtm05";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_Thrs_Error "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_Status "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_pos "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_neg "ValueType: Identifier = 383, Name = SAErs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_Quality "ValueType: Identifier = 46, Name = SAEpc06";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_Power_On_Pro "ValueType: Identifier = 129, Name = SAEct02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_Active_Profi "ValueType: Identifier = 129, Name = SAEct02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Isolation_Counter "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit00 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Selfholding_Iso_Alarm "ValueType: Identifier = 87, Name = SAEbs02";
+CM_ SG_ 2565806036 IMD_Rsp_G_Unbalance_Thrs "ValueType: Identifier = 46, Name = SAEpc06";
+CM_ SG_ 2565806036 IMD_Rsp_G_Unbalance_Counter "ValueType: Identifier = 133, Name = SAEct03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Unbalance "ValueType: Identifier = 46, Name = SAEpc06";
+CM_ SG_ 2565806036 IMD_Rsp_G_Hardware_DeviceTypePar "ValueType: Identifier = 258, Name = SAEatnd0200";
+CM_ SG_ 2565806036 IMD_Rsp_G_Hardware_DeviceTy_0000 "ValueType: Identifier = 258, Name = SAEatnd0200";
+CM_ SG_ 2565806036 IMD_Rsp_G_Software_Version "ValueType: Identifier = 373, Name = SAEid03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Software_D_Number "ValueType: Identifier = 373, Name = SAEid03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Software_Build_Number "ValueType: Identifier = 373, Name = SAEid03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Hardware_SerialNumberP "ValueType: Identifier = 258, Name = SAEatnd0200";
+CM_ SG_ 2565806036 IMD_Rsp_G_Hardware_SerialNu_0000 "ValueType: Identifier = 258, Name = SAEatnd0200";
+CM_ SG_ 2565806036 IMD_Rsp_G_Hardware_Item_NumberPa "ValueType: Identifier = 258, Name = SAEatnd0200";
+CM_ SG_ 2565806036 IMD_Rsp_G_Hardware_Item_Num_0000 "ValueType: Identifier = 258, Name = SAEatnd0200";
+CM_ SG_ 2565806036 IMD_Rsp_G_Hardware_AH_NumberPart "ValueType: Identifier = 258, Name = SAEatnd0200";
+CM_ SG_ 2565806036 IMD_Rsp_G_Hardware_AH_Numbe_0000 "ValueType: Identifier = 258, Name = SAEatnd0200";
+CM_ SG_ 2565806036 IMD_Rsp_G_Bootloader_Version "ValueType: Identifier = 373, Name = SAEid03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Bootloader_D_Number "ValueType: Identifier = 373, Name = SAEid03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Bootloader_BuildNumber "ValueType: Identifier = 373, Name = SAEid03";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0000 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit01 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0001 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit02 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0002 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit03 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0003 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit04 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0004 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit05 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0005 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit06 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0006 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit07 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0007 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit08 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0008 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit09 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0009 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit10 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0010 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit11 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0011 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit12 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0012 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit13 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0013 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit14 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0014 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit15 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit16 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit17 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit18 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit19 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit20 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit21 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit22 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit23 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit24 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit25 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit26 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit27 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit28 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit29 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit30 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806036 IMD_Rsp_G_Device_Error_Bit31 "ValueType: Identifier = 86, Name = SAEbs01";
+CM_ SG_ 2565806336 Cooling_Capacity "0-100% scaling too 0-8500 rpm
+1-5% minimum 500rpm";
+CM_ SG_ 2565806336 Cmd_Pump_Speed "1-100% -> min->max rpm
+1-28% minimum operating speed";
+CM_ SG_ 2566906137 Fb_Condensor_Fan_Speed "1-100% -> min->max rpm
+1-28% minimum operating speed";
+CM_ SG_ 2566906137 Fb_Pump_Speed "1-100% -> min->max rpm
+1-28% minimum operating speed";
+BA_DEF_ BO_  "CG_MessageInstName" STRING ;
+BA_DEF_ BO_  "CG_RX_TX" ENUM  "RX","TX","NONE";
+BA_DEF_ BO_  "CanDootDecode" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootDecodeBus" INT 0 6;
+BA_DEF_ BO_  "CanDootPaused" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulate" ENUM  "No","Yes";
+BA_DEF_ BO_  "CanDootSimulateBus" INT 0 6;
+BA_DEF_ BO_  "CanDootSimulateCycleTime" INT 0 50000;
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 65535;
+BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 0 3600000;
+BA_DEF_ BO_  "GenMsgDelayTime" INT 0 1000;
+BA_DEF_ BO_  "GenMsgFastOnStart" INT 0 100000;
+BA_DEF_ BO_  "GenMsgILSupport" ENUM  "Yes","No";
+BA_DEF_ BO_  "GenMsgNrOfRepetition" INT 0 1000000;
+BA_DEF_ BO_  "GenMsgRequestable" INT 0 1;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclic","reserved","cyclicIfActive","reserved","reserved","reserved","reserved","reserved","noMsgSendType";
+BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 100000;
+BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","J1939PG","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","StandardCAN_FD","ExtendedCAN_FD";
+BA_DEF_ SG_  "CG_VarType" ENUM  "bool","uint8_t","int8_t","uint16_t","int16_t","uint32_t","int32_t","float","double";
+BA_DEF_ SG_  "CanDootBroadcast" ENUM  "No","Yes";
+BA_DEF_ SG_  "CanDootGroup" ENUM  "None","g1","g2","g3","g4","g5","g6","g7","g8","g9","gA","gB","gC","gD","gE","gF";
+BA_DEF_ SG_  "CanDootHidden" ENUM  "No","Yes";
+BA_DEF_ SG_  "GenSigEVName" STRING ;
+BA_DEF_ SG_  "GenSigILSupport" ENUM  "Yes","No";
+BA_DEF_ SG_  "GenSigInactiveValue" INT 0 0;
+BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType","OnChangeAndIfActive","OnChangeAndIfActiveWithRepetition";
+BA_DEF_ SG_  "GenSigStartValue" FLOAT -3.4E+38 3.4E+38;
+BA_DEF_ SG_  "SPN" INT 0 524287;
+BA_DEF_ SG_  "SigType" ENUM  "Default","Range","RangeSigned","ASCII","Discrete","Control","ReferencePGN","DTC","StringDelimiter","StringLength","StringLengthControl";
+BA_DEF_ BU_  "ECU" STRING ;
+BA_DEF_ BU_  "NmJ1939AAC" INT 0 1;
+BA_DEF_ BU_  "NmJ1939ECUInstance" INT 0 3;
+BA_DEF_ BU_  "NmJ1939Function" INT 0 255;
+BA_DEF_ BU_  "NmJ1939FunctionInstance" INT 0 7;
+BA_DEF_ BU_  "NmJ1939IdentityNumber" INT 0 2097151;
+BA_DEF_ BU_  "NmJ1939IndustryGroup" INT 0 7;
+BA_DEF_ BU_  "NmJ1939ManufacturerCode" INT 0 2047;
+BA_DEF_ BU_  "NmJ1939System" INT 0 127;
+BA_DEF_ BU_  "NmJ1939SystemInstance" INT 0 15;
+BA_DEF_ BU_  "NmStationAddress" INT 0 255;
+BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_  "ProtocolType" STRING ;
+BA_DEF_ SG_  "SystemSignalLongSymbol" STRING ;
+BA_DEF_DEF_  "CG_MessageInstName" "";
+BA_DEF_DEF_  "CG_RX_TX" "RX";
+BA_DEF_DEF_  "CanDootDecode" "No";
+BA_DEF_DEF_  "CanDootDecodeBus" 1;
+BA_DEF_DEF_  "CanDootPaused" "No";
+BA_DEF_DEF_  "CanDootSimulate" "No";
+BA_DEF_DEF_  "CanDootSimulateBus" 1;
+BA_DEF_DEF_  "CanDootSimulateCycleTime" 100;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "GenMsgCycleTimeFast" 0;
+BA_DEF_DEF_  "GenMsgDelayTime" 0;
+BA_DEF_DEF_  "GenMsgFastOnStart" 0;
+BA_DEF_DEF_  "GenMsgILSupport" "Yes";
+BA_DEF_DEF_  "GenMsgNrOfRepetition" 0;
+BA_DEF_DEF_  "GenMsgRequestable" 1;
+BA_DEF_DEF_  "GenMsgSendType" "noMsgSendType";
+BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
+BA_DEF_DEF_  "VFrameFormat" "ExtendedCAN";
+BA_DEF_DEF_  "CG_VarType" "uint8_t";
+BA_DEF_DEF_  "CanDootBroadcast" "Yes";
+BA_DEF_DEF_  "CanDootGroup" "None";
+BA_DEF_DEF_  "CanDootHidden" "No";
+BA_DEF_DEF_  "GenSigEVName" "Env@Nodename_@Signame";
+BA_DEF_DEF_  "GenSigILSupport" "Yes";
+BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "GenSigSendType" "Cyclic";
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "SPN" 0;
+BA_DEF_DEF_  "SigType" "Default";
+BA_DEF_DEF_  "ECU" "";
+BA_DEF_DEF_  "NmJ1939AAC" 0;
+BA_DEF_DEF_  "NmJ1939ECUInstance" 0;
+BA_DEF_DEF_  "NmJ1939Function" 0;
+BA_DEF_DEF_  "NmJ1939FunctionInstance" 0;
+BA_DEF_DEF_  "NmJ1939IdentityNumber" 0;
+BA_DEF_DEF_  "NmJ1939IndustryGroup" 0;
+BA_DEF_DEF_  "NmJ1939ManufacturerCode" 0;
+BA_DEF_DEF_  "NmJ1939System" 0;
+BA_DEF_DEF_  "NmJ1939SystemInstance" 0;
+BA_DEF_DEF_  "NmStationAddress" 254;
+BA_DEF_DEF_  "NodeLayerModules" "";
+BA_DEF_DEF_  "BusType" "CAN";
+BA_DEF_DEF_  "ProtocolType" "";
+BA_DEF_DEF_  "SystemSignalLongSymbol" "";
+BA_ "BusType" "CAN";
+BA_ "NmStationAddress" BU_ EVCU 1;
+BA_ "NmStationAddress" BU_ DCDC2 177;
+BA_ "NmStationAddress" BU_ DCDC1 179;
+BA_ "NmStationAddress" BU_ BCL25_700_8 208;
+BA_ "NmStationAddress" BU_ ECU 254;
+BA_ "CanDootDecode" BO_ 2683180730 1;
+BA_ "CanDootDecode" BO_ 2683180986 1;
+BA_ "CanDootDecode" BO_ 2683175354 1;
+BA_ "CanDootDecode" BO_ 2683175098 1;
+BA_ "CanDootDecode" BO_ 2683176378 1;
+BA_ "CanDootDecode" BO_ 2683175610 1;
+BA_ "CanDootDecode" BO_ 2683175866 1;
+BA_ "CanDootDecode" BO_ 2683180990 1;
+BA_ "GenSigStartValue" SG_ 2565853185 BCL_cmd_EVSE_type_set 0;
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_meb_contactor_fail_timeou "C2S_fp_meb_contactor_fail_timeout_ms";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_meb_dcdc_max_bat_chg_curr "C2S_fp_meb_dcdc_max_bat_chg_current";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cr_slip_ring_temp_thresho "C2S_fp_cr_slip_ring_temp_threshold";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cr_max_current_fully_woun "C2S_fp_cr_max_current_fully_wound";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cr_max_current_slip_ring_ "C2S_fp_cr_max_current_slip_ring_hot";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cr_fully_unwound_current_ "C2S_fp_cr_fully_unwound_current_ma";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_md_compressor1_torque_lim "C2S_fp_md_compressor1_torque_limit";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cs_l2_motor_start_cool_te "C2S_fp_cs_l2_motor_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cs_l1_dcdc_start_cool_tem "C2S_fp_cs_l1_dcdc_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cs_l1_reel_drv_start_cool "C2S_fp_cs_l1_reel_drv_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cs_l1_reel_drv_max_cool_t "C2S_fp_cs_l1_reel_drv_max_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cs_l1_fan_mtr_start_cool_ "C2S_fp_cs_l1_fan_mtr_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cs_l1_fan_mtr_max_cool_te "C2S_fp_cs_l1_fan_mtr_max_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cs_l3_dchvi_start_cool_te "C2S_fp_cs_l3_dchvi_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_cs_l4_acuhv_start_cool_te "C2S_fp_cs_l4_acuhv_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177658 C2S_fp_hvac_heater_power_setpoin "C2S_fp_hvac_heater_power_setpoint";
+BA_ "SystemSignalLongSymbol" SG_ 2683180730 C2S_stopping_main_hydraulic_moto "C2S_stopping_main_hydraulic_motor";
+BA_ "SystemSignalLongSymbol" SG_ 2683180730 C2S_stopping_main_compressor_mot "C2S_stopping_main_compressor_motors";
+BA_ "SystemSignalLongSymbol" SG_ 2683180730 C2S_stopping_cabin_hvac_compress "C2S_stopping_cabin_hvac_compressor";
+BA_ "SystemSignalLongSymbol" SG_ 2683175610 C2S_cr_panel_manual_auto_momenta "C2S_cr_panel_manual_auto_momentary";
+BA_ "GenSigStartValue" SG_ 2683176122 C2S_Hyd_Oil_Cooling_Temp 8000;
+BA_ "GenSigStartValue" SG_ 2683176122 C2S_Hyd_Oil_Cooling_Pressure 500;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc_Total_Power_W 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Water_Mist_Level_10b_Raw 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rcs_Hydraulic_Oil_Temp 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rcs_Compressor_Low_Stage_Tem 1;
+BA_ "SystemSignalLongSymbol" SG_ 2683176122 C2S_Rcs_Compressor_Low_Stage_Tem "C2S_Rcs_Compressor_Low_Stage_Temp";
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rcs_Compressor_High_Stage_Te 1;
+BA_ "SystemSignalLongSymbol" SG_ 2683176122 C2S_Rcs_Compressor_High_Stage_Te "C2S_Rcs_Compressor_High_Stage_Temp";
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rcs_Tram_Pressure 1;
+BA_ "GenSigStartValue" SG_ 2683176122 C2S_Rcs_Tram_Pressure 102;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rcs_Ambient_Temperature 1;
+BA_ "GenSigStartValue" SG_ 2683176122 C2S_Rcs_Ambient_Temperature 499.299212598425;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rcs_Heat_Request 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Heat_Valve_Proportion 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Sensor_Dhab_Source_Mv 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Sensor_Dhab_Low 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Sensor_Dhab_High 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Dvc1000_3 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Dvc1000_2 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Dvc1000_1 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Bat_K15 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc1_Flow_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Motor1_Flow_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Aux_In_Pwm 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Pump_Bosch_Pwm 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_B460_Pwm 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_B460_Press_In 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rad_Press_In 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rad_Press_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc2_Press_In 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc2_Press_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc1_Press_In 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc1_Press_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Dcdc1_Press_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Motor1_Press_In 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Motor1_Press_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Cr_Torque 0;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Cr_Rotary_Sensor_Raw_In_uA 0;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Cr_Rotary_Sensor_Percent 0;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Cr_Slip_Ring_Temp_5v3 0;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Cr_Slip_Ring_Temp_5v2 0;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Cr_Slip_Ring_Temp_5v1 0;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Cr_Slip_Ring_Sensor_Supply_M 0;
+BA_ "SystemSignalLongSymbol" SG_ 2683176122 C2S_Cr_Slip_Ring_Sensor_Supply_M "C2S_Cr_Slip_Ring_Sensor_Supply_Mv";
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc2_Temp_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc1_Temp_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rad_Temp_In 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Rad_Temp_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Motor1_Temp_Out 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Lv_Pdu_Temp 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Acdc_Pdu_Temp 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_Hv_Pdu_Temp 1;
+BA_ "CanDootHidden" SG_ 2683176122 C2S_mux 1;
+BA_ "GenSigStartValue" SG_ 2565845761 DCDC1_Temperature_coolant_fault 500;
+BA_ "GenSigStartValue" SG_ 2565845761 DCDC1_Output_voltage_UV_fault 400;
+BA_ "GenSigStartValue" SG_ 2565845761 DCDC1_Output_Voltage_setpoint 440;
+BA_ "GenSigStartValue" SG_ 2565845761 DCDC1_SRS_Batch_no 0;
+BA_ "GenSigStartValue" SG_ 2565845761 DCDC1_Temp_coolant_warning 400;
+BA_ "GenSigStartValue" SG_ 2565845761 DCDC1_Output_voltage_OV_fault 441;
+BA_ "GenSigStartValue" SG_ 2565845761 DCDC1_Output_current_limit 2000;
+BA_ "GenSigStartValue" SG_ 2565845761 DCDC1_SRS_Serial_no 0;
+BA_ "GenSigStartValue" SG_ 2565845249 DCDC2_Temperature_coolant_fault 500;
+BA_ "GenSigStartValue" SG_ 2565845249 DCDC2_Output_voltage_UV_fault 400;
+BA_ "GenSigStartValue" SG_ 2565845249 DCDC2_Output_Voltage_setpoint 440;
+BA_ "GenSigStartValue" SG_ 2565845249 DCDC2_SRS_Batch_no 0;
+BA_ "GenSigStartValue" SG_ 2565845249 DCDC1_Temp_coolant_warning 400;
+BA_ "GenSigStartValue" SG_ 2565845249 DCDC2_Output_voltage_OV_fault 441;
+BA_ "GenSigStartValue" SG_ 2565845249 DCDC2_Output_current_limit 2000;
+BA_ "GenSigStartValue" SG_ 2565845249 DCDC2_SRS_Serial_no 0;
+BA_ "GenSigStartValue" SG_ 2566853844 IMD_G_Capacity 1;
+BA_ "GenSigStartValue" SG_ 2566853588 IMD_G_Voltage_HV 32120;
+BA_ "GenSigStartValue" SG_ 2566853588 IMD_G_Voltage_HVneg_Earth 32120;
+BA_ "GenSigStartValue" SG_ 2566853588 IMD_G_Voltage_HVpos_Earth 32120;
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Isolation_R_iso_Origin "IMD_Req_G_Isolation_R_iso_Original";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Isolation_R_iso_Correc "IMD_Req_G_Isolation_R_iso_Corrected";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Isolation_Power_On_Pro "IMD_Req_G_Isolation_Power_On_Profile";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Isolation_Active_Profi "IMD_Req_G_Isolation_Active_Profile";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Hardware_DeviceTypePar "IMD_Req_G_Hardware_DeviceTypePartB";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Hardware_DeviceTy_0000 "IMD_Req_G_Hardware_DeviceTypePartA";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Hardware_SerialNumberP "IMD_Req_G_Hardware_SerialNumberPartB";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Hardware_SerialNu_0000 "IMD_Req_G_Hardware_SerialNumberPartA";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Hardware_Item_NumberPa "IMD_Req_G_Hardware_Item_NumberPartB";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Hardware_Item_Num_0000 "IMD_Req_G_Hardware_Item_NumberPartA";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Hardware_AH_NumberPart "IMD_Req_G_Hardware_AH_NumberPartB";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_G_Hardware_AH_Numbe_0000 "IMD_Req_G_Hardware_AH_NumberPartA";
+BA_ "GenSigStartValue" SG_ 2565854231 IMD_Req_S_Selftest_Period 1;
+BA_ "GenSigStartValue" SG_ 2565854231 IMD_Req_S_Isolation_Thrs_Warning 30;
+BA_ "GenSigStartValue" SG_ 2565854231 IMD_Req_S_Isolation_Thrs_Error 30;
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_S_Isolation_Power_On_Pro "IMD_Req_S_Isolation_Power_On_Profile";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_S_Isolation_Active_Profi "IMD_Req_S_Isolation_Active_Profile";
+BA_ "SystemSignalLongSymbol" SG_ 2565854231 IMD_Req_S_Selfholding_IsoAlarm_R "IMD_Req_S_Selfholding_IsoAlarm_Reset";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Status_B "IMD_Rsp_G_Warning_Alarm_Status_Bit00";
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Voltage_HVpos_Earth 32120;
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Voltage_HVneg_Earth 32120;
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Voltage_HV 32120;
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Selftest_Period 1;
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Capacity 1;
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_Origin "IMD_Rsp_G_Isolation_R_iso_Original";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_Correc "IMD_Rsp_G_Isolation_R_iso_Corrected";
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Isolation_Thrs_Warning 30;
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Isolation_Thrs_Error 30;
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_Status "IMD_Rsp_G_Isolation_R_iso_Status1";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Isolation_Power_On_Pro "IMD_Rsp_G_Isolation_Power_On_Profile";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Isolation_Active_Profi "IMD_Rsp_G_Isolation_Active_Profile";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Hardware_DeviceTypePar "IMD_Rsp_G_Hardware_DeviceTypePartB";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Hardware_DeviceTy_0000 "IMD_Rsp_G_Hardware_DeviceTypePartA";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Hardware_SerialNumberP "IMD_Rsp_G_Hardware_SerialNumberPartB";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Hardware_SerialNu_0000 "IMD_Rsp_G_Hardware_SerialNumberPartA";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Hardware_Item_NumberPa "IMD_Rsp_G_Hardware_Item_NumberPartB";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Hardware_Item_Num_0000 "IMD_Rsp_G_Hardware_Item_NumberPartA";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Hardware_AH_NumberPart "IMD_Rsp_G_Hardware_AH_NumberPartB";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Hardware_AH_Numbe_0000 "IMD_Rsp_G_Hardware_AH_NumberPartA";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0000 "IMD_Rsp_G_Warning_Alarm_Status_Bit01";
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Earthlift_Status_Unuse 0;
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Earthlift_Status_Unuse "IMD_Rsp_G_Earthlift_Status_Unused";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0001 "IMD_Rsp_G_Warning_Alarm_Status_Bit02";
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Status_Lock_Unused 0;
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Voltage_Mode_Unused 0;
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_S_0000 0;
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Isolation_R_iso_S_0000 "IMD_Rsp_G_Isolation_R_iso_StatusUnused";
+BA_ "GenSigStartValue" SG_ 2565806036 IMD_Req_G_Selfholding_Iso_Alarm_ 0;
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Req_G_Selfholding_Iso_Alarm_ "IMD_Req_G_Selfholding_Iso_Alarm_Unused";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0002 "IMD_Rsp_G_Warning_Alarm_Status_Bit03";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0003 "IMD_Rsp_G_Warning_Alarm_Status_Bit04";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0004 "IMD_Rsp_G_Warning_Alarm_Status_Bit05";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0005 "IMD_Rsp_G_Warning_Alarm_Status_Bit06";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0006 "IMD_Rsp_G_Warning_Alarm_Status_Bit07";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0007 "IMD_Rsp_G_Warning_Alarm_Status_Bit08";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0008 "IMD_Rsp_G_Warning_Alarm_Status_Bit09";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0009 "IMD_Rsp_G_Warning_Alarm_Status_Bit10";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0010 "IMD_Rsp_G_Warning_Alarm_Status_Bit11";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0011 "IMD_Rsp_G_Warning_Alarm_Status_Bit12";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0012 "IMD_Rsp_G_Warning_Alarm_Status_Bit13";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0013 "IMD_Rsp_G_Warning_Alarm_Status_Bit14";
+BA_ "SystemSignalLongSymbol" SG_ 2565806036 IMD_Rsp_G_Warning_Alarm_Sta_0014 "IMD_Rsp_G_Warning_Alarm_Status_Bit15";
+BA_ "GenSigStartValue" SG_ 2683177406 S2C_output_current 1000;
+BA_ "GenSigStartValue" SG_ 2683177406 S2C_output_voltage 220;
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_meb_contactor_fail_timeou "S2C_sp_meb_contactor_fail_timeout_ms";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_meb_dcdc_max_bat_chg_curr "S2C_sp_meb_dcdc_max_bat_chg_current";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cr_slip_ring_temp_thresho "S2C_sp_cr_slip_ring_temp_threshold";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cr_max_current_fully_woun "S2C_sp_cr_max_current_fully_wound";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cr_max_current_slip_ring_ "S2C_sp_cr_max_current_slip_ring_hot";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cr_fully_unwound_current_ "S2C_sp_cr_fully_unwound_current_ma";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_md_compressor1_torque_lim "S2C_sp_md_compressor1_torque_limit";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cs_l2_motor_start_cool_te "S2C_sp_cs_l2_motor_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cs_l1_dcdc_start_cool_tem "S2C_sp_cs_l1_dcdc_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cs_l1_reel_drv_start_cool "S2C_sp_cs_l1_reel_drv_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cs_l1_reel_drv_max_cool_t "S2C_sp_cs_l1_reel_drv_max_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cs_l1_fan_mtr_start_cool_ "S2C_sp_cs_l1_fan_mtr_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cs_l1_fan_mtr_max_cool_te "S2C_sp_cs_l1_fan_mtr_max_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cs_l3_dchvi_start_cool_te "S2C_sp_cs_l3_dchvi_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_cs_l4_acuhv_start_cool_te "S2C_sp_cs_l4_acuhv_start_cool_temp";
+BA_ "SystemSignalLongSymbol" SG_ 2683177662 S2C_sp_hvac_heater_power_setpoin "S2C_sp_hvac_heater_power_setpoint";
+BA_ "GenSigStartValue" SG_ 2565806336 Ambient_temp 40;
+BA_ "GenSigStartValue" SG_ 2565806336 Cmd_Battery_inlet_temp 40;
+BA_ "GenSigStartValue" SG_ 2565806336 Cmd_Battery_outlet_temp 40;
+BA_ "GenSigStartValue" SG_ 2566906137 Suction_temp 40;
+BA_ "GenSigStartValue" SG_ 2566906393 Coolant_inlet_temp 40;
+BA_ "GenSigStartValue" SG_ 2566906393 Coolant_outlet_temp 40;
+BA_ "GenSigStartValue" SG_ 2566906393 Heat_Error 0;
+BA_ "GenSigStartValue" SG_ 2566906393 HP_Transducer_Sensor_Error 0;
+BA_ "GenSigStartValue" SG_ 2566906393 LP_Temp_Sensor_Error 0;
+BA_ "GenSigStartValue" SG_ 2566906393 LP_Transducer_Sensor_Error 0;
+BA_ "GenSigStartValue" SG_ 2566906393 Safe_to_turn_off 0;
+BA_ "GenSigStartValue" SG_ 2566857610 AC_MediumTemperature 8736;
+BA_ "GenSigStartValue" SG_ 2566857601 BE_MediumTemperature 8736;
+BA_ "GenSigStartValue" SG_ 2566857600 DC_MediumTemperature 8736;
+BA_ "GenSigStartValue" SG_ 2566857602 IM_MediumTemperature 8736;
+SIG_GROUP_ 2565853185 Bdc_OnOff_Mode 1 : BCL_cmd_Enable BCL_cmd_Mode BCL_cmd_Balancing;
+SIG_GROUP_ 2565853185 Bdc_Chg_Setpoints 1 : BCL_cmd_Chg_Vbat_lim BCL_cmd_Chg_Ibat_lim BCL_cmd_Chg_Iac_Lim;
+SIG_GROUP_ 2565853185 Bdc_Inv_Setpoints 1 :;
+SIG_GROUP_ 2565853185 Bdc_Wake_Out 1 : BCL_cmd_wake_out;
+SIG_GROUP_ 2565853185 Bdc_Sleep_Mode 1 : BCL_cmd_Sleep_Mode;
+SIG_GROUP_ 2565853185 Bdc_Pilot_Impedance 1 : BCL_cmd_Control_pilot_imp;
+SIG_GROUP_ 2565853185 Bdc_LED_Driver 1 : BCL_cmd_LED_Index BCL_cmd_LED_mode BCL_cmd_LED_bright BCL_cmd_LED_on_time BCL_cmd_LED_duty;
+SIG_GROUP_ 2565853185 Bdc_Motor_Rise_Time 1 : BCL_cmd_Motor_Rise_Time;
+SIG_GROUP_ 2565853185 Bdc_Ext_DC_Current_Sensor 1 : BCL_cmd_Ext_DC_CurrSens_En BCL_cmd_Ext_DC_CurrSens_Val;
+SIG_GROUP_ 2565853185 Bdc_LV_Battery_UV_Limit 1 : BCL_cmd_LV_Battery_UV_Limit;
+SIG_GROUP_ 2565853185 Bdc_EVSE_type 1 : BCL_cmd_EVSE_type_set;
+SIG_GROUP_ 2565853185 Bdc_CRC_counter_selection 1 : BCL_cmd_CRC_Cntr;
+SIG_GROUP_ 2565853185 Bdc_Button_Action_Selection 1 : BCL_cmd_Button_A_Action BCL_cmd_Button_B_Action;
+SIG_GROUP_ 2565853185 Bdc_Otp_Recovery_En 1 : BCL_cmd_Otp_recovery_enable;
+SIG_GROUP_ 2565853185 Bdc_Hvil_En 1 : BCL_cmd_Hvil_enable;
+SIG_GROUP_ 2565853185 Bdc_Ext_Temp_Sensor_Type 1 : BCL_cmd_TempExt_Sensor_Type BCL_cmd_TempExt_Otp_En BCL_cmd_TempExt_Otp;
+SIG_GROUP_ 2565853185 Bdc_Ext_Temp_Sensor_Custom_Table 1 : BCL_cmd_TempExt_Table_Idx BCL_cmd_TempExt_Table_Temp BCL_cmd_TempExt_Table_Resistance;
+SIG_GROUP_ 2565853185 Bdc_Ext_Set_Can_Addr 1 : BCL_cmd_CAN_address_new60 BCL_cmd_CAN_address_SN_Lower;
+SIG_GROUP_ 2565853185 Bdc_Ext_Set_Can_Addr_SN 1 : BCL_cmd_CAN_address_new61 BCL_cmd_CAN_address_SN_Upper;
+SIG_GROUP_ 2565853185 Bdc_Save_Setpoints 1 : BCL_cmd_Save_Settings;
+SIG_GROUP_ 2565845761 DCDC1_Output_volt_curr_setpoint 1 : DCDC1_Output_Voltage_setpoint DCDC1_Output_current_limit DCDC1_b_sts_RemoteShutdown;
+SIG_GROUP_ 2565845761 DCDC1_Output_uv_ov_setpoint 1 : DCDC1_Output_voltage_UV_fault DCDC1_Output_voltage_OV_fault;
+SIG_GROUP_ 2565845761 DCDC1_Temp_warning_limit 1 : DCDC1_Temperature_coolant_fault DCDC1_Temp_coolant_warning;
+SIG_GROUP_ 2565845761 DCDC1_Set_Remote_Shutdown 1 : DCDC1_Remote_shutdown_sp DCDC1_SRS_Batch_no DCDC1_SRS_Serial_no;
+SIG_GROUP_ 2565845249 DCDC2_Output_volt_curr_setpoint 1 : DCDC2_b_sts_RemoteShutdown DCDC2_Output_current_limit DCDC2_Output_Voltage_setpoint;
+SIG_GROUP_ 2565845249 DCDC2_Output_uv_ov_setpoint 1 : DCDC2_Output_voltage_OV_fault DCDC2_Output_voltage_UV_fault;
+SIG_GROUP_ 2565845249 DCDC2_Temp_warning_limit 1 : DCDC1_Temp_coolant_warning DCDC2_Temperature_coolant_fault;
+SIG_GROUP_ 2565845249 DCDC2_Set_Remote_Shutdown 1 : DCDC2_Remote_shutdown_sp DCDC2_SRS_Batch_no DCDC2_SRS_Serial_no;
+SIG_VALTYPE_ 2683177658 C2S_fp_cs_fan_pid_kp : 1;
+SIG_VALTYPE_ 2683177658 C2S_fp_cs_fan_pid_ki : 1;
+SIG_VALTYPE_ 2683177658 C2S_fp_cs_fan_pid_kd : 1;
+SIG_VALTYPE_ 2683177658 C2S_fp_md_hydraulic_runtime_s : 1;
+SIG_VALTYPE_ 2683177658 C2S_fp_md_compressor_runtime_s : 1;
+SIG_VALTYPE_ 2683177662 S2C_sp_cs_fan_pid_kp : 1;
+SIG_VALTYPE_ 2683177662 S2C_sp_cs_fan_pid_ki : 1;
+SIG_VALTYPE_ 2683177662 S2C_sp_cs_fan_pid_kd : 1;
+SIG_VALTYPE_ 2683177662 S2C_sp_md_hydraulic_runtime_s : 1;
+SIG_VALTYPE_ 2683177662 S2C_sp_md_compressor_runtime_s : 1;
+

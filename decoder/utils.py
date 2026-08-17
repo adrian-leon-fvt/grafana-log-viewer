@@ -3,6 +3,8 @@ import os
 import sys
 import subprocess
 import logging
+import subprocess
+import shutil
 from pathlib import Path
 
 from datetime import datetime, timedelta, timezone
@@ -16,11 +18,55 @@ from itertools import chain
 from can import LogReader, Logger
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
+from typing import Any
 
 if __name__ == "__main__":
     sys.path.append(str(Path(__file__).parent.parent))
 
 from decoder.config import *
+
+
+SUMMARY: int = 25
+"""Per-device / per-batch summary level (shown at some/minimal, hidden at silent)."""
+FINAL_SUMMARY: int = 35
+"""Final overall run total level (shown at all levels including silent)."""
+logging.addLevelName(SUMMARY, "SUMMARY")
+logging.addLevelName(FINAL_SUMMARY, "FINAL_SUMMARY")
+
+_cli_log_level: int | None = None
+
+
+def install_verbosity_level(verbosity: str) -> None:
+    """Set the effective log level from a --verbosity argument.
+
+    debug    → DEBUG   (everything)
+    some     → INFO    (hides per-signal Sending... and S3 scan/discovery)
+    minimal  → SUMMARY (also hides per-signal Sent... and per-file streamed)
+    silent   → WARNING (hides everything except FINAL_SUMMARY and errors)
+    """
+    global _cli_log_level
+    level_map = {
+        "debug": logging.DEBUG,
+        "some": logging.INFO,
+        "minimal": SUMMARY,
+        "silent": logging.WARNING,
+    }
+    _cli_log_level = level_map.get(verbosity, logging.DEBUG)
+    logging.getLogger().setLevel(_cli_log_level)
+
+    aws_level = logging.DEBUG if _cli_log_level == logging.DEBUG else logging.WARNING
+    for name in ("boto3", "botocore", "s3transfer", "urllib3"):
+        logging.getLogger(name).setLevel(aws_level)
+
+
+def log_summary(msg: object, *args: object, **kwargs: object) -> None:
+    """Log at SUMMARY level (per-device/batch totals)."""
+    logging.log(SUMMARY, msg, *args, **kwargs)
+
+
+def log_final(msg: object, *args: object, **kwargs: object) -> None:
+    """Log at FINAL_SUMMARY level (overall run totals; shown even in silent)."""
+    logging.log(FINAL_SUMMARY, msg, *args, **kwargs)
 
 
 def setup_simple_logger(
@@ -35,12 +81,16 @@ def setup_simple_logger(
     if not logger.hasHandlers():
         logger.addHandler(handler)
     logger.propagate = False
-    logger.setLevel(level)
+    logger.setLevel(_cli_log_level if _cli_log_level is not None else level)
 
 
 def get_time_str(start_time: float, end_ts: float | None = None) -> str:
     _end_ts = time.time() if end_ts is None else end_ts
     elapsed = _end_ts - start_time
+    return format_duration_seconds(elapsed)
+
+
+def format_duration_seconds(elapsed: float) -> str:
     days, rem = divmod(elapsed, 86400)
     hours, rem = divmod(rem, 3600)
     mins, secs = divmod(rem, 60)
@@ -55,7 +105,52 @@ def get_time_str(start_time: float, end_ts: float | None = None) -> str:
     if secs or parts:
         parts.append(f"{secs:.3f}s")
 
-    return "".join(parts)
+    return "".join(parts) or "0s"
+
+
+def format_time_span(start: datetime, end: datetime) -> str:
+    return (
+        f"{start.isoformat()} - {end.isoformat()} "
+        f"({format_duration_seconds((end - start).total_seconds())})"
+    )
+
+
+def format_bytes(value: int | None) -> str:
+    if value is None:
+        return "n/a"
+    size = float(value)
+    units = ["B", "KiB", "MiB", "GiB", "TiB"]
+    unit_idx = 0
+    while size >= 1024.0 and unit_idx < len(units) - 1:
+        size /= 1024.0
+        unit_idx += 1
+    if unit_idx == 0:
+        return f"{int(size)}{units[unit_idx]}"
+    return f"{size:.3f}{units[unit_idx]}"
+
+
+def parse_time_arg(value: str, now: datetime, allow_today: bool = True) -> datetime:
+    value = value.strip()
+    if value == "now":
+        return now
+    if allow_today and value == "today":
+        return datetime.today().astimezone(now.tzinfo)
+
+    offset_match = re.fullmatch(r"(\d+)([smhd])", value)
+    if offset_match:
+        amount, unit = offset_match.groups()
+        delta = {
+            "s": timedelta(seconds=int(amount)),
+            "m": timedelta(minutes=int(amount)),
+            "h": timedelta(hours=int(amount)),
+            "d": timedelta(days=int(amount)),
+        }[unit]
+        return now - delta
+
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=now.tzinfo)
+    return parsed.astimezone(now.tzinfo)
 
 
 def get_files(
@@ -400,6 +495,85 @@ def get_metrics_from_vm(
     return ret
 
 
+def _escape_vm_label_value(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _build_vm_selector(
+    job: str,
+    metric_name: str = "",
+    label_filters: dict[str, str] | None = None,
+) -> str:
+    filters = {"job": job, **(label_filters or {})}
+    selector = ",".join(
+        f'{key}="{_escape_vm_label_value(str(value))}"'
+        for key, value in filters.items()
+        if str(value).strip()
+    )
+    if metric_name.strip():
+        return f'{metric_name}{{{selector}}}' if selector else metric_name
+    return f"{{{selector}}}"
+
+
+def get_latest_vm_job_timestamp(
+    server: str,
+    job: str,
+    metric_name: str = "",
+    label_filters: dict[str, str] | None = None,
+    lookback: str = "365d",
+    timeout: float = 10.0,
+) -> dict[str, Any]:
+    """
+    Fast latest-sample lookup for one VM job.
+
+    Uses one instant query with a wide lookback window so VictoriaMetrics can
+    search for the most recent raw sample without a range-scan loop.
+    """
+    selector = _build_vm_selector(
+        job=job, metric_name=metric_name, label_filters=label_filters
+    )
+    query = f"max(timestamp({selector}))"
+
+    try:
+        resp = requests.get(
+            server + vmapi_query,
+            params={"query": query, "step": lookback},
+            timeout=timeout,
+        )
+        if resp.status_code != 200:
+            return {
+                "has_data": False,
+                "timestamp": None,
+                "query": query,
+                "error": f"status_code={resp.status_code}",
+            }
+
+        payload = resp.json()
+        result = payload.get("data", {}).get("result", [])
+        if not result:
+            return {"has_data": False, "timestamp": None, "query": query}
+
+        raw_value = result[0].get("value", [None, None])[1]
+        if raw_value in (None, ""):
+            return {"has_data": False, "timestamp": None, "query": query}
+
+        latest_ts = datetime.fromtimestamp(
+            float(raw_value), tz=timezone.utc
+        )
+        return {
+            "has_data": True,
+            "timestamp": latest_ts,
+            "query": query,
+        }
+    except Exception as e:
+        return {
+            "has_data": False,
+            "timestamp": None,
+            "query": query,
+            "error": str(e),
+        }
+
+
 def convert_mf4_to_trc(
     paths: list[Path | str], output_name: str | Path
 ) -> None:
@@ -447,14 +621,30 @@ def get_windows_home_path() -> Path:
     Try to get the windows home path on both Windows and WSL/Linux.
     Looks for a suitable path in the PATH environment variable or defaults to a common location.
     """
-    return Path(
-        os.environ["USERPROFILE"]
-        if os.name == "nt"
-        else f'/mnt/c/Users/{subprocess.run(["powershell.exe", "Write-Host $env:USERNAME"], capture_output=True, text=True).stdout.strip()}'
-    )
+    if os.name == "nt":
+        return Path(os.environ.get("USERPROFILE", str(Path.home())))
+
+    # Linux/WSL path: if powershell is available, infer Windows profile path.
+    if shutil.which("powershell.exe"):
+        try:
+            username = subprocess.run(
+                ["powershell.exe", "Write-Host $env:USERNAME"],
+                capture_output=True,
+                text=True,
+                check=False,
+            ).stdout.strip()
+            if username:
+                candidate = Path(f"/mnt/c/Users/{username}")
+                if candidate.exists():
+                    return candidate
+        except Exception:
+            pass
+
+    # Container-safe fallback.
+    return Path.home()
 
 
-def convert_to_eng(value: int | float) -> str:
+def convert_to_eng(value: int | float | str) -> str:
     if not (type(value) is int or type(value) is float):
         try:
             logging.warning(
