@@ -30,10 +30,12 @@ exec docker run "${docker_args[@]}" \
   --cursor-output-file "/state/d65_cursor.out.json" \
   --default-lookback-seconds "${D65_DEFAULT_LOOKBACK_SECONDS:-600}" \
   --overlap-seconds "${D65_OVERLAP_SECONDS:-120}" \
+  --cursor-basis "last-modified" \
   -- \
   python -m decoder.D65.send_d65_data \
   --server "${D65_SERVER:-http://localhost:8428}" \
   --s3-streaming \
+  --s3-time-basis "last-modified" \
   --start "{start}" \
   --end "{end}" \
   --cursor-ts "{cursor_ts}" \

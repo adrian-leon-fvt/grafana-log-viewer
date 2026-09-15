@@ -261,6 +261,7 @@ def main_post_s3_streaming_to_victoriametrics(
     cursor_timestamp: str = "",
     cursor_key: str = "",
     cursor_out: str = "",
+    time_basis: Literal["timestamp", "last-modified"] = "timestamp",
 ):
     start_ts = time.time()
 
@@ -277,11 +278,19 @@ def main_post_s3_streaming_to_victoriametrics(
             end_time=end_date,
             Prefix=s3_prefix,
             posted_after=posted_after,
+            time_basis=time_basis,
         )
         s3_info_list = summary["buckets"].get(s3_bucket, {}).get("files", [])
 
     if not s3_info_list:
         logging.warning("⚠️ No B3SR S3 files found to stream.")
+        if cursor_out.strip() and time_basis == "last-modified":
+            Path(cursor_out).write_text(
+                json.dumps(
+                    {"last_timestamp": end_date.isoformat(), "last_key": ""}
+                ),
+                encoding="utf-8",
+            )
         return {}
 
     s3_info_list = [
@@ -301,7 +310,9 @@ def main_post_s3_streaming_to_victoriametrics(
         item
         for item in s3_info_list
         if _is_after_cursor(
-            item_timestamp=item.get("Timestamp"),
+            item_timestamp=item.get(
+                "LastModified" if time_basis == "last-modified" else "Timestamp"
+            ),
             item_key=item.get("Key", ""),
             cursor_timestamp=parsed_cursor_ts,
             cursor_key=cursor_key,
@@ -312,8 +323,13 @@ def main_post_s3_streaming_to_victoriametrics(
         logging.warning("⚠️ No B3SR S3 files newer than cursor.")
         return {}
 
+    if cursor_out.strip():
+        newest_first = False
     s3_info_list.sort(
-        key=lambda x: x.get("Timestamp", datetime.min.replace(tzinfo=timezone.utc)),
+        key=lambda x: x.get(
+            "LastModified" if time_basis == "last-modified" else "Timestamp",
+            datetime.min.replace(tzinfo=timezone.utc),
+        ),
         reverse=newest_first,
     )
 
@@ -371,6 +387,7 @@ def main_post_s3_streaming_to_victoriametrics(
         count_str = f"[{idx} of {total}]"
         start_ts_single = time.time()
         result: dict[str, int] = {}
+        processed = False
 
         if selected_strategy == "memory":
             blob = download_file_bytes_from_s3(
@@ -389,6 +406,7 @@ def main_post_s3_streaming_to_victoriametrics(
                         skip_signal_range_check=skip_signal_range_check,
                         max_batch_size=max_batch_size,
                     )
+                    processed = True
             except Exception as e:
                 logging.error(f"❌ {count_str} Error processing in memory {key}: {e}")
             del blob
@@ -413,14 +431,21 @@ def main_post_s3_streaming_to_victoriametrics(
                         skip_signal_range_check=skip_signal_range_check,
                         max_batch_size=max_batch_size,
                     )
+                    processed = True
             except Exception as e:
                 logging.error(f"❌ {count_str} Error processing temp file {key}: {e}")
             finally:
                 if tmp_path and tmp_path.exists():
                     tmp_path.unlink()
 
+        if not processed:
+            logging.error("❌ Stopping before cursor advances past failed object %s", key)
+            break
+
         sent = sum(result.values())
-        item_ts = item.get("Timestamp")
+        item_ts = item.get(
+            "LastModified" if time_basis == "last-modified" else "Timestamp"
+        )
         if isinstance(item_ts, datetime):
             if span_start is None or item_ts < span_start:
                 span_start = item_ts
@@ -878,6 +903,12 @@ if __name__ == "__main__":
         default="",
         help=argparse.SUPPRESS,
     )
+    parser.add_argument(
+        "--s3-time-basis",
+        choices=["timestamp", "last-modified"],
+        default="timestamp",
+        help="Select S3 objects and advance cursor by recording timestamp or upload time.",
+    )
 
     args = parser.parse_args()
     DBC_FOLDER_OVERRIDE = args.dbc_folder
@@ -911,6 +942,7 @@ if __name__ == "__main__":
             cursor_timestamp=args.cursor_ts,
             cursor_key=args.cursor_key,
             cursor_out=args.cursor_out,
+            time_basis=args.s3_time_basis,
         )
     else:
         main_post_to_victoriametrics(

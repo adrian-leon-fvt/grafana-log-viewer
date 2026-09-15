@@ -731,6 +731,7 @@ def get_d65_file_list_from_s3(
     output_file: Path | str = "",
     ignore_upper: bool = False,
     ignore_lower: bool = False,
+    time_basis: Literal["timestamp", "last-modified"] = "timestamp",
     **kwargs,
 ) -> list[dict]:
     prefix: str = ""
@@ -744,6 +745,7 @@ def get_d65_file_list_from_s3(
         end_time=end,
         max_workers=max_workers,
         posted_after=posted_after,
+        time_basis=time_basis,
         Prefix=prefix,
         **kwargs,
     )
@@ -1014,6 +1016,7 @@ def main_post_s3_streaming_to_victoriametrics(
     cursor_timestamp = _parse_cursor_timestamp(kwargs.get("cursor_timestamp", ""))
     cursor_key = str(kwargs.get("cursor_key", ""))
     cursor_out = str(kwargs.get("cursor_out", "")).strip()
+    time_basis = kwargs.get("time_basis", "timestamp")
 
     if s3_info_list is None:
         s3_info_list = get_d65_file_list_from_s3(
@@ -1021,10 +1024,18 @@ def main_post_s3_streaming_to_victoriametrics(
             end=end_date,
             ignore_upper=ignore_upper,
             ignore_lower=ignore_lower,
+            time_basis=time_basis,
         )
 
     if not s3_info_list:
         logging.warning("⚠️ No S3 files found to stream.")
+        if cursor_out and time_basis == "last-modified":
+            Path(cursor_out).write_text(
+                json.dumps(
+                    {"last_timestamp": end_date.isoformat(), "last_key": ""}
+                ),
+                encoding="utf-8",
+            )
         return {}, {}
 
     s3_info_list = [
@@ -1052,7 +1063,9 @@ def main_post_s3_streaming_to_victoriametrics(
         item
         for item in s3_info_list
         if _is_after_cursor(
-            item_timestamp=item.get("Timestamp"),
+            item_timestamp=item.get(
+                "LastModified" if time_basis == "last-modified" else "Timestamp"
+            ),
             item_key=item.get("Key", ""),
             cursor_timestamp=cursor_timestamp,
             cursor_key=cursor_key,
@@ -1060,8 +1073,13 @@ def main_post_s3_streaming_to_victoriametrics(
     ]
 
     send_newest_first = kwargs.get("send_newest_first", True)
+    if cursor_out:
+        send_newest_first = False
     s3_info_list.sort(
-        key=lambda x: x.get("Timestamp", datetime.min.replace(tzinfo=timezone.utc)),
+        key=lambda x: x.get(
+            "LastModified" if time_basis == "last-modified" else "Timestamp",
+            datetime.min.replace(tzinfo=timezone.utc),
+        ),
         reverse=send_newest_first,
     )
 
@@ -1135,6 +1153,7 @@ def main_post_s3_streaming_to_victoriametrics(
         count_str = f"[{idx} of {total}]"
         start_ts = time.time()
         result: dict[str, int] = {}
+        processed = False
         current_start: datetime | None = None
         current_end: datetime | None = None
         if selected_strategy == "memory":
@@ -1156,6 +1175,7 @@ def main_post_s3_streaming_to_victoriametrics(
                         skip_signal_range_check=skip_signal_range_check,
                         max_batch_size=max_batch_size,
                     )
+                    processed = True
             except Exception as e:
                 logging.error(f"❌ {count_str} Error processing in memory {key}: {e}")
             del blob
@@ -1184,14 +1204,21 @@ def main_post_s3_streaming_to_victoriametrics(
                         skip_signal_range_check=skip_signal_range_check,
                         max_batch_size=max_batch_size,
                     )
+                    processed = True
             except Exception as e:
                 logging.error(f"❌ {count_str} Error processing temp file {key}: {e}")
             finally:
                 if tmp_path and tmp_path.exists():
                     tmp_path.unlink()
 
+        if not processed:
+            logging.error("❌ Stopping before cursor advances past failed object %s", key)
+            break
+
         sent = sum(result.values())
-        item_ts = item.get("Timestamp")
+        item_ts = item.get(
+            "LastModified" if time_basis == "last-modified" else "Timestamp"
+        )
         if isinstance(item_ts, datetime):
             if (
                 cursor_last_ts is None
@@ -1876,6 +1903,12 @@ if __name__ == "__main__":
         default="",
         help=argparse.SUPPRESS,
     )
+    parser.add_argument(
+        "--s3-time-basis",
+        choices=["timestamp", "last-modified"],
+        default="timestamp",
+        help="Select S3 objects and advance cursor by recording timestamp or upload time.",
+    )
 
     args = parser.parse_args()
     DBC_FOLDER_OVERRIDE = args.dbc_folder
@@ -1987,6 +2020,7 @@ if __name__ == "__main__":
             posted_after=posted_after,
             ignore_upper=effective_ignore_upper,
             ignore_lower=effective_ignore_lower,
+            time_basis=args.s3_time_basis,
         )
     elif not args.skip_download:
         logging.debug("⬇️ Starting D65 file download from S3 ...")
@@ -2020,6 +2054,7 @@ if __name__ == "__main__":
                 cursor_timestamp=args.cursor_ts,
                 cursor_key=args.cursor_key,
                 cursor_out=args.cursor_out,
+                time_basis=args.s3_time_basis,
             )
         else:
             main_post_to_victoriametrics(

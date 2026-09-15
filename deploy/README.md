@@ -5,8 +5,10 @@ systemd user timers.
 Runtime dependencies are installed in Docker image `ingest-runner:current` at
 deploy time (no host Python/venv dependency).
 
-Polling uses persisted cursor state (`/home/ubuntu/ingest/cursor/*.json`) with overlap
-buffer to avoid timer-drift gaps.
+Polling uses S3 `LastModified` upload time plus persisted cursor state
+(`/home/ubuntu/ingest/cursor/*.json`) and an overlap buffer. This catches files
+uploaded now even when their embedded recording timestamps are old. First run
+after migration from a recording-time cursor rescans the previous 24 hours.
 Cursor files live under `/home/ubuntu/ingest/cursor` so they survive release
 switches and can be copied to new server.
 

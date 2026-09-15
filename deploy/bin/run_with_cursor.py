@@ -35,6 +35,8 @@ def main() -> int:
     parser.add_argument("--cursor-output-file", required=True, type=Path)
     parser.add_argument("--default-lookback-seconds", type=int, default=600)
     parser.add_argument("--overlap-seconds", type=int, default=120)
+    parser.add_argument("--cursor-basis", default="timestamp")
+    parser.add_argument("--basis-change-lookback-seconds", type=int, default=86400)
     parser.add_argument(
         "--",
         dest="separator",
@@ -52,13 +54,19 @@ def main() -> int:
 
     now = datetime.now(timezone.utc)
     state = _load_state(args.state_file)
-    last_ts_raw = state.get("last_timestamp")
+    basis_matches = state.get("cursor_basis") == args.cursor_basis
+    last_ts_raw = state.get("last_timestamp") if basis_matches else None
     last_key = str(state.get("last_key", ""))
 
-    if last_ts_raw:
+    if not basis_matches and state:
+        start_ts = now - timedelta(seconds=args.basis_change_lookback_seconds)
+        last_key = ""
+    elif last_ts_raw:
         start_ts = _parse_iso(last_ts_raw) - timedelta(seconds=args.overlap_seconds)
     else:
         start_ts = now - timedelta(seconds=args.default_lookback_seconds)
+
+    args.cursor_output_file.unlink(missing_ok=True)
 
     replacements = {
         "{start}": start_ts.isoformat(),
@@ -79,15 +87,9 @@ def main() -> int:
             if output.get("last_timestamp"):
                 state["last_timestamp"] = output["last_timestamp"]
                 state["last_key"] = str(output.get("last_key", ""))
-            else:
-                state["last_timestamp"] = now.isoformat()
-                state["last_key"] = ""
-        except Exception:
-            state["last_timestamp"] = now.isoformat()
-            state["last_key"] = ""
-    else:
-        state["last_timestamp"] = now.isoformat()
-        state["last_key"] = ""
+                state["cursor_basis"] = args.cursor_basis
+        except Exception as exc:
+            print(f"Invalid cursor output; preserving prior cursor: {exc}", file=sys.stderr)
     _save_state(args.state_file, state)
     return 0
 

@@ -30,11 +30,13 @@ exec docker run "${docker_args[@]}" \
   --cursor-output-file "/state/b3sr_cursor.out.json" \
   --default-lookback-seconds "${B3SR_DEFAULT_LOOKBACK_SECONDS:-600}" \
   --overlap-seconds "${B3SR_OVERLAP_SECONDS:-120}" \
+  --cursor-basis "last-modified" \
   -- \
   python -m decoder.B3SR.send_b3sr \
   --server "${B3SR_SERVER:-http://localhost:8431}" \
   --s3-streaming \
   --s3-bucket "${B3SR_S3_BUCKET:-b3sr-telematics}" \
+  --s3-time-basis "last-modified" \
   --start "{start}" \
   --end "{end}" \
   --cursor-ts "{cursor_ts}" \

@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 from decoder.s3_helper import (
@@ -86,6 +87,37 @@ class NewMf4FilesSummaryTest(unittest.TestCase):
         self.assertFalse(summary["has_new_files"])
         self.assertEqual(summary["total_count"], 0)
         self.assertEqual(summary["buckets"]["d65-telematics"]["keys"], [])
+
+    @patch("decoder.s3_helper.create_s3_client")
+    def test_last_modified_basis_includes_late_upload(self, create_client) -> None:
+        old_recording_time = "2026-09-01T12:00:00Z"
+        uploaded_today = datetime(2026, 9, 15, 12, 5, tzinfo=timezone.utc)
+        fake_client = create_client.return_value
+        fake_client.get_paginator.return_value.paginate.return_value = [
+            {
+                "Contents": [
+                    {
+                        "Key": "device/late.mf4",
+                        "LastModified": uploaded_today,
+                        "Size": 123,
+                    }
+                ]
+            }
+        ]
+        fake_client.head_object.return_value = {
+            "Metadata": {"timestamp": old_recording_time}
+        }
+
+        from decoder.s3_helper import get_mf4_files_list_from_s3
+
+        files = get_mf4_files_list_from_s3(
+            "test-bucket",
+            start_time=datetime(2026, 9, 15, 12, 0, tzinfo=timezone.utc),
+            end_time=datetime(2026, 9, 15, 12, 10, tzinfo=timezone.utc),
+            time_basis="last-modified",
+        )
+
+        self.assertEqual([item["Key"] for item in files], ["device/late.mf4"])
 
 
 if __name__ == "__main__":

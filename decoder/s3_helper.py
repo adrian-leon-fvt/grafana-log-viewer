@@ -96,9 +96,10 @@ def _parse_s3_timestamp(timestamp: str) -> datetime:
     if normalized.endswith("Z"):
         normalized = normalized[:-1] + "+00:00"
     try:
-        return datetime.fromisoformat(normalized).astimezone(
-            ZoneInfo("America/Vancouver")
-        )
+        parsed = datetime.fromisoformat(normalized)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(ZoneInfo("America/Vancouver"))
     except (ValueError, TypeError):
         parsed = datetime.strptime(timestamp.strip("Z"), "%Y%m%dT%H%M%S")
         return parsed.replace(tzinfo=timezone.utc).astimezone(
@@ -313,6 +314,10 @@ def get_mf4_files_list_from_s3(
             logging.error(f"❌ Invalid end_time format: {end_time}")
             return []
 
+    time_basis = kwargs.get("time_basis", "timestamp")
+    if time_basis not in {"timestamp", "last-modified"}:
+        raise ValueError("time_basis must be 'timestamp' or 'last-modified'")
+
     posted_after: datetime | None = kwargs.get("posted_after", None)
     if isinstance(posted_after, datetime) and posted_after.tzinfo is None:
         posted_after = posted_after.replace(tzinfo=timezone.utc)
@@ -354,12 +359,21 @@ def get_mf4_files_list_from_s3(
                 if posted_after and last_modified < posted_after:
                     return {}
 
+                if time_basis == "last-modified" and (
+                    (start_time and last_modified < start_time)
+                    or (end_time and last_modified > end_time)
+                ):
+                    return {}
+
                 timestamp: datetime | None = get_timestamp(key)
                 if not timestamp:
                     return {}
 
-                if (not start_time or timestamp >= start_time) and (
-                    not end_time or timestamp <= end_time
+                selected_time = (
+                    last_modified if time_basis == "last-modified" else timestamp
+                )
+                if (not start_time or selected_time >= start_time) and (
+                    not end_time or selected_time <= end_time
                 ):
                     return {
                         "Key": key,
@@ -405,6 +419,7 @@ def get_mf4_files_list_from_s3(
         logging.error(
             f"❌ Error fetching files from bucket '{bucket_name}': {e}"
         )
+        raise
 
     return []
 
