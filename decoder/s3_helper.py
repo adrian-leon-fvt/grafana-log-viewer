@@ -28,6 +28,7 @@ def _resolve_s3_verify_setting() -> bool | str:
     - AWS_S3_TLS_INSECURE=true  -> verify=False
     - AWS_CA_BUNDLE=/path       -> verify=/path (if file exists)
     - AWS_S3_CA_BUNDLE=/path    -> verify=/path (if file exists)
+    - ./Zscaler_Root_CA.crt    -> verify=that file (if it exists)
     - default                   -> verify=True (botocore/certifi defaults)
     """
     insecure = os.getenv("AWS_S3_TLS_INSECURE", "").strip().lower()
@@ -46,6 +47,14 @@ def _resolve_s3_verify_setting() -> bool | str:
         logging.warning(
             f"⚠️ {env_name} was set but file not found: {ca_bundle}. Falling back to default CA trust."
         )
+
+    local_ca_bundle = Path(__file__).resolve().parents[1] / "Zscaler_Root_CA.crt"
+    if local_ca_bundle.is_file():
+        logging.info(
+            "Using local CA bundle for S3 TLS verification: %s",
+            local_ca_bundle,
+        )
+        return str(local_ca_bundle)
 
     return True
 

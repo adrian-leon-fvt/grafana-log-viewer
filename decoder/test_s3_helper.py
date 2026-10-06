@@ -1,15 +1,47 @@
 import unittest
 from datetime import datetime, timezone
+from pathlib import Path
 from unittest.mock import patch
 
 from decoder.s3_helper import (
     EESBuckets,
+    _resolve_s3_verify_setting,
     get_new_mf4_files_summary_from_s3,
     _parse_s3_timestamp,
 )
 
 
 class NewMf4FilesSummaryTest(unittest.TestCase):
+    @patch.dict("os.environ", {}, clear=True)
+    @patch("decoder.s3_helper.Path.is_file", return_value=False)
+    def test_s3_tls_defaults_to_certifi(self, _is_file) -> None:
+        self.assertTrue(_resolve_s3_verify_setting())
+
+    @patch.dict(
+        "os.environ",
+        {"AWS_CA_BUNDLE": "/tmp/custom-ca.pem"},
+        clear=True,
+    )
+    @patch("decoder.s3_helper.Path.exists", return_value=True)
+    def test_s3_tls_uses_configured_ca_bundle(self, _exists) -> None:
+        self.assertEqual(
+            _resolve_s3_verify_setting(),
+            "/tmp/custom-ca.pem",
+        )
+
+    @patch.dict("os.environ", {}, clear=True)
+    @patch("decoder.s3_helper.Path.is_file", return_value=True)
+    def test_s3_tls_local_ca_and_override_priority(self, _is_file) -> None:
+        local_ca = Path(__file__).resolve().parents[1] / "Zscaler_Root_CA.crt"
+        self.assertEqual(_resolve_s3_verify_setting(), str(local_ca))
+        with (
+            patch.dict("os.environ", {"AWS_CA_BUNDLE": "/tmp/custom-ca.pem"}),
+            patch("decoder.s3_helper.Path.exists", return_value=True),
+        ):
+            self.assertEqual(_resolve_s3_verify_setting(), "/tmp/custom-ca.pem")
+        with patch.dict("os.environ", {"AWS_S3_TLS_INSECURE": "true"}):
+            self.assertIs(_resolve_s3_verify_setting(), False)
+
     def test_parse_timestamp_with_and_without_z(self) -> None:
         self.assertEqual(
             _parse_s3_timestamp("20240724T173516").isoformat(),
