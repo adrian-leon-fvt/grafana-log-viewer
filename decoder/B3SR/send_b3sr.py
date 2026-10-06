@@ -879,7 +879,7 @@ if __name__ == "__main__":
         "--verbosity",
         type=str,
         choices=["debug", "some", "minimal", "silent"],
-        default="debug",
+        default="some",
         help=(
             "Log verbosity. debug=all, some=hides S3 scan+per-signal Sending..., "
             "minimal=also hides per-signal Sent..., silent=errors+final summary only."
