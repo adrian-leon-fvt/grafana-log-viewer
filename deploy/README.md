@@ -34,6 +34,18 @@ is missing.
 ./scripts/deploy_victoriametrics.sh
 ```
 
+## Send D65 files from a local folder
+
+```bash
+python -m decoder.D65.send_d65_data --input-folder /mnt/d/d65files
+```
+
+`--input-folder` (alias `--folder`) scans MF4 files recursively and skips S3
+download. Existing `--start`/`--end` filters still apply (default: last 7 days).
+Files need an `Upper`/`Lower` folder or device MAC in their path for job
+selection. This local mode cannot be combined with `--s3-streaming`; scheduled
+server ingestion continues using S3 streaming.
+
 ## Status and logs
 
 ```bash

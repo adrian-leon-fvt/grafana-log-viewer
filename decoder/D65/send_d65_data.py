@@ -1357,7 +1357,7 @@ def download_d65_files_from_s3(
 def get_files_in_range(
     dir_path: Path, start: datetime, end: datetime
 ) -> list[CSVContent]:
-    if not dir_path.exists() and not dir_path.is_dir():
+    if not dir_path.exists() or not dir_path.is_dir():
         logging.error(f"❌ {dir_path} does not exist or is not a directory.")
         return []
 
@@ -1510,8 +1510,9 @@ def get_all_unique_d65_files(
     end: datetime,
     sorted: bool = True,
     reverse_sort: bool = False,
+    input_folder: Path | None = None,
 ) -> list[CSVContent]:
-    cancloud_folder = get_d65_cancloud_folder()
+    cancloud_folder = input_folder or get_d65_cancloud_folder()
 
     logging.debug(f" 📁 Reading CANCloud files from {cancloud_folder} ...")
     start_ts = time.time()
@@ -1545,6 +1546,7 @@ def main_post_to_victoriametrics(
     ignore_upper: bool = False,
     ignore_lower: bool = False,
     s3_info_list: list[dict] | None = None,
+    input_folder: Path | None = None,
     **kwargs,
 ):
     start_ts = time.time()
@@ -1585,6 +1587,7 @@ def main_post_to_victoriametrics(
             start=start_date,
             end=end_date,
             reverse_sort=kwargs.get("send_newest_first", True),
+            input_folder=input_folder,
         )
 
     if ignore_upper:
@@ -1772,6 +1775,16 @@ if __name__ == "__main__":
         help="Download files from S3",
     )
     parser.add_argument(
+        "--input-folder",
+        "--folder",
+        dest="input_folder",
+        type=Path,
+        help=(
+            "Read MF4 files from this local folder instead of downloading from S3. "
+            "Searches subfolders recursively."
+        ),
+    )
+    parser.add_argument(
         "--ignore-upper",
         action="store_true",
         help="Ignore Upper files",
@@ -1920,6 +1933,14 @@ if __name__ == "__main__":
         parser.error("--s3-streaming-decode-overhead must be > 0.")
     if args.s3_streaming_max_active_files < 1:
         parser.error("--s3-streaming-max-active-files must be >= 1.")
+    if args.s3_streaming and args.input_folder:
+        parser.error("--input-folder cannot be used with --s3-streaming.")
+    if args.input_folder and (
+        not args.input_folder.exists() or not args.input_folder.is_dir()
+    ):
+        parser.error(
+            f"--input-folder must be an existing directory: {args.input_folder}"
+        )
 
     server = server_vm_test_dump if args.test else args.server
 
@@ -2022,7 +2043,7 @@ if __name__ == "__main__":
             ignore_lower=effective_ignore_lower,
             time_basis=args.s3_time_basis,
         )
-    elif not args.skip_download:
+    elif not args.skip_download and not args.input_folder:
         logging.debug("⬇️ Starting D65 file download from S3 ...")
         s3_info_list_for_post = main_download_files(
             start_date=start_date,
@@ -2067,6 +2088,7 @@ if __name__ == "__main__":
                 send_newest_first=True,
                 dbc_files_override=dbc_files_override,
                 skip_signal_range_check=args.backfill,
+                input_folder=args.input_folder,
                 # dbc_files_override={
                 #     "Upper": [],
                 #     "Lower": [f for f in get_d65_dbc_files()["Lower"] if "Main" in f.name],
